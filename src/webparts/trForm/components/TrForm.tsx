@@ -16,7 +16,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
   constructor(props: ITrFormProps) {
     super(props);
-    debugger;
+
     this.state = {
       tr: props.tr,
       errorMessages: []
@@ -24,10 +24,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
 
   public componentWillReceiveProps(nextProps: ITrFormProps, nextContext: any) {
-    debugger;
+
   }
   public save() {
-    debugger;
+
     this.props.save(this.state.tr)
       .then((result) => { })
       .catch((response) => {
@@ -43,8 +43,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.setState(this.state);
   }
   public render(): React.ReactElement<ITrFormProps> {
-    debugger;
 
+    console.log("WorkTypeID is" + this.props.tr.WorkTypeId);
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
       return {
         key: wt.id,
@@ -52,17 +52,28 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       }
     });
     let applicationtypeDropDoownoptions =
-     _.filter(this.props.applicationTypes, (at) => {
-       debugger;
-        return at.workTypeIds.indexOf(this.props.tr.WorkTypeId) > 0 }
-        )
-    .map((at)=>{
-        return {
-        key: at.id,
-        text: at.applicationType
-      }
-    })
+      _.filter(this.props.applicationTypes, (at) => {
 
+        return at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1
+      })
+        .map((at) => {
+          return {
+            key: at.id,
+            text: at.applicationType
+          }
+        });
+    let enduseDropDoownoptions =
+      _.filter(this.props.endUses, (eu) => {
+
+        return (eu.applicationTypeId === this.props.tr.ApplicationTypeId)
+      })
+        .map((eu) => {
+          return {
+            key: eu.id,
+            text: eu.endUse
+          }
+        });
+    console.log("# of app types is " + applicationtypeDropDoownoptions.length);
     return (
       <div>
 
@@ -74,13 +85,21 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label >Request #</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Title} onChanged={e => { this.state.tr.Title = e;this.setState(this.state); }} />
+              <TextField value={this.state.tr.Title} onChanged={e => {
+                this.state.tr.Title = e; this.setState(this.state);
+              }} />
             </td>
             <td>
               <Label >Work Type</Label>
             </td>
             <td>
-              <Dropdown label='' selectedKey={this.state.tr.WorkTypeId} options={worktypeDropDoownoptions} onChanged={e => {debugger; this.state.tr.WorkTypeId = e.key as number;this.setState(this.state); }} />
+              <Dropdown label='' selectedKey={this.state.tr.WorkTypeId} options={worktypeDropDoownoptions} onChanged={e => {
+                debugger;
+                this.state.tr.WorkTypeId = e.key as number;
+                console.log("WorkType changing to " + this.state.tr.WorkTypeId);
+                this.setState(this.state);
+                console.log("WorkType changed to " + this.state.tr.WorkTypeId);
+              }} />
             </td>
 
             <td>
@@ -102,7 +121,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label >Application Type</Label>
             </td>
             <td>
-              <Dropdown label='' selectedKey={this.state.tr.ApplicationTypeId} options={applicationtypeDropDoownoptions} onChanged={e => {debugger; this.state.tr.ApplicationTypeId = e.key as number;this.setState(this.state); }} />
+              <Dropdown label='' selectedKey={this.state.tr.ApplicationTypeId} options={applicationtypeDropDoownoptions} onChanged={e => { debugger; this.state.tr.ApplicationTypeId = e.key as number; this.setState(this.state); }} />
             </td>
             <td>
               <Label >MailBox</Label>
@@ -142,11 +161,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <DatePicker value={moment(this.state.tr.InitiationDate).toDate()} onSelectDate={e => { this.state.tr.InitiationDate = moment(e).toISOString(); }} />
             </td>
             <td>
-              <Label >Work Type</Label>
+              <Label >End Use</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.WorkTypeId.toString()} />
-            </td>
+              <Dropdown label='' selectedKey={this.state.tr.EndUseId} options={enduseDropDoownoptions} onChanged={e => { debugger; this.state.tr.EndUseId = e.key as number; this.setState(this.state); }} />
+           </td>
             <td>
               <Label >Customer</Label>
             </td>

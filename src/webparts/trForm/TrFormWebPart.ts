@@ -150,7 +150,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     );
   }
   private save(tr: TR): Promise<any> {
-    debugger;
+   
     return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(tr);
     // .then((results) => {
     //   debugger;

@@ -15,8 +15,10 @@
     "@types/react-addons-update": "0.14.14",
     "@types/react-dom": "0.14.18",
     "@types/webpack-env": ">=1.12.1 <1.14.0",
+    "moment": "^2.18.1",
     "react": "15.4.2",
-    "react-dom": "15.4.2"
+    "react-dom": "15.4.2",
+    "sp-pnp-js": "^2.0.4"
   },
   "devDependencies": {
     "@microsoft/sp-build-web": "~1.0.1",
