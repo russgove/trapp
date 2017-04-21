@@ -12,6 +12,8 @@ import * as moment from 'moment';
 import * as _ from "lodash";
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
+import * as tabs from "react-tabs"
+
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
 
   constructor(props: ITrFormProps) {
@@ -165,7 +167,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <Dropdown label='' selectedKey={this.state.tr.EndUseId} options={enduseDropDoownoptions} onChanged={e => { debugger; this.state.tr.EndUseId = e.key as number; this.setState(this.state); }} />
-           </td>
+            </td>
             <td>
               <Label >Customer</Label>
             </td>
@@ -177,6 +179,28 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
 
         </table>
+        <tabs.Tabs>
+          <tabs.TabList>
+            <tabs.Tab>
+              Title
+             </tabs.Tab>
+            <tabs.Tab>
+              Someting else
+             </tabs.Tab>
+                 <tabs.Tab>
+              wish I had docs, maybe in email
+             </tabs.Tab>
+          </tabs.TabList>
+          <tabs.TabPanel>
+            <h2>Hello from Bar</h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <h2>cool</h2>
+          </tabs.TabPanel>
+             <tabs.TabPanel>
+            <h2>check emails from okc dude ew tr</h2>
+          </tabs.TabPanel>
+        </tabs.Tabs>
         <Button buttonType={ButtonType.normal} onClick={this.save.bind(this)}>Save</Button>
       </div>
     );
