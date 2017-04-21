@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../node_modules/@microsoft/sp-module-interfaces/lib/manifestSchemas/jsonSchemas/clientSideComponentManifestSchema.json",
+  "id": "de8f72fd-5818-483e-a41a-c91968a94f17",
+  "alias": "TrFormWebPart",
+  "componentType": "WebPart",
+  "version": "0.0.1",
+  "manifestVersion": 2,
+  "preconfiguredEntries": [
+    {
+      "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
+      "group": {
+        "default": "Under Development"
+      },
+      "title": {
+        "default": "TR-Form"
+      },
+      "description": {
+        "default": "Appused for mintaning TRs"
+      },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "listUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/Trs",
+        "workTypesListUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/WorkTypes",
+        "applicationTypesListUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/ApplicationTypes",
+        "endUsesListUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/EndUses"
+      }
+    }
+  ]
+}

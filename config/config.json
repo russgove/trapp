@@ -1,0 +1,13 @@
+{
+  "entries": [
+    {
+      "entry": "./lib/webparts/trForm/TrFormWebPart.js",
+      "manifest": "./src/webparts/trForm/TrFormWebPart.manifest.json",
+      "outputPath": "./dist/tr-form.bundle.js"
+    }
+  ],
+  "externals": {},
+  "localizedResources": {
+    "trFormStrings": "webparts/trForm/loc/{locale}.js"
+  }
+}
