@@ -77,6 +77,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formProps.tr.EndUseId = item.EndUseId;
         formProps.tr.WorkTypeId = item.WorkTypeId;
         formProps.tr.Title = item.Title;
+        formProps.tr.TitleArea=item.TitleArea;
+        formProps.tr.DescriptionArea=item.DescriptionArea;
+        formProps.tr.SummaryArea=item.SummaryArea;
+        
 
 
       });

@@ -1,6 +1,6 @@
 export class TR {
     public Id: number;
-     public Title: string;
+    public Title: string;
     public CER: string;
     public InitiationDate: string;
     public TRDueDate: string;
@@ -13,9 +13,12 @@ export class TR {
     public TRPriority: string;
     public Customer: string;
     public Status: string;
-    public ApplicationTypeId:number;
-    public EndUseId:number;
-public WorkTypeId:number;
+    public ApplicationTypeId: number;
+    public EndUseId: number;
+    public TitleArea: string;
+    public DescriptionArea: string;
+    public SummaryArea: string;
+    public WorkTypeId: number;
 
 }
 export class WorkType {

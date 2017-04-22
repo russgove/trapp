@@ -8,28 +8,113 @@ export interface inITrFormState {
   tr: TR;
   errorMessages: Array<md.Message>;
 }
+import { SPComponentLoader } from '@microsoft/sp-loader';
 import * as moment from 'moment';
 import * as _ from "lodash";
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs"
 
-export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
 
+export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
+  private ckeditor: any;
   constructor(props: ITrFormProps) {
     super(props);
-
     this.state = {
       tr: props.tr,
       errorMessages: []
     };
+    debugger;
+
   }
 
   public componentWillReceiveProps(nextProps: ITrFormProps, nextContext: any) {
 
   }
-  public save() {
+  public componentDidMount() {
+    debugger;
+    var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
+    SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
+      this.ckeditor = CKEDITOR;
+      this.ckeditor.replace("tronoxtrtextarea-title");
 
+    });
+
+
+  }
+  public tabChanged(newTabID, oldTabID) {
+    debugger;
+    switch (oldTabID) {
+      case 0:
+        let data = this.ckeditor.instances["tronoxtrtextarea-title"].getData();
+        this.ckeditor.remove("tronoxtrtextarea-title");
+        console.log("removed tronoxtrtextarea-title")
+        break;
+      case 1:
+        let data1 = this.ckeditor.instances["tronoxtrtextarea-description"].getData();
+        this.ckeditor.remove("tronoxtrtextarea-description");
+        console.log("removed tronoxtrtextarea-description");
+        break;
+      case 2:
+        let data2 = this.ckeditor.instances["tronoxtrtextarea-summary"].getData();
+        this.ckeditor.remove("tronoxtrtextarea-summary");
+        console.log("removed tronoxtrtextarea-summary");
+        break;
+      default:
+
+    };
+    switch (newTabID) {
+      case 0:
+        if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
+          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+            this.ckeditor.replace("tronoxtrtextarea-title");
+            console.log("created tronoxtrtextarea-title")
+          });
+        }
+        break;
+      case 1:
+        if (this.ckeditor.instances["tronoxtrtextarea-description"] === undefined) {
+          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+            this.ckeditor.replace("tronoxtrtextarea-description");
+            console.log("created tronoxtrtextarea-description")
+          });
+        }
+        break;
+      case 2:
+        if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
+          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+            this.ckeditor.replace("tronoxtrtextarea-summary");
+            console.log("created tronoxtrtextarea-summary")
+          });
+        }
+        break;
+      default:
+
+    }
+
+    debugger;
+
+  }
+  public save() {
+    debugger;
+    for (let instanceName in this.ckeditor.instances) {
+      debugger;
+      let instance = this.ckeditor.instances[instanceName];
+      let data = instance.getData();
+      switch (instanceName) {
+        case "tronoxtrtextarea-title":
+          this.state.tr.TitleArea = data;
+          break;
+        case "tronoxtrtextarea-description":
+          this.state.tr.DescriptionArea = data;
+          break;
+        case "tronoxtrtextarea-summary":
+          this.state.tr.SummaryArea = data;
+          break;
+        default:
+
+      }
+    }
     this.props.save(this.state.tr)
       .then((result) => { })
       .catch((response) => {
@@ -82,6 +167,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         <MessageDisplay messages={this.state.errorMessages}
           hideMessage={this.removeMessage.bind(this)} />
         <table>
+
           <tr>
             <td>
               <Label >Request #</Label>
@@ -179,7 +265,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
 
         </table>
-        <tabs.Tabs>
+        <tabs.Tabs onSelect={this.tabChanged.bind(this)}>
           <tabs.TabList>
             <tabs.Tab>
               Title
@@ -209,14 +295,21 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               formulae
              </tabs.Tab>
           </tabs.TabList>
-          <tabs.TabPanel>
-            <h2>This is the titler</h2>
+          <tabs.TabPanel >
+
+            <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
+              {this.state.tr.TitleArea}
+            </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>and the descriptin</h2>
+            <textarea name="tronoxtrtextarea-description" id="tronoxtrtextarea-description" style={{ display: "none" }}>
+              {this.state.tr.DescriptionArea}
+            </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>some summary data herer</h2>
+            <textarea name="tronoxtrtextarea-summary" id="tronoxtrtextarea-summary" style={{ display: "none" }}>
+              {this.state.tr.SummaryArea}
+            </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
             <h2>these are the test pareameters</h2>
