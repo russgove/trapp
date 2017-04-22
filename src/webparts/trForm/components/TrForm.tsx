@@ -185,20 +185,56 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Title
              </tabs.Tab>
             <tabs.Tab>
-              Someting else
+              Description
              </tabs.Tab>
-                 <tabs.Tab>
-              wish I had docs, maybe in email
+            <tabs.Tab>
+              Summary
+             </tabs.Tab>
+            <tabs.Tab>
+              Test Params
+             </tabs.Tab>
+            <tabs.Tab>
+              tech Spec
+             </tabs.Tab>
+            <tabs.Tab>
+              staff cc
+             </tabs.Tab>
+            <tabs.Tab>
+              pigments
+             </tabs.Tab>
+            <tabs.Tab>
+              Tests
+             </tabs.Tab>
+            <tabs.Tab>
+              formulae
              </tabs.Tab>
           </tabs.TabList>
           <tabs.TabPanel>
-            <h2>Hello from Bar</h2>
+            <h2>This is the titler</h2>
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>cool</h2>
+            <h2>and the descriptin</h2>
           </tabs.TabPanel>
-             <tabs.TabPanel>
-            <h2>check emails from okc dude ew tr</h2>
+          <tabs.TabPanel>
+            <h2>some summary data herer</h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <h2>these are the test pareameters</h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <h2>Specification</h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <h2>staff cc? just sen emails. or set notifications></h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <h2>pigments incolve</h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <h2>these are teh tests</h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <h2>formulae?></h2>
           </tabs.TabPanel>
         </tabs.Tabs>
         <Button buttonType={ButtonType.normal} onClick={this.save.bind(this)}>Save</Button>
