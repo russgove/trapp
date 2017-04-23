@@ -1,4 +1,29 @@
+import * as moment from 'moment';
 export class TR {
+
+    public constructor() {
+        this.Id = -1;
+        this.Title = '';
+        this.CER = "";
+        this.InitiationDate =  moment(new Date()).toISOString(); 
+        this.TRDueDate =   moment(new Date()).toISOString(); 
+        this.ActualStartDate =  moment(new Date()).toISOString(); 
+        this.ActualCompletionDate =  moment(new Date()).toISOString(); 
+        this.RequestorId = null;
+        this.EstimatedHours = 0;
+        this.Site = "";
+        this.MailBox = "";
+        this.TRPriority = "";
+        this.Customer = "";
+        this.Status = "";
+        this.ApplicationTypeId = 0;
+        this.EndUseId = 0;
+        this.TitleArea = "";
+        this.DescriptionArea = "";
+        this.SummaryArea = "";
+        this.WorkTypeId = 0;
+
+    }
     public Id: number;
     public Title: string;
     public CER: string;
@@ -6,7 +31,7 @@ export class TR {
     public TRDueDate: string;
     public ActualStartDate: string;
     public ActualCompletionDate: string;
-    public Requestor: string;
+    public RequestorId: number;
     public EstimatedHours: number;
     public Site: string;
     public MailBox: string;

@@ -3,10 +3,14 @@ import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { TR } from "../dataModel";
-import { TextField, Label, Button, ButtonType, MessageBar, MessageBarType, DatePicker, Dropdown, IDropdownProps } from 'office-ui-fabric-react';
+import {
+  TextField, Label, Button, ButtonType, MessageBar, MessageBarType,
+  CompactPeoplePicker, DatePicker, Dropdown, IDropdownProps, IPersonaProps, PersonaPresence, PersonaInitialsColor, IBasePickerSuggestionsProps,
+} from 'office-ui-fabric-react';
 export interface inITrFormState {
   tr: TR;
   errorMessages: Array<md.Message>;
+  resultsPersonas: Array<IPersonaProps>;
 }
 import { SPComponentLoader } from '@microsoft/sp-loader';
 import * as moment from 'moment';
@@ -18,13 +22,16 @@ import * as tabs from "react-tabs"
 
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
   private ckeditor: any;
+
+  private resultsPersonas: Array<IPersonaProps> = new Array<IPersonaProps>();
   constructor(props: ITrFormProps) {
     super(props);
     this.state = {
       tr: props.tr,
-      errorMessages: []
+      errorMessages: [],
+      resultsPersonas: []
     };
-    debugger;
+
 
   }
 
@@ -32,7 +39,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
   }
   public componentDidMount() {
-    debugger;
+
     var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
@@ -43,7 +50,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
   }
   public tabChanged(newTabID, oldTabID) {
-    debugger;
+
     switch (oldTabID) {
       case 0:
         let data = this.ckeditor.instances["tronoxtrtextarea-title"].getData();
@@ -92,13 +99,13 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     }
 
-    debugger;
+
 
   }
   public save() {
-    debugger;
+
     for (let instanceName in this.ckeditor.instances) {
-      debugger;
+
       let instance = this.ckeditor.instances[instanceName];
       let data = instance.getData();
       switch (instanceName) {
@@ -123,14 +130,28 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       });
 
   }
+
+  public resolveSuggestions(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
+
+    return this.props.peoplesearch(searchText, currentSelected);
+  }
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
     _.remove(messageList, {
       Id: messageId
     });
     this.setState(this.state);
   }
+  public getTextFromItem(persona: IPersonaProps): string {
+    debugger;
+    return persona.primaryText;
+  }
   public render(): React.ReactElement<ITrFormProps> {
+    const suggestionProps: IBasePickerSuggestionsProps = {
+      suggestionsHeaderText: 'Suggested People',
+      noResultsFoundText: 'No results found',
+      loadingText: 'Loading',
 
+    };
     console.log("WorkTypeID is" + this.props.tr.WorkTypeId);
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
       return {
@@ -182,7 +203,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <Dropdown label='' selectedKey={this.state.tr.WorkTypeId} options={worktypeDropDoownoptions} onChanged={e => {
-                debugger;
+
                 this.state.tr.WorkTypeId = e.key as number;
                 console.log("WorkType changing to " + this.state.tr.WorkTypeId);
                 this.setState(this.state);
@@ -227,10 +248,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <TextField value={this.state.tr.CER} readOnly={true} onChanged={e => { this.state.tr.CER = e }} />
             </td>
             <td>
-
+              Requestor
             </td>
             <td>
-
+              <CompactPeoplePicker
+                onResolveSuggestions={this.resolveSuggestions.bind(this)}
+                pickerSuggestionsProps={suggestionProps}
+                getTextFromItem={this.getTextFromItem}
+              />
             </td>
             <td>
 

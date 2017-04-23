@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
-import { Version } from '@microsoft/sp-core-library';
+import { SearchQuery, SearchResult, SearchResults } from "sp-pnp-js";
+import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
   IPropertyPaneConfiguration,
@@ -13,6 +14,10 @@ import * as _ from 'lodash';
 import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
+import {
+  TextField, Label, Button, ButtonType, MessageBar, MessageBarType,
+  BasePeoplePicker, DatePicker, Dropdown, IDropdownProps, IPersonaProps, PersonaPresence, PersonaInitialsColor
+} from 'office-ui-fabric-react';
 
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
   private tr: TR;
@@ -32,7 +37,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public render(): void {
 
-    let formProps: ITrFormProps = { workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
+    let formProps: ITrFormProps = { peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
     let batch = pnp.sp.createBatch();
     pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
       .then((items) => {
@@ -56,34 +61,38 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       });
     // how to get querystring parameter
-    pnp.sp.web.lists.getByTitle("trs").items.getById(1).inBatch(batch).get()
-      .then((item) => {
+   
+    var qp = new UrlQueryParameterCollection(window.location.href);
+    if (qp.getValue("Id")) {
+      const id: number = parseInt(qp.getValue("Id"));
+      pnp.sp.web.lists.getByTitle("trs").items.getById(id).inBatch(batch).get()
+        .then((item) => {
 
-        formProps.tr = new TR();
-        formProps.tr.Id = item.Id;
-        formProps.tr.ActualCompletionDate = item.ActualCompletionDate;
-        formProps.tr.ApplicationTypeId = item.ApplicationTypeId;
-        formProps.tr.ActualStartDate = item.ActualStartDate;
-        formProps.tr.CER = item.CER;
-        formProps.tr.Customer = item.Customer;
-        formProps.tr.TRDueDate = item.TRDueDate;
-        formProps.tr.EstimatedHours = item.EstimatedHours;
-        formProps.tr.InitiationDate = item.InitiationDate;
-        formProps.tr.MailBox = item.MailBox;
-        formProps.tr.TRPriority = item.TRPriority;
-        formProps.tr.Requestor = item.Requestor;
-        formProps.tr.Site = item.Site;
-        formProps.tr.Status = item.Status;
-        formProps.tr.EndUseId = item.EndUseId;
-        formProps.tr.WorkTypeId = item.WorkTypeId;
-        formProps.tr.Title = item.Title;
-        formProps.tr.TitleArea=item.TitleArea;
-        formProps.tr.DescriptionArea=item.DescriptionArea;
-        formProps.tr.SummaryArea=item.SummaryArea;
-        
+          formProps.tr = new TR();
+          formProps.tr.Id = item.Id;
+          formProps.tr.ActualCompletionDate = item.ActualCompletionDate;
+          formProps.tr.ApplicationTypeId = item.ApplicationTypeId;
+          formProps.tr.ActualStartDate = item.ActualStartDate;
+          formProps.tr.CER = item.CER;
+          formProps.tr.Customer = item.Customer;
+          formProps.tr.TRDueDate = item.TRDueDate;
+          formProps.tr.EstimatedHours = item.EstimatedHours;
+          formProps.tr.InitiationDate = item.InitiationDate;
+          formProps.tr.MailBox = item.MailBox;
+          formProps.tr.TRPriority = item.TRPriority;
+          formProps.tr.RequestorId = item.RequestorId;
+          formProps.tr.Site = item.Site;
+          formProps.tr.Status = item.Status;
+          formProps.tr.EndUseId = item.EndUseId;
+          formProps.tr.WorkTypeId = item.WorkTypeId;
+          formProps.tr.Title = item.Title;
+          formProps.tr.TitleArea = item.TitleArea;
+          formProps.tr.DescriptionArea = item.DescriptionArea;
+          formProps.tr.SummaryArea = item.SummaryArea;
+        });
+    }
 
-
-      });
+    formProps.peoplesearch = this.peoplesearch;
 
 
     batch.execute().then((value) => {
@@ -119,7 +128,32 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ]
     };
   }
+  public peoplesearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
+  
 
+    let sq: SearchQuery = {
+      Querytext: "Title:"+searchText+"* ContentClass=urn:content-class:SPSPeople",
+     SourceId: "b09a7990-05ea-4af9-81ef-edfab16c4e31",  //http://www.dotnetmafia.com/blogs/dotnettipoftheday/archive/2013/01/04/list-of-common-sharepoint-2013-result-source-ids.aspx
+      RowLimit:500
+     // SelectProperties: ["*"]
+    };
+    return pnp.sp.search(sq).then((results: SearchResults) => {
+      let resultsPersonas: Array<IPersonaProps> = [];
+      for (let element of results.PrimarySearchResults) {
+        const temp = element as any;
+        temp
+        let personapprop: IPersonaProps = {
+          primaryText: temp.PreferredName, secondaryText: temp.Departmenr, imageUrl: temp.PictureURL,
+          imageInitials: temp.contentclass, presence: PersonaPresence.none
+        }
+        resultsPersonas.push(personapprop);
+      }
+      return resultsPersonas;
+    });
+
+
+  }
+  
   protected loadData() {
     let batch = pnp.sp.createBatch();
     pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
@@ -154,8 +188,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     );
   }
   private save(tr: TR): Promise<any> {
-   
-    return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(tr);
+  
+    if (tr.Id !== -1) {
+      return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(tr);
+    }
+    else {
+      return pnp.sp.web.lists.getByTitle("trs").items.add(tr);
+    }
     // .then((results) => {
     //   debugger;
     // })
