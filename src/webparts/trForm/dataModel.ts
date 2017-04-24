@@ -1,8 +1,17 @@
 import * as moment from 'moment';
-export enum modes{
+export enum modes {
     NEW,
     EDIT,
     DISPLAY
+}
+export class peopleSearchResults {
+    constructor(
+        public PreferredName: string,
+        public Department: string,
+        public JobTitle: string,
+        public PictureURL: string,
+        public OfficeNumber: string
+    ) { }
 }
 export class TR {
 
@@ -10,10 +19,10 @@ export class TR {
         this.Id = -1;
         this.Title = '';
         this.CER = "";
-        this.InitiationDate =  moment(new Date()).toISOString(); 
-        this.TRDueDate =   moment(new Date()).toISOString(); 
-        this.ActualStartDate =  moment(new Date()).toISOString(); 
-        this.ActualCompletionDate =  moment(new Date()).toISOString(); 
+        this.InitiationDate = moment(new Date()).toISOString();
+        this.TRDueDate = moment(new Date()).toISOString();
+        this.ActualStartDate = moment(new Date()).toISOString();
+        this.ActualCompletionDate = moment(new Date()).toISOString();
         this.RequestorId = null;
         this.EstimatedHours = 0;
         this.Site = "";

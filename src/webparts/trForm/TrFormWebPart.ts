@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
-import { SearchQuery, SearchResults } from "sp-pnp-js";
+import { SearchQuery, SearchResults, SortDirection } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
@@ -159,7 +159,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let sq: SearchQuery = {
       Querytext: "Title:" + searchText + "* ContentClass=urn:content-class:SPSPeople",
       SourceId: "b09a7990-05ea-4af9-81ef-edfab16c4e31",  //http://www.dotnetmafia.com/blogs/dotnettipoftheday/archive/2013/01/04/list-of-common-sharepoint-2013-result-source-ids.aspx
-      RowLimit: 500
+      RowLimit: 50,
+      SelectProperties:["PreferredName","Department","JobTitle","PictureURL",
+      "OfficeNumber"]
+      ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
     };
     return pnp.sp.search(sq).then((results: SearchResults) => {
@@ -167,13 +170,16 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       for (let element of results.PrimarySearchResults) {
         const temp = element as any;
         let personapprop: IPersonaProps = {
-          primaryText: temp.PreferredName, secondaryText: temp.Department,tertiaryText:temp.JobTitle,
-           imageUrl: temp.PictureURL,
-          imageInitials: temp.contentclass, presence: PersonaPresence.none
+          primaryText: temp.PreferredName, 
+          secondaryText:temp.JobTitle,
+          tertiaryText: (temp.OfficeNumber)?temp.Department+"("+temp.OfficeNumber+") ":temp.Department,
+          imageUrl: temp.PictureURL,
+          imageInitials: temp.contentclass,
+           presence: PersonaPresence.none
         };
         resultsPersonas.push(personapprop);
       }
-      return resultsPersonas;
+      return _.sortBy(resultsPersonas, "primaryText");
     });
 
 

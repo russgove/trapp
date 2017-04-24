@@ -3,16 +3,16 @@ import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { TR } from "../dataModel";
-import {   
-  NormalPeoplePicker,CompactPeoplePicker, IBasePickerSuggestionsProps,
+import {
+  NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
-import {  Button, ButtonType} from 'office-ui-fabric-react/lib/Button';
-import {  TextField} from 'office-ui-fabric-react/lib/TextField';
-import {  Label} from 'office-ui-fabric-react/lib/Label';
-import {  MessageBar, MessageBarType,} from 'office-ui-fabric-react/lib/MessageBar';
-import {  Dropdown, IDropdownProps,} from 'office-ui-fabric-react/lib/Dropdown';
-import {  DatePicker,} from 'office-ui-fabric-react/lib/DatePicker';
-import {  IPersonaProps, PersonaPresence, PersonaInitialsColor,} from 'office-ui-fabric-react/lib/Persona';
+import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
+import { TextField } from 'office-ui-fabric-react/lib/TextField';
+import { Label } from 'office-ui-fabric-react/lib/Label';
+import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
+import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
+import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
+import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona,PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
 export interface inITrFormState {
   tr: TR;
@@ -139,9 +139,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
 
   public resolveSuggestions(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
-   debugger;
+    debugger;
     return this.props.peoplesearch(searchText, currentSelected);
- 
   }
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
     _.remove(messageList, {
@@ -150,8 +149,22 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.setState(this.state);
   }
   public getTextFromItem(persona: IPersonaProps): string {
-    
-    return persona.primaryText+"SSS";
+
+    return persona.primaryText;
+  }
+  public renderPeople(person:IPersonaProps): JSX.Element {
+    debugger;
+    return <Persona
+    size={PersonaSize.large}
+      primaryText={person.primaryText}
+      secondaryText={person.secondaryText}
+   
+      tertiaryText={person.tertiaryText}
+      imageUrl={person.imageUrl}
+      imageShouldFadeIn={true}
+
+    />
+
   }
   public render(): React.ReactElement<ITrFormProps> {
     const suggestionProps: IBasePickerSuggestionsProps = {
@@ -244,7 +257,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label >MailBox</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.MailBox} onChanged={e => { this.state.tr.MailBox = e ;}} />
+              <TextField value={this.state.tr.MailBox} onChanged={e => { this.state.tr.MailBox = e; }} />
             </td>
 
           </tr>
@@ -253,7 +266,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label value='Request #' >CER #</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.CER} readOnly={true} onChanged={e => { this.state.tr.CER = e ;}} />
+              <TextField value={this.state.tr.CER} readOnly={true} onChanged={e => { this.state.tr.CER = e; }} />
             </td>
             <td>
               Requestor
@@ -263,6 +276,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 onResolveSuggestions={this.resolveSuggestions.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
+                onRenderSuggestionsItem={this.renderPeople}
               />
             </td>
             <td>
