@@ -8,5 +8,5 @@ export interface ITrFormProps {
   applicationTypes: Array<ApplicationType>;
   endUses: Array<EndUse>;
   save: (tr) => any;
-  peoplesearch: (searchText: string, currentSelected: IPersonaProps[]) => Promise<IPersonaProps[]>
+  peoplesearch: (searchText: string, currentSelected: IPersonaProps[]) => Promise<IPersonaProps[]>;
 }

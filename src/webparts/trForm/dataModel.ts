@@ -1,4 +1,9 @@
 import * as moment from 'moment';
+export enum modes{
+    NEW,
+    EDIT,
+    DISPLAY
+}
 export class TR {
 
     public constructor() {

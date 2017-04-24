@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
-import { SearchQuery, SearchResult, SearchResults } from "sp-pnp-js";
+import { SearchQuery,  SearchResults } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
@@ -15,8 +15,7 @@ import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
 import {
-  TextField, Label, Button, ButtonType, MessageBar, MessageBarType,
-  BasePeoplePicker, DatePicker, Dropdown, IDropdownProps, IPersonaProps, PersonaPresence, PersonaInitialsColor
+ Dropdown, IDropdownProps, IPersonaProps, PersonaPresence
 } from 'office-ui-fabric-react';
 
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
@@ -141,11 +140,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       let resultsPersonas: Array<IPersonaProps> = [];
       for (let element of results.PrimarySearchResults) {
         const temp = element as any;
-        temp
-        let personapprop: IPersonaProps = {
+         let personapprop: IPersonaProps = {
           primaryText: temp.PreferredName, secondaryText: temp.Departmenr, imageUrl: temp.PictureURL,
           imageInitials: temp.contentclass, presence: PersonaPresence.none
-        }
+        };
         resultsPersonas.push(personapprop);
       }
       return resultsPersonas;

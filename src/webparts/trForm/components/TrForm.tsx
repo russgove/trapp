@@ -4,9 +4,15 @@ import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { TR } from "../dataModel";
 import {
-  TextField, Label, Button, ButtonType, MessageBar, MessageBarType,
-  CompactPeoplePicker, DatePicker, Dropdown, IDropdownProps, IPersonaProps, PersonaPresence, PersonaInitialsColor, IBasePickerSuggestionsProps,
-} from 'office-ui-fabric-react';
+  CompactPeoplePicker, IBasePickerSuggestionsProps,
+} from 'office-ui-fabric-react/lib/Pickers';
+import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
+import { TextField } from 'office-ui-fabric-react/lib/TextField';
+import { Label } from 'office-ui-fabric-react/lib/Label';
+import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
+import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
+import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
+import { IPersonaProps, PersonaPresence, PersonaInitialsColor, } from 'office-ui-fabric-react/lib/Persona';
 export interface inITrFormState {
   tr: TR;
   errorMessages: Array<md.Message>;
@@ -17,7 +23,7 @@ import * as moment from 'moment';
 import * as _ from "lodash";
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
-import * as tabs from "react-tabs"
+import * as tabs from "react-tabs";
 
 
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
@@ -55,7 +61,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       case 0:
         let data = this.ckeditor.instances["tronoxtrtextarea-title"].getData();
         this.ckeditor.remove("tronoxtrtextarea-title");
-        console.log("removed tronoxtrtextarea-title")
+        console.log("removed tronoxtrtextarea-title");
         break;
       case 1:
         let data1 = this.ckeditor.instances["tronoxtrtextarea-description"].getData();
@@ -75,7 +81,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
           new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-title");
-            console.log("created tronoxtrtextarea-title")
+            console.log("created tronoxtrtextarea-title");
           });
         }
         break;
@@ -83,7 +89,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         if (this.ckeditor.instances["tronoxtrtextarea-description"] === undefined) {
           new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-description");
-            console.log("created tronoxtrtextarea-description")
+            console.log("created tronoxtrtextarea-description");
           });
         }
         break;
@@ -91,7 +97,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
           new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-summary");
-            console.log("created tronoxtrtextarea-summary")
+            console.log("created tronoxtrtextarea-summary");
           });
         }
         break;
@@ -157,29 +163,29 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       return {
         key: wt.id,
         text: wt.workType
-      }
+      };
     });
     let applicationtypeDropDoownoptions =
       _.filter(this.props.applicationTypes, (at) => {
 
-        return at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1
+        return at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1;
       })
         .map((at) => {
           return {
             key: at.id,
             text: at.applicationType
-          }
+          };
         });
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
 
-        return (eu.applicationTypeId === this.props.tr.ApplicationTypeId)
+        return (eu.applicationTypeId === this.props.tr.ApplicationTypeId);
       })
         .map((eu) => {
           return {
             key: eu.id,
             text: eu.endUse
-          }
+          };
         });
     console.log("# of app types is " + applicationtypeDropDoownoptions.length);
     return (
@@ -215,7 +221,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label >Site</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Site} onChanged={e => { this.state.tr.Site = e }} />
+              <TextField value={this.state.tr.Site} onChanged={e => { this.state.tr.Site = e; }} />
             </td>
 
           </tr>
@@ -236,7 +242,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label >MailBox</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.MailBox} onChanged={e => { this.state.tr.MailBox = e }} />
+              <TextField value={this.state.tr.MailBox} onChanged={e => { this.state.tr.MailBox = e; }} />
             </td>
 
           </tr>
@@ -245,7 +251,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label value='Request #' >CER #</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.CER} readOnly={true} onChanged={e => { this.state.tr.CER = e }} />
+              <TextField value={this.state.tr.CER} readOnly={true} onChanged={e => { this.state.tr.CER = e; }} />
             </td>
             <td>
               Requestor
@@ -283,7 +289,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label >Customer</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Customer} onChanged={e => { this.state.tr.Customer = e }} />
+              <TextField value={this.state.tr.Customer} onChanged={e => { this.state.tr.Customer = e; }} />
             </td>
 
           </tr>
