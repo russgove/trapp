@@ -19,10 +19,8 @@
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "listUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/Trs",
-        "workTypesListUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/WorkTypes",
-        "applicationTypesListUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/ApplicationTypes",
-        "endUsesListUrl": "https://tronoxglobal.sharepoint.com/sites/TR/_api/lists/EndUses"
+        "mode": "Display",
+        
       }
     }
   ]

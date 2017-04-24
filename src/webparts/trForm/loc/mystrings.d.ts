@@ -1,7 +1,7 @@
 declare interface ITrFormStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
-  ListUrlFieldLabel: string;
+  ModeFieldLabel: string;
 }
 
 declare module 'trFormStrings' {
