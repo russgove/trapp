@@ -37,7 +37,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public render(): void {
 
-    let formProps: ITrFormProps = { mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
+    let formProps: ITrFormProps = { ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
     let batch = pnp.sp.createBatch();
     pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
       .then((items) => {
@@ -197,7 +197,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       SourceId: "b09a7990-05ea-4af9-81ef-edfab16c4e31",  //http://www.dotnetmafia.com/blogs/dotnettipoftheday/archive/2013/01/04/list-of-common-sharepoint-2013-result-source-ids.aspx
       RowLimit: 50,
       SelectProperties: ["PreferredName", "Department", "JobTitle", "PictureURL",
-        "OfficeNumber"]
+        "OfficeNumber", "WorkEmail"]
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
     };
@@ -211,7 +211,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           tertiaryText: (temp.OfficeNumber) ? temp.Department + "(" + temp.OfficeNumber + ") " : temp.Department,
           imageUrl: temp.PictureURL,
           imageInitials: temp.contentclass,
-          presence: PersonaPresence.none
+          presence: PersonaPresence.none,
+          optionalText: temp.WorkEmail // need this for ensureuser
+
         };
         resultsPersonas.push(personapprop);
       }
@@ -219,6 +221,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     });
 
 
+  }
+  protected ensureUser(email): Promise<any> {
+    return pnp.sp.web.ensureUser(email);
   }
 
   protected loadData() {

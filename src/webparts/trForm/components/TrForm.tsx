@@ -139,11 +139,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
 
   public resolveSuggestions(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
-   
+
     return this.props.peoplesearch(searchText, currentSelected);
   }
   public resolveSuggestionsTR(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
-  
+
     return this.props.TRsearch(searchText, currentSelected);
   }
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
@@ -156,8 +156,28 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     return persona.primaryText;
   }
+  public requestorChanged(req: Array<IPersonaProps>) { // need to call ensure user
+    debugger;
+    if (req.length) {
+      console.log("requestor changedd " + req[0].optionalText);// I am only adding a single user. req[0] , others are ignored
+
+      const email = req[0].optionalText;
+      this.props.ensureUser(email).then((user) => {
+
+        this.state.tr.RequestorId = user.data.Id;
+        this.setState(this.state);
+      }).catch((error)=>{
+             this.state.errorMessages.push(new md.Message(error.data.responseBody['odata.error'].message.value));
+        this.setState(this.state);
+      })
+    }
+    else {
+      console.log("requestor removed ");// I am only adding a single user. req[0] , others are ignored
+      this.state.tr.RequestorId = null;
+    }
+  }
   public renderPeople(person: IPersonaProps): JSX.Element {
-    
+
     return <Persona
       size={PersonaSize.large}
       primaryText={person.primaryText}
@@ -170,12 +190,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     />
 
   }
-  public defaultTRSelectedItems():Array<IPersonaProps>{
-    debugger;
-    return [{id:this.state.tr.ParentTRId.toString(),primaryText:this.state.tr.ParentTR}];
-  }
+
   public renderTR(person: IPersonaProps): JSX.Element {
-    
+
     return <Persona
       size={PersonaSize.extraLarge}
       primaryText={person.primaryText}
@@ -269,12 +286,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
 
               <NormalPeoplePicker
-                defaultSelectedItems={ [{id:this.state.tr.ParentTRId.toString(),primaryText:this.state.tr.ParentTR}]}
+                defaultSelectedItems={this.state.tr.ParentTRId?[{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }]:[]}
                 onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
                 onRenderSuggestionsItem={this.renderTR}
-                onChange={e => { console.log("TR changedd"+e);debugger; this.state.tr.ParentTRId = parseInt(e[0].id); }}
+                onChange={e => { console.log("TR changedd" + e); debugger; this.state.tr.ParentTRId = parseInt(e[0].id); }}
               />
             </td>
             <td>
@@ -293,22 +310,22 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           </tr>
           <tr>
             <td>
-              <Label value='Request #' >CER #</Label>
+              <Label>CER #</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.CER} readOnly={true} onChanged={e => { this.state.tr.CER = e; }} />
+              <TextField value={this.state.tr.CER} onChanged={e => { this.state.tr.CER = e; }} />
             </td>
             <td>
               Requestor
             </td>
             <td>
               <NormalPeoplePicker
-              defaultSelectedItems={ [{id:this.state.tr.RequestorId.toString(),primaryText:this.state.tr.RequestorName}]}
+                defaultSelectedItems={this.state.tr.RequestorId?[{ id: this.state.tr.RequestorId.toString(), primaryText: this.state.tr.RequestorName }]:[]}
                 onResolveSuggestions={this.resolveSuggestions.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
                 onRenderSuggestionsItem={this.renderPeople}
-                onChange={e => { console.log("Person changedd"+e);debugger; this.state.tr.RequestorId = 1; }}
+                onChange={this.requestorChanged.bind(this)}
               />
             </td>
             <td>
