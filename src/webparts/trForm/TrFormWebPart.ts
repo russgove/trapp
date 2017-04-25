@@ -37,7 +37,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public render(): void {
 
-    let formProps: ITrFormProps = { mode: this.properties.mode, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
+    let formProps: ITrFormProps = { mode: this.properties.mode,TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
     let batch = pnp.sp.createBatch();
     pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
       .then((items) => {
@@ -153,9 +153,39 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ]
     };
   }
+  public TRsearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
+
+debugger;
+    let sq: SearchQuery = {
+      Querytext:  searchText + " Path:https://tronoxglobal.sharepoint.com/sites/TR/TRs ContentTypeId:0x0100A87C11965AD4494DA4E5CB2CC25622BB",
+      RowLimit: 50,
+      SelectProperties:["Title","MailBoxOWSTEXT"]
+      ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
+      // SelectProperties: ["*"]
+    };
+    console.log(sq);
+    return pnp.sp.search(sq).then((results: SearchResults) => {
+      let resultsPersonas: Array<IPersonaProps> = [];
+      for (let element of results.PrimarySearchResults) {
+        const temp = element as any;
+        let personapprop: IPersonaProps = {
+          primaryText: temp.Title, 
+          secondaryText:temp.MailBoxOWSTEXT,
+          tertiaryText: (temp.Title)?temp.Title+"("+temp.Title+") ":temp.Title,
+          imageUrl: temp.Title,
+          imageInitials: temp.contentclass,
+           presence: PersonaPresence.none
+        };
+        resultsPersonas.push(personapprop);
+      }
+      return _.sortBy(resultsPersonas, "primaryText");
+    });
+
+
+  }
   public peoplesearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
 
-
+debugger;
     let sq: SearchQuery = {
       Querytext: "Title:" + searchText + "* ContentClass=urn:content-class:SPSPeople",
       SourceId: "b09a7990-05ea-4af9-81ef-edfab16c4e31",  //http://www.dotnetmafia.com/blogs/dotnettipoftheday/archive/2013/01/04/list-of-common-sharepoint-2013-result-source-ids.aspx

@@ -12,7 +12,7 @@ import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
-import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona,PersonaSize } from 'office-ui-fabric-react/lib/Persona';
+import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
 export interface inITrFormState {
   tr: TR;
@@ -142,6 +142,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     debugger;
     return this.props.peoplesearch(searchText, currentSelected);
   }
+    public resolveSuggestionsTR(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
+    debugger;
+    return this.props.TRsearch(searchText, currentSelected);
+  }
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
     _.remove(messageList, {
       Id: messageId
@@ -152,13 +156,13 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     return persona.primaryText;
   }
-  public renderPeople(person:IPersonaProps): JSX.Element {
+  public renderPeople(person: IPersonaProps): JSX.Element {
     debugger;
     return <Persona
-    size={PersonaSize.large}
+      size={PersonaSize.large}
       primaryText={person.primaryText}
       secondaryText={person.secondaryText}
-   
+
       tertiaryText={person.tertiaryText}
       imageUrl={person.imageUrl}
       imageShouldFadeIn={true}
@@ -242,10 +246,16 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           </tr>
           <tr>
             <td>
-              <Label value='Request #' >Parent TR</Label>
+              <Label  >Parent TR</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Id.toString()} readOnly={true} />
+          
+              <NormalPeoplePicker
+                onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
+                pickerSuggestionsProps={suggestionProps}
+                getTextFromItem={this.getTextFromItem}
+                onRenderSuggestionsItem={this.renderPeople}
+              />
             </td>
             <td>
               <Label >Application Type</Label>

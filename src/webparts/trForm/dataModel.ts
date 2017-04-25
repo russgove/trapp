@@ -17,6 +17,7 @@ export class TR {
 
     public constructor() {
         this.Id = -1;
+        this.ParentTR = null;
         this.Title = '';
         this.CER = "";
         this.InitiationDate = moment(new Date()).toISOString();
@@ -39,6 +40,7 @@ export class TR {
 
     }
     public Id: number;
+    public ParentTR: number;
     public Title: string;
     public CER: string;
     public InitiationDate: string;
