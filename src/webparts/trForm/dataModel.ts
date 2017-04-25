@@ -18,6 +18,7 @@ export class TR {
     public constructor() {
         this.Id = -1;
         this.ParentTR = null;
+        this.ParentTRId = null;
         this.Title = '';
         this.CER = "";
         this.InitiationDate = moment(new Date()).toISOString();
@@ -25,6 +26,7 @@ export class TR {
         this.ActualStartDate = moment(new Date()).toISOString();
         this.ActualCompletionDate = moment(new Date()).toISOString();
         this.RequestorId = null;
+        this.RequestorName = null;
         this.EstimatedHours = 0;
         this.Site = "";
         this.MailBox = "";
@@ -40,7 +42,8 @@ export class TR {
 
     }
     public Id: number;
-    public ParentTR: number;
+    public ParentTR: string;
+    public ParentTRId: number;
     public Title: string;
     public CER: string;
     public InitiationDate: string;
@@ -48,6 +51,7 @@ export class TR {
     public ActualStartDate: string;
     public ActualCompletionDate: string;
     public RequestorId: number;
+    public RequestorName:string;
     public EstimatedHours: number;
     public Site: string;
     public MailBox: string;

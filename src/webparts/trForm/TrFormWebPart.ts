@@ -37,7 +37,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public render(): void {
 
-    let formProps: ITrFormProps = { mode: this.properties.mode,TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
+    let formProps: ITrFormProps = { mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
     let batch = pnp.sp.createBatch();
     pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
       .then((items) => {
@@ -76,12 +76,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       });
     var qp = new UrlQueryParameterCollection(window.location.href);
+    debugger;
     if (this.properties.mode !== modes.NEW) {
       if (qp.getValue("Id")) {
         const id: number = parseInt(qp.getValue("Id"));
-        pnp.sp.web.lists.getByTitle("trs").items.getById(id).inBatch(batch).get()
+        let fields = "*,ParentTR/Title,Requestor/Title";
+        pnp.sp.web.lists.getByTitle("trs").items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
           .then((item) => {
-
+            debugger;
             formProps.tr = new TR();
             formProps.tr.Id = item.Id;
             formProps.tr.ActualCompletionDate = item.ActualCompletionDate;
@@ -95,6 +97,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.MailBox = item.MailBox;
             formProps.tr.TRPriority = item.TRPriority;
             formProps.tr.RequestorId = item.RequestorId;
+            formProps.tr.RequestorName = item.Requestor.Title;
+
             formProps.tr.Site = item.Site;
             formProps.tr.Status = item.Status;
             formProps.tr.EndUseId = item.EndUseId;
@@ -103,6 +107,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.TitleArea = item.TitleArea;
             formProps.tr.DescriptionArea = item.DescriptionArea;
             formProps.tr.SummaryArea = item.SummaryArea;
+            formProps.tr.ParentTRId = item.ParentTRId;
+            formProps.tr.ParentTR = item.ParentTR.Title;
           })
           .catch((error) => {
             console.log("ERROR, An error occured fetching the listitem");
@@ -155,26 +161,26 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public TRsearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
 
-debugger;
+
     let sq: SearchQuery = {
-      Querytext:  searchText + " Path:https://tronoxglobal.sharepoint.com/sites/TR/TRs ContentTypeId:0x0100A87C11965AD4494DA4E5CB2CC25622BB",
+      Querytext: searchText + " Path:https://tronoxglobal.sharepoint.com/sites/TR/TRs ContentTypeId:0x0100A87C11965AD4494DA4E5CB2CC25622BB",
       RowLimit: 50,
-      SelectProperties:["Title","MailBoxOWSTEXT"]
+      SelectProperties: ["Title", "MailBoxOWSTEXT", "ListItemID", "CEROWSTEXT", "CustomerOWSTEXT", "SiteOWSTEXT"]
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
     };
     console.log(sq);
+    debugger;
     return pnp.sp.search(sq).then((results: SearchResults) => {
       let resultsPersonas: Array<IPersonaProps> = [];
       for (let element of results.PrimarySearchResults) {
         const temp = element as any;
         let personapprop: IPersonaProps = {
-          primaryText: temp.Title, 
-          secondaryText:temp.MailBoxOWSTEXT,
-          tertiaryText: (temp.Title)?temp.Title+"("+temp.Title+") ":temp.Title,
-          imageUrl: temp.Title,
-          imageInitials: temp.contentclass,
-           presence: PersonaPresence.none
+          primaryText: temp.Title,
+          secondaryText: temp.CustomerOWSTEXT,
+          tertiaryText: temp.SiteOWSTEXT,
+          presence: PersonaPresence.none,
+          id: temp.ListItemID
         };
         resultsPersonas.push(personapprop);
       }
@@ -185,13 +191,13 @@ debugger;
   }
   public peoplesearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
 
-debugger;
+
     let sq: SearchQuery = {
       Querytext: "Title:" + searchText + "* ContentClass=urn:content-class:SPSPeople",
       SourceId: "b09a7990-05ea-4af9-81ef-edfab16c4e31",  //http://www.dotnetmafia.com/blogs/dotnettipoftheday/archive/2013/01/04/list-of-common-sharepoint-2013-result-source-ids.aspx
       RowLimit: 50,
-      SelectProperties:["PreferredName","Department","JobTitle","PictureURL",
-      "OfficeNumber"]
+      SelectProperties: ["PreferredName", "Department", "JobTitle", "PictureURL",
+        "OfficeNumber"]
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
     };
@@ -200,12 +206,12 @@ debugger;
       for (let element of results.PrimarySearchResults) {
         const temp = element as any;
         let personapprop: IPersonaProps = {
-          primaryText: temp.PreferredName, 
-          secondaryText:temp.JobTitle,
-          tertiaryText: (temp.OfficeNumber)?temp.Department+"("+temp.OfficeNumber+") ":temp.Department,
+          primaryText: temp.PreferredName,
+          secondaryText: temp.JobTitle,
+          tertiaryText: (temp.OfficeNumber) ? temp.Department + "(" + temp.OfficeNumber + ") " : temp.Department,
           imageUrl: temp.PictureURL,
           imageInitials: temp.contentclass,
-           presence: PersonaPresence.none
+          presence: PersonaPresence.none
         };
         resultsPersonas.push(personapprop);
       }
@@ -246,12 +252,16 @@ debugger;
     );
   }
   private save(tr: TR): Promise<any> {
+    // remove lookups
+    let copy = _.clone(tr);
+    delete copy.RequestorName;
+    delete copy.ParentTR;
 
     if (tr.Id !== -1) {
-      return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(tr);
+      return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(copy);
     }
     else {
-      return pnp.sp.web.lists.getByTitle("trs").items.add(tr);
+      return pnp.sp.web.lists.getByTitle("trs").items.add(copy);
     }
     // .then((results) => {
     //   debugger;

@@ -139,11 +139,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
 
   public resolveSuggestions(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
-    debugger;
+   
     return this.props.peoplesearch(searchText, currentSelected);
   }
-    public resolveSuggestionsTR(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
-    debugger;
+  public resolveSuggestionsTR(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
+  
     return this.props.TRsearch(searchText, currentSelected);
   }
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
@@ -157,7 +157,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     return persona.primaryText;
   }
   public renderPeople(person: IPersonaProps): JSX.Element {
-    debugger;
+    
     return <Persona
       size={PersonaSize.large}
       primaryText={person.primaryText}
@@ -166,6 +166,24 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       tertiaryText={person.tertiaryText}
       imageUrl={person.imageUrl}
       imageShouldFadeIn={true}
+
+    />
+
+  }
+  public defaultTRSelectedItems():Array<IPersonaProps>{
+    debugger;
+    return [{id:this.state.tr.ParentTRId.toString(),primaryText:this.state.tr.ParentTR}];
+  }
+  public renderTR(person: IPersonaProps): JSX.Element {
+    
+    return <Persona
+      size={PersonaSize.extraLarge}
+      primaryText={person.primaryText}
+      secondaryText={person.secondaryText}
+
+      tertiaryText={person.tertiaryText}
+      imageUrl={person.imageUrl}
+      imageInitials=""
 
     />
 
@@ -249,12 +267,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label  >Parent TR</Label>
             </td>
             <td>
-          
+
               <NormalPeoplePicker
+                defaultSelectedItems={ [{id:this.state.tr.ParentTRId.toString(),primaryText:this.state.tr.ParentTR}]}
                 onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
-                onRenderSuggestionsItem={this.renderPeople}
+                onRenderSuggestionsItem={this.renderTR}
+                onChange={e => { console.log("TR changedd"+e);debugger; this.state.tr.ParentTRId = parseInt(e[0].id); }}
               />
             </td>
             <td>
@@ -283,10 +303,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <NormalPeoplePicker
+              defaultSelectedItems={ [{id:this.state.tr.RequestorId.toString(),primaryText:this.state.tr.RequestorName}]}
                 onResolveSuggestions={this.resolveSuggestions.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
                 onRenderSuggestionsItem={this.renderPeople}
+                onChange={e => { console.log("Person changedd"+e);debugger; this.state.tr.RequestorId = 1; }}
               />
             </td>
             <td>
