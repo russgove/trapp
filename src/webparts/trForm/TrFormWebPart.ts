@@ -97,8 +97,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.MailBox = item.MailBox;
             formProps.tr.TRPriority = item.TRPriority;
             formProps.tr.RequestorId = item.RequestorId;
+            if (item.Requestor){
             formProps.tr.RequestorName = item.Requestor.Title;
-
+            }
             formProps.tr.Site = item.Site;
             formProps.tr.Status = item.Status;
             formProps.tr.EndUseId = item.EndUseId;
@@ -108,7 +109,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.DescriptionArea = item.DescriptionArea;
             formProps.tr.SummaryArea = item.SummaryArea;
             formProps.tr.ParentTRId = item.ParentTRId;
-            formProps.tr.ParentTR = item.ParentTR.Title;
+            if (item.ParentTR){
+formProps.tr.ParentTR = item.ParentTR.Title;
+            }
+            
           })
           .catch((error) => {
             console.log("ERROR, An error occured fetching the listitem");

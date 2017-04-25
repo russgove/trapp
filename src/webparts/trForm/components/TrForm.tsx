@@ -158,16 +158,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public requestorChanged(req: Array<IPersonaProps>) { // need to call ensure user
     debugger;
-    if (req.length) {
+    if (req.length > 0) {
       console.log("requestor changedd " + req[0].optionalText);// I am only adding a single user. req[0] , others are ignored
-
       const email = req[0].optionalText;
       this.props.ensureUser(email).then((user) => {
-
         this.state.tr.RequestorId = user.data.Id;
         this.setState(this.state);
-      }).catch((error)=>{
-             this.state.errorMessages.push(new md.Message(error.data.responseBody['odata.error'].message.value));
+      }).catch((error) => {
+        this.state.errorMessages.push(new md.Message(error.data.responseBody['odata.error'].message.value));
         this.setState(this.state);
       })
     }
@@ -286,7 +284,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
 
               <NormalPeoplePicker
-                defaultSelectedItems={this.state.tr.ParentTRId?[{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }]:[]}
+                defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
                 onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
@@ -320,7 +318,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <NormalPeoplePicker
-                defaultSelectedItems={this.state.tr.RequestorId?[{ id: this.state.tr.RequestorId.toString(), primaryText: this.state.tr.RequestorName }]:[]}
+                defaultSelectedItems={this.state.tr.RequestorId ? [{ id: this.state.tr.RequestorId.toString(), primaryText: this.state.tr.RequestorName }] : []}
                 onResolveSuggestions={this.resolveSuggestions.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
