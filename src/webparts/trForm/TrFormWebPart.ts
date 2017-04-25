@@ -36,6 +36,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     });
   }
   public render(): void {
+// hide the ribbon
+
+   document.getElementById("s4-ribbonrow").style.display = "none";
 
     let formProps: ITrFormProps = { ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
     let batch = pnp.sp.createBatch();
@@ -75,11 +78,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-    var qp = new UrlQueryParameterCollection(window.location.href);
+    var queryParameters= new UrlQueryParameterCollection(window.location.href);
     debugger;
     if (this.properties.mode !== modes.NEW) {
-      if (qp.getValue("Id")) {
-        const id: number = parseInt(qp.getValue("Id"));
+      if (queryParameters.getValue("Id")) {
+        const id: number = parseInt(queryParameters.getValue("Id"));
         let fields = "*,ParentTR/Title,Requestor/Title";
         pnp.sp.web.lists.getByTitle("trs").items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
           .then((item) => {
@@ -97,8 +100,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.MailBox = item.MailBox;
             formProps.tr.TRPriority = item.TRPriority;
             formProps.tr.RequestorId = item.RequestorId;
-            if (item.Requestor){
-            formProps.tr.RequestorName = item.Requestor.Title;
+            if (item.Requestor) {
+              formProps.tr.RequestorName = item.Requestor.Title;
             }
             formProps.tr.Site = item.Site;
             formProps.tr.Status = item.Status;
@@ -109,10 +112,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.DescriptionArea = item.DescriptionArea;
             formProps.tr.SummaryArea = item.SummaryArea;
             formProps.tr.ParentTRId = item.ParentTRId;
-            if (item.ParentTR){
-formProps.tr.ParentTR = item.ParentTR.Title;
+            if (item.ParentTR) {
+              formProps.tr.ParentTR = item.ParentTR.Title;
             }
-            
+
           })
           .catch((error) => {
             console.log("ERROR, An error occured fetching the listitem");
@@ -130,7 +133,7 @@ formProps.tr.ParentTR = item.ParentTR.Title;
       ReactDom.render(this.reactElement, this.domElement);
     }
     );
-
+ 
   }
 
   protected get dataVersion(): Version {
