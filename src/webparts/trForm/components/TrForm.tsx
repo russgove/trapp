@@ -2,11 +2,12 @@ import * as React from 'react';
 import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-import { TR } from "../dataModel";
+import { TR, modes } from "../dataModel";
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
 import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
+import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
@@ -38,7 +39,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       errorMessages: [],
       resultsPersonas: []
     };
-
+    this.SaveButton = this.SaveButton.bind(this);
+this.ModeDisplay = this.ModeDisplay.bind(this);
 
   }
 
@@ -135,6 +137,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         this.state.errorMessages.push(new md.Message(response.data.responseBody['odata.error'].message.value));
         this.setState(this.state);
       });
+    return false; // stop postback
+  }
+  public cancel() {
+
+    this.props.cancel();
+    return false; // stop postback
 
   }
 
@@ -203,6 +211,21 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     />
 
   }
+
+  public SaveButton(): JSX.Element {
+    if (this.props.mode === modes.DISPLAY) {
+      return <div />
+    } else return (
+      <Link onClick={this.save.bind(this)}>Save </Link>
+    )
+  }
+  public ModeDisplay(): JSX.Element {
+    return (
+      <Label>MODE : {modes[this.props.mode]}</Label>
+    )
+    
+  }
+
   public render(): React.ReactElement<ITrFormProps> {
     const suggestionProps: IBasePickerSuggestionsProps = {
       suggestionsHeaderText: 'Suggested People',
@@ -245,6 +268,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
         <MessageDisplay messages={this.state.errorMessages}
           hideMessage={this.removeMessage.bind(this)} />
+        <this.ModeDisplay />
         <table>
 
           <tr>
@@ -289,7 +313,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
                 onRenderSuggestionsItem={this.renderTR}
-                onChange={e => { console.log("TR changedd" + e); debugger; this.state.tr.ParentTRId = parseInt(e[0].id); }}
+                onChange={e => {debugger; this.state.tr.ParentTRId = (e.length > 0)?parseInt(e[0].id):null; }}
               />
             </td>
             <td>
@@ -424,7 +448,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <h2>formulae?></h2>
           </tabs.TabPanel>
         </tabs.Tabs>
-        <Button buttonType={ButtonType.normal} onClick={this.save.bind(this)}>Save</Button>
+
+        <this.SaveButton />
+        <Link onClick={this.cancel.bind(this)}>Cancel </Link>
+        {/*<Button buttonType={ButtonType.normal} onClick={this.save.bind(this)}>Save Buttom</Button>*/}
       </div>
     );
   }

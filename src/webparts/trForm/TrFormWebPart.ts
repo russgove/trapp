@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
 import { SearchQuery, SearchResults, SortDirection } from "sp-pnp-js";
-import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
+import { Version, UrlQueryParameterCollection, UrlUtilities } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
   IPropertyPaneConfiguration,
@@ -36,11 +36,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     });
   }
   public render(): void {
-// hide the ribbon
+    // hide the ribbon
+    if (document.getElementById("s4-ribbonrow")) {
+      document.getElementById("s4-ribbonrow").style.display = "none";
+    }
 
-   document.getElementById("s4-ribbonrow").style.display = "none";
-
-    let formProps: ITrFormProps = { ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
+    let formProps: ITrFormProps = { cancel: this.cancel, ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
     let batch = pnp.sp.createBatch();
     pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
       .then((items) => {
@@ -78,7 +79,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-    var queryParameters= new UrlQueryParameterCollection(window.location.href);
+    var queryParameters = new UrlQueryParameterCollection(window.location.href);
     debugger;
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
@@ -133,7 +134,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ReactDom.render(this.reactElement, this.domElement);
     }
     );
- 
+
   }
 
   protected get dataVersion(): Version {
@@ -268,19 +269,37 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let copy = _.clone(tr);
     delete copy.RequestorName;
     delete copy.ParentTR;
-
+    let queryParameters = new UrlQueryParameterCollection(window.location.href);
+    let encodedSource = queryParameters.getValue("Source");
+    let source = decodeURIComponent(encodedSource);
+    console.log("source uis " + source);
+    debugger;
     if (tr.Id !== -1) {
-      return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(copy);
+      return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(copy).then((x) => {
+        window.location.href = source;
+      });
     }
     else {
-      return pnp.sp.web.lists.getByTitle("trs").items.add(copy);
+      return pnp.sp.web.lists.getByTitle("trs").items.add(copy).then((x) => {
+        window.location.href = source;
+
+      });
     }
+
     // .then((results) => {
     //   debugger;
     // })
     // .catch((reaseon) => {
     //   debugger;
     // });
+  }
+  private cancel(): void {
+    let queryParameters = new UrlQueryParameterCollection(window.location.href);
+    let encodedSource = queryParameters.getValue("Source");
+    let source = decodeURIComponent(encodedSource);
+    console.log("source uis " + source);
+    window.location.href = source;
+
   }
 }
 
