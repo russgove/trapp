@@ -13,7 +13,7 @@ import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
-import { DetailsList, IDetailsListProps ,DetailsListLayoutMode,IColumn} from 'office-ui-fabric-react/lib/DetailsList';
+import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn } from 'office-ui-fabric-react/lib/DetailsList';
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
@@ -293,24 +293,35 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public getTechSpecs() {
     debugger;
-    var x = _.map(this.props.techSpecs,(techSpec) => {
+    var x = _.map(this.props.techSpecs, (techSpec) => {
       return {
         title: techSpec.title,
-        selected: (this.state.tr.TechSpecId.indexOf(techSpec.id)!= -1)
+        selected: (this.state.tr.TechSpecId.indexOf(techSpec.id) != -1),
+        id: techSpec.id
       }
     });
-    return _.sortBy(x,"selected").reverse();
+    return _.sortBy(x, "selected").reverse();
 
   }
-  public renderToggle(item?: any, index?: number, column?: IColumn) :any {
+  public toggleTechSpec(isSelected: boolean, id: number) {
     debugger;
-    return(
-    <Toggle 
-      checked={item.selected}
-      onText="On Team"
-      offText=""
-      
-    />
+    if (isSelected) {
+      this.state.tr.TechSpecId.push(id);//addit
+    }
+    else {
+      this.state.tr.TechSpecId = _.filter(this.state.tr.TechSpecId, function (x) { return x != id });//remove it
+    }
+    this.setState(this.state);
+  }
+  public renderToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={item.selected}
+        onText="On Team"
+        offText=""
+        onChanged={e => { this.toggleTechSpec(e, item.id) }}
+      />
 
     );
   }
@@ -416,6 +427,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <Dropdown
+                label=""
                 options={[
                   { key: 'High', text: 'High' },
                   { key: 'Medium', text: 'Medium' },
@@ -439,6 +451,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <Dropdown
+                label=""
                 options={this.props.requestors.map((r) => { return { key: r.id, text: r.title } })}
                 onChanged={e => { this.state.tr.RequestorId = e.key as number; }}
                 selectedKey={this.state.tr.RequestorId}
@@ -482,6 +495,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <Dropdown
+                label=""
                 options={[
                   { key: 'Pending', text: 'Pending' },
                   { key: 'In Progress', text: 'In Progress' },
@@ -601,12 +615,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           </tabs.TabPanel>
           <tabs.TabPanel>
             <DetailsList
-            layoutMode={DetailsListLayoutMode.fixedColumns}
+              layoutMode={DetailsListLayoutMode.fixedColumns}
               items={this.getTechSpecs()}
               setKey="id"
               columns={[
-                { key: "title", name: "Tecnical Specialis Name", fieldName: "title", minWidth: 20,maxWidth:200 },
-                { key: "selected", name: "On Team?", fieldName: "selected", minWidth: 200, onRender:this.renderToggle.bind(this) }
+                { key: "title", name: "Tecnical Specialis Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                { key: "selected", name: "On Team?", fieldName: "selected", minWidth: 200, onRender: this.renderToggle.bind(this) }
               ]}
             />
           </tabs.TabPanel>
