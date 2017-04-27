@@ -16,29 +16,31 @@ export class peopleSearchResults {
 export class TR {
 
     public constructor() {
-        this.Id = -1;
+        this.Id = null;
         this.ParentTR = null;
         this.ParentTRId = null;
-        this.Title = '';
-        this.CER = "";
-        this.InitiationDate = moment(new Date()).toISOString();
-        this.TRDueDate = moment(new Date()).toISOString();
-        this.ActualStartDate = moment(new Date()).toISOString();
-        this.ActualCompletionDate = moment(new Date()).toISOString();
+        this.Title = null;
+        this.CER = null;
+        this.InitiationDate =null; //moment(new Date()).toISOString();
+        this.TRDueDate = null;//;moment(new Date()).toISOString();
+        this.ActualStartDate = null;//moment(new Date()).toISOString();
+        this.ActualCompletionDate = null;//= moment(new Date()).toISOString();
         this.RequestorId = null;
         this.RequestorName = null;
-        this.EstimatedHours = 0;
-        this.Site = "";
-        this.MailBox = "";
-        this.TRPriority = "";
-        this.Customer = "";
-        this.Status = "";
-        this.ApplicationTypeId = 0;
-        this.EndUseId = 0;
-        this.TitleArea = "";
-        this.DescriptionArea = "";
-        this.SummaryArea = "";
-        this.WorkTypeId = 0;
+        this.EstimatedHours = null;
+        this.Site = null;
+ 
+        this.TRPriority =null;
+        this.Customer = null;
+        this.Status = null;
+        this.ApplicationTypeId = null;
+        this.EndUseId = null;
+        this.TitleArea = null;
+        this.DescriptionArea = null;
+        this.SummaryArea = null;
+                this.TestParamsArea = null;
+        this.WorkTypeId = null;
+           this.TechSpecId = [];
 
     }
     public Id: number;
@@ -54,7 +56,6 @@ export class TR {
     public RequestorName:string;
     public EstimatedHours: number;
     public Site: string;
-    public MailBox: string;
     public TRPriority: string;
     public Customer: string;
     public Status: string;
@@ -63,7 +64,9 @@ export class TR {
     public TitleArea: string;
     public DescriptionArea: string;
     public SummaryArea: string;
+    public TestParamsArea: string;
     public WorkTypeId: number;
+    public TechSpecId:Array<number>
 
 }
 export class WorkType {
@@ -72,7 +75,15 @@ export class WorkType {
         public workType: string) { }
 
 }
-
+export class User{
+    public constructor(
+        public id: number,
+        public title: string,
+        public position:string,
+        public department:string,
+        ) { }
+    
+}
 export class ApplicationType {
     public constructor(
         public id: string,

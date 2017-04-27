@@ -1,4 +1,4 @@
-import { TR, ApplicationType, WorkType, EndUse, modes } from "../dataModel";
+import { TR, ApplicationType, WorkType, EndUse, modes,User } from "../dataModel";
 import {
   IPersonaProps
 } from 'office-ui-fabric-react';
@@ -14,4 +14,6 @@ export interface ITrFormProps {
   ensureUser: (email) => Promise<any>;
   peoplesearch: (searchText: string, currentSelected: IPersonaProps[]) => Promise<IPersonaProps[]>;
   TRsearch: (searchText: string, currentSelected: IPersonaProps[]) => Promise<IPersonaProps[]>;
+  requestors:Array<User>
+  techSpecs:Array<User>
 }

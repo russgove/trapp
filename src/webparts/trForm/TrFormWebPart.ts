@@ -9,7 +9,7 @@ import {
   PropertyPaneTextField, PropertyPaneDropdown
 } from '@microsoft/sp-webpart-base';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
-import { TR, WorkType, ApplicationType, EndUse, modes } from "./dataModel";
+import { TR, WorkType, ApplicationType, EndUse, modes, User } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
@@ -41,8 +41,31 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
 
-    let formProps: ITrFormProps = { cancel: this.cancel, ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save };
+    let formProps: ITrFormProps = { techSpecs:[],requestors: [], cancel: this.cancel.bind(this), ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save.bind(this) };
     let batch = pnp.sp.createBatch();
+    
+    pnp.sp.web.siteGroups.getByName("TR YY Tech Specialists").users.inBatch(batch).get()
+      .then((items) => {
+        formProps.techSpecs = _.map(items, (item) => {
+          return new User(item["Id"], item["Title"],item["Title"],item["Title"]);
+        });
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching Tech Specialists'");
+        console.log(error.message);
+
+      });
+       pnp.sp.web.siteGroups.getByName("TR YY Requestors").users.inBatch(batch).get()
+      .then((items) => {
+        formProps.requestors = _.map(items, (item) => {
+          return new User(item["Id"], item["Title"],item["Title"],item["Title"]);
+        });
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching Requestors'");
+        console.log(error.message);
+
+      });
     pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
@@ -80,14 +103,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       });
     var queryParameters = new UrlQueryParameterCollection(window.location.href);
-    debugger;
+ 
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
         let fields = "*,ParentTR/Title,Requestor/Title";
-        pnp.sp.web.lists.getByTitle("trs").items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+        pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
           .then((item) => {
-            debugger;
+     
             formProps.tr = new TR();
             formProps.tr.Id = item.Id;
             formProps.tr.ActualCompletionDate = item.ActualCompletionDate;
@@ -98,7 +121,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.TRDueDate = item.TRDueDate;
             formProps.tr.EstimatedHours = item.EstimatedHours;
             formProps.tr.InitiationDate = item.InitiationDate;
-            formProps.tr.MailBox = item.MailBox;
+
             formProps.tr.TRPriority = item.TRPriority;
             formProps.tr.RequestorId = item.RequestorId;
             if (item.Requestor) {
@@ -116,6 +139,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             if (item.ParentTR) {
               formProps.tr.ParentTR = item.ParentTR.Title;
             }
+            debugger;
+            formProps.tr.TechSpecId=item.TechSpecId;
 
           })
           .catch((error) => {
@@ -178,7 +203,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       // SelectProperties: ["*"]
     };
     console.log(sq);
-    debugger;
+  
     return pnp.sp.search(sq).then((results: SearchResults) => {
       let resultsPersonas: Array<IPersonaProps> = [];
       for (let element of results.PrimarySearchResults) {
@@ -234,71 +259,40 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     return pnp.sp.web.ensureUser(email);
   }
 
-  protected loadData() {
-    let batch = pnp.sp.createBatch();
-    pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
-      .then((items) => {
-        let newProps: ITrFormProps = _.clone(this.reactElement.props);
-        newProps.endUses = _.map(items, (item) => {
-          return new EndUse(item["Id"], item["Title"], item["ApplicationTypeId"]);
-        });
-        this.reactElement.props = newProps;
-
-      });
-    pnp.sp.web.lists.getByTitle("Work Types").items.inBatch(batch).get()
-      .then((items) => {
-
-        this.reactElement.props.workTypes = _.map(items, (item) => {
-          return new WorkType(item["Id"], item["Title"]);
-        });
-
-      });
-    pnp.sp.web.lists.getByTitle("Application Types").inBatch(batch).items.get()
-      .then((items) => {
-        this.reactElement.props.applicationTypes = _.map(items, (item) => {
-          return new ApplicationType(item["Id"], item["Title"], item["WorkTypeId"]);
-        });
-      });
-    batch.execute().then((value) => {
-      console.log("All done!");
+ 
+  private navigateToSource() {
+    let queryParameters = new UrlQueryParameterCollection(window.location.href);
+    let encodedSource = queryParameters.getValue("Source");
+    if (encodedSource) {
+      let source = decodeURIComponent(encodedSource);
+      console.log("source uis " + source);
+      window.location.href = source;
     }
-    );
   }
   private save(tr: TR): Promise<any> {
     // remove lookups
     let copy = _.clone(tr);
     delete copy.RequestorName;
     delete copy.ParentTR;
-    let queryParameters = new UrlQueryParameterCollection(window.location.href);
-    let encodedSource = queryParameters.getValue("Source");
-    let source = decodeURIComponent(encodedSource);
-    console.log("source uis " + source);
-    debugger;
-    if (tr.Id !== -1) {
-      return pnp.sp.web.lists.getByTitle("trs").items.getById(tr.Id).update(copy).then((x) => {
-        window.location.href = source;
+
+   
+    if (tr.Id !== null) {
+      return pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(tr.Id).update(copy).then((x) => {
+     
+        this.navigateToSource();
       });
     }
     else {
-      return pnp.sp.web.lists.getByTitle("trs").items.add(copy).then((x) => {
-        window.location.href = source;
+      return pnp.sp.web.lists.getByTitle("Technical Requests").items.add(copy).then((x) => {
+      
+        this.navigateToSource();
 
       });
     }
 
-    // .then((results) => {
-    //   debugger;
-    // })
-    // .catch((reaseon) => {
-    //   debugger;
-    // });
-  }
+   }
   private cancel(): void {
-    let queryParameters = new UrlQueryParameterCollection(window.location.href);
-    let encodedSource = queryParameters.getValue("Source");
-    let source = decodeURIComponent(encodedSource);
-    console.log("source uis " + source);
-    window.location.href = source;
+    this.navigateToSource();
 
   }
 }

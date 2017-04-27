@@ -9,9 +9,11 @@ import {
 import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
+import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
+import { DetailsList, IDetailsListProps ,DetailsListLayoutMode,IColumn} from 'office-ui-fabric-react/lib/DetailsList';
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
@@ -40,7 +42,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       resultsPersonas: []
     };
     this.SaveButton = this.SaveButton.bind(this);
-this.ModeDisplay = this.ModeDisplay.bind(this);
+    this.ModeDisplay = this.ModeDisplay.bind(this);
+    this.save = this.save.bind(this);
+    this.cancel = this.cancel.bind(this);
 
   }
 
@@ -76,6 +80,11 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
         this.ckeditor.remove("tronoxtrtextarea-summary");
         console.log("removed tronoxtrtextarea-summary");
         break;
+      case 3:
+        let data3 = this.ckeditor.instances["tronoxtrtextarea-testparams"].getData();
+        this.ckeditor.remove("tronoxtrtextarea-testparams");
+        console.log("removed tronoxtrtextarea-testparams");
+        break;
       default:
 
     };
@@ -104,12 +113,60 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
           });
         }
         break;
+      case 3:
+        if (this.ckeditor.instances["tronoxtrtextarea-testparams"] === undefined) {
+          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+            this.ckeditor.replace("tronoxtrtextarea-testparams");
+            console.log("created tronoxtrtextarea-testparams");
+          });
+        }
+        break;
       default:
 
     }
 
 
 
+  }
+  public isValid(): boolean {
+    debugger;
+    this.state.errorMessages = [];
+    let errorsFound = false;
+    if (!this.state.tr.Title) {
+      this.state.errorMessages.push(new md.Message("Request #  is required"));
+      errorsFound = true;
+    }
+    if (!this.state.tr.WorkTypeId) {
+      this.state.errorMessages.push(new md.Message("Work Type is required"));
+      errorsFound = true;
+    }
+    if (!this.state.tr.ApplicationTypeId) {
+      this.state.errorMessages.push(new md.Message("Application Type is required"));
+      errorsFound = true;
+    }
+    if (!this.state.tr.InitiationDate) {
+      this.state.errorMessages.push(new md.Message("Initiation Date   is required"));
+      errorsFound = true;
+    }
+    if (!this.state.tr.TRDueDate) {
+      this.state.errorMessages.push(new md.Message("Due Date  is required"));
+      errorsFound = true;
+    }
+    if (!this.state.tr.Site) {
+      this.state.errorMessages.push(new md.Message("Site is required"));
+      errorsFound = true;
+    }
+    if (!this.state.tr.Status) {
+      this.state.errorMessages.push(new md.Message("Status  is required"));
+      errorsFound = true;
+    }
+    if (!this.state.tr.RequestorId) {
+      this.state.errorMessages.push(new md.Message("Requestor is required"));
+      errorsFound = true;
+    }
+
+
+    return !errorsFound;
   }
   public save() {
 
@@ -131,12 +188,17 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
 
       }
     }
-    this.props.save(this.state.tr)
-      .then((result) => { })
-      .catch((response) => {
-        this.state.errorMessages.push(new md.Message(response.data.responseBody['odata.error'].message.value));
-        this.setState(this.state);
-      });
+
+    if (this.isValid()) {
+      this.props.save(this.state.tr)
+        .then((result) => { })
+        .catch((response) => {
+          this.state.errorMessages.push(new md.Message(response.data.responseBody['odata.error'].message.value));
+          this.setState(this.state);
+        });
+    } else {
+      this.setState(this.state); // show errors
+    }
     return false; // stop postback
   }
   public cancel() {
@@ -165,7 +227,7 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
     return persona.primaryText;
   }
   public requestorChanged(req: Array<IPersonaProps>) { // need to call ensure user
-    debugger;
+
     if (req.length > 0) {
       console.log("requestor changedd " + req[0].optionalText);// I am only adding a single user. req[0] , others are ignored
       const email = req[0].optionalText;
@@ -216,14 +278,41 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
     if (this.props.mode === modes.DISPLAY) {
       return <div />
     } else return (
-      <Link onClick={this.save.bind(this)}>Save </Link>
+      <span style={{ margin: 20 }}>
+        <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+          Save
+        </a>
+      </span>
     )
   }
   public ModeDisplay(): JSX.Element {
     return (
       <Label>MODE : {modes[this.props.mode]}</Label>
     )
-    
+
+  }
+  public getTechSpecs() {
+    debugger;
+    var x = _.map(this.props.techSpecs,(techSpec) => {
+      return {
+        title: techSpec.title,
+        selected: (this.state.tr.TechSpecId.indexOf(techSpec.id)!= -1)
+      }
+    });
+    return _.sortBy(x,"selected");
+
+  }
+  public renderToggle(item?: any, index?: number, column?: IColumn) :any {
+    debugger;
+    return(
+    <Toggle 
+      checked={item.selected}
+      onText="On Team"
+      offText=""
+
+    />
+
+    );
   }
 
   public render(): React.ReactElement<ITrFormProps> {
@@ -313,20 +402,28 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
                 onRenderSuggestionsItem={this.renderTR}
-                onChange={e => {debugger; this.state.tr.ParentTRId = (e.length > 0)?parseInt(e[0].id):null; }}
+                onChange={e => { this.state.tr.ParentTRId = (e.length > 0) ? parseInt(e[0].id) : null; }}
               />
             </td>
             <td>
               <Label >Application Type</Label>
             </td>
             <td>
-              <Dropdown label='' selectedKey={this.state.tr.ApplicationTypeId} options={applicationtypeDropDoownoptions} onChanged={e => { debugger; this.state.tr.ApplicationTypeId = e.key as number; this.setState(this.state); }} />
+              <Dropdown label='' selectedKey={this.state.tr.ApplicationTypeId} options={applicationtypeDropDoownoptions} onChanged={e => { this.state.tr.ApplicationTypeId = e.key as number; this.setState(this.state); }} />
             </td>
             <td>
-              <Label >MailBox</Label>
+              <Label >Priority</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.MailBox} onChanged={e => { this.state.tr.MailBox = e; }} />
+              <Dropdown
+                options={[
+                  { key: 'High', text: 'High' },
+                  { key: 'Medium', text: 'Medium' },
+                  { key: 'Low', text: 'Low' },
+
+                ]}
+                onChanged={e => { this.state.tr.TRPriority = e.text; }}
+                selectedKey={this.state.tr.TRPriority} />
             </td>
 
           </tr>
@@ -338,22 +435,28 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
               <TextField value={this.state.tr.CER} onChanged={e => { this.state.tr.CER = e; }} />
             </td>
             <td>
-              Requestor
+              <Label>Requestor</Label>
             </td>
             <td>
-              <NormalPeoplePicker
+              <Dropdown
+                options={this.props.requestors.map((r) => { return { key: r.id, text: r.title } })}
+                onChanged={e => { this.state.tr.RequestorId = e.key as number; }}
+                selectedKey={this.state.tr.RequestorId}
+              />
+              {/*<NormalPeoplePicker
                 defaultSelectedItems={this.state.tr.RequestorId ? [{ id: this.state.tr.RequestorId.toString(), primaryText: this.state.tr.RequestorName }] : []}
                 onResolveSuggestions={this.resolveSuggestions.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
                 onRenderSuggestionsItem={this.renderPeople}
                 onChange={this.requestorChanged.bind(this)}
-              />
+              />*/}
             </td>
             <td>
-
+              <Label>Customer</Label>
             </td>
             <td>
+              <TextField value={this.state.tr.Customer} onChanged={e => { this.state.tr.Customer = e; }} />
 
             </td>
 
@@ -364,19 +467,81 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
             </td>
             <td>
 
-              <DatePicker value={moment(this.state.tr.InitiationDate).toDate()} onSelectDate={e => { this.state.tr.InitiationDate = moment(e).toISOString(); }} />
+              <DatePicker
+                value={(this.state.tr.InitiationDate) ? moment(this.state.tr.InitiationDate).toDate() : null}
+                onSelectDate={e => { this.state.tr.InitiationDate = moment(e).toISOString(); }} />
             </td>
             <td>
               <Label >End Use</Label>
             </td>
             <td>
-              <Dropdown label='' selectedKey={this.state.tr.EndUseId} options={enduseDropDoownoptions} onChanged={e => { debugger; this.state.tr.EndUseId = e.key as number; this.setState(this.state); }} />
+              <Dropdown label='' selectedKey={this.state.tr.EndUseId} options={enduseDropDoownoptions} onChanged={e => { ; this.state.tr.EndUseId = e.key as number; this.setState(this.state); }} />
             </td>
             <td>
-              <Label >Customer</Label>
+              <Label >Status</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Customer} onChanged={e => { this.state.tr.Customer = e; }} />
+              <Dropdown
+                options={[
+                  { key: 'Pending', text: 'Pending' },
+                  { key: 'In Progress', text: 'In Progress' },
+                  { key: 'Complete', text: 'Complete' },
+                  { key: 'Canceled', text: 'Canceled' },
+                ]}
+                onChanged={e => { this.state.tr.Status = e.text; }}
+                selectedKey={this.state.tr.Status} />
+
+            </td>
+
+          </tr>
+          <tr>
+            <td>
+              <Label  >Due Date</Label>
+            </td>
+            <td>
+
+              <DatePicker
+                value={(this.state.tr.TRDueDate) ? moment(this.state.tr.InitiationDate).toDate() : null}
+                onSelectDate={e => { this.state.tr.TRDueDate = moment(e).toISOString(); }} />
+            </td>
+            <td>
+              <Label >Actual Start Date</Label>
+            </td>
+            <td>
+              <DatePicker
+                value={(this.state.tr.ActualStartDate) ? moment(this.state.tr.ActualStartDate).toDate() : null}
+                onSelectDate={e => { this.state.tr.ActualStartDate = moment(e).toISOString(); }} />
+            </td>
+            <td>
+              <Label >Actual Completion Date</Label>
+            </td>
+            <td>
+              <DatePicker
+                value={(this.state.tr.ActualCompletionDate) ? moment(this.state.tr.ActualCompletionDate).toDate() : null}
+                onSelectDate={e => { this.state.tr.ActualCompletionDate = moment(e).toISOString(); }} />
+            </td>
+
+          </tr>
+          <tr>
+            <td>
+              <Label  >Estimated Hours</Label>
+            </td>
+            <td>
+
+              <TextField datatype="number"
+                value={(this.state.tr.EstimatedHours) ? this.state.tr.EstimatedHours.toString() : null}
+                onChanged={e => { this.state.tr.EstimatedHours = parseInt(e) }} />
+            </td>
+            <td>
+              <Label ></Label>
+            </td>
+
+
+            <td>
+              <Label >Actual Completion Date</Label>
+            </td>
+            <td>
+
             </td>
 
           </tr>
@@ -398,7 +563,7 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
               Test Params
              </tabs.Tab>
             <tabs.Tab>
-              tech Spec
+              Tech Spec
              </tabs.Tab>
             <tabs.Tab>
               staff cc
@@ -430,10 +595,20 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>these are the test pareameters</h2>
+            <textarea name="tronoxtrtextarea-testparams" id="tronoxtrtextarea-testparams" style={{ display: "none" }}>
+              {this.state.tr.TestParamsArea}
+            </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>Specification</h2>
+            <DetailsList
+            layoutMode={DetailsListLayoutMode.fixedColumns}
+              items={this.getTechSpecs()}
+              setKey="id"
+              columns={[
+                { key: "title", name: "Tecnical Specialis Name", fieldName: "title", minWidth: 20,maxWidth:200 },
+                { key: "selected", name: "On Team?", fieldName: "selected", minWidth: 200, onRender:this.renderToggle.bind(this) }
+              ]}
+            />
           </tabs.TabPanel>
           <tabs.TabPanel>
             <h2>staff cc? just sen emails. or set notifications></h2>
@@ -450,7 +625,12 @@ this.ModeDisplay = this.ModeDisplay.bind(this);
         </tabs.Tabs>
 
         <this.SaveButton />
-        <Link onClick={this.cancel.bind(this)}>Cancel </Link>
+        <span style={{ margin: 20 }}>
+          <a href="#" onClick={this.cancel} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+            Cancel
+        </a>
+        </span>
+
         {/*<Button buttonType={ButtonType.normal} onClick={this.save.bind(this)}>Save Buttom</Button>*/}
       </div>
     );
