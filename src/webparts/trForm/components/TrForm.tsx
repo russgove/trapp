@@ -299,7 +299,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         selected: (this.state.tr.TechSpecId.indexOf(techSpec.id)!= -1)
       }
     });
-    return _.sortBy(x,"selected");
+    return _.sortBy(x,"selected").reverse();
 
   }
   public renderToggle(item?: any, index?: number, column?: IColumn) :any {
