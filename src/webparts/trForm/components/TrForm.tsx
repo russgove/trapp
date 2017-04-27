@@ -309,7 +309,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       checked={item.selected}
       onText="On Team"
       offText=""
-
+      
     />
 
     );
