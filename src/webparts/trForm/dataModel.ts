@@ -66,7 +66,8 @@ export class TR {
     public SummaryArea: string;
     public TestParamsArea: string;
     public WorkTypeId: number;
-    public TechSpecId:Array<number>
+    public TechSpecId:Array<number>;
+   
 
 }
 export class WorkType {

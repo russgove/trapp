@@ -3,7 +3,7 @@ import {
   IPersonaProps
 } from 'office-ui-fabric-react';
 export interface ITrFormProps {
-  mode: modes,
+  mode: modes;
   tr?: TR;
 
   workTypes: Array<WorkType>;
@@ -14,6 +14,7 @@ export interface ITrFormProps {
   ensureUser: (email) => Promise<any>;
   peoplesearch: (searchText: string, currentSelected: IPersonaProps[]) => Promise<IPersonaProps[]>;
   TRsearch: (searchText: string, currentSelected: IPersonaProps[]) => Promise<IPersonaProps[]>;
-  requestors:Array<User>
-  techSpecs:Array<User>
+  requestors:Array<User>;
+  techSpecs:Array<User>;
+  childTRs:Array<TR>;
 }

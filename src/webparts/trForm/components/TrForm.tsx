@@ -17,18 +17,18 @@ import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn } from '
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
-export interface inITrFormState {
-  tr: TR;
-  errorMessages: Array<md.Message>;
-  resultsPersonas: Array<IPersonaProps>;
-}
 import { SPComponentLoader } from '@microsoft/sp-loader';
 import * as moment from 'moment';
 import * as _ from "lodash";
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs";
-
+export interface inITrFormState {
+  tr: TR;
+  errorMessages: Array<md.Message>;
+  resultsPersonas: Array<IPersonaProps>;
+  isDirty: boolean;
+}
 
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
   private ckeditor: any;
@@ -39,10 +39,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.state = {
       tr: props.tr,
       errorMessages: [],
-      resultsPersonas: []
+      resultsPersonas: [],
+      isDirty: false,
     };
     this.SaveButton = this.SaveButton.bind(this);
     this.ModeDisplay = this.ModeDisplay.bind(this);
+    this.StatusDisplay = this.StatusDisplay.bind(this);
     this.save = this.save.bind(this);
     this.cancel = this.cancel.bind(this);
 
@@ -87,7 +89,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         break;
       default:
 
-    };
+    }
     switch (newTabID) {
       case 0:
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
@@ -156,6 +158,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       this.state.errorMessages.push(new md.Message("Site is required"));
       errorsFound = true;
     }
+    if (!this.state.tr.TRPriority) {
+      this.state.errorMessages.push(new md.Message("Proiority  is required"));
+      errorsFound = true;
+    }
     if (!this.state.tr.Status) {
       this.state.errorMessages.push(new md.Message("Status  is required"));
       errorsFound = true;
@@ -191,7 +197,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     if (this.isValid()) {
       this.props.save(this.state.tr)
-        .then((result) => { })
+        .then((result) => {
+          this.state.isDirty = false;
+          this.setState(this.state);
+        })
         .catch((response) => {
           this.state.errorMessages.push(new md.Message(response.data.responseBody['odata.error'].message.value));
           this.setState(this.state);
@@ -227,7 +236,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     return persona.primaryText;
   }
   public requestorChanged(req: Array<IPersonaProps>) { // need to call ensure user
-
+    this.state.isDirty = true;
     if (req.length > 0) {
       console.log("requestor changedd " + req[0].optionalText);// I am only adding a single user. req[0] , others are ignored
       const email = req[0].optionalText;
@@ -237,7 +246,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       }).catch((error) => {
         this.state.errorMessages.push(new md.Message(error.data.responseBody['odata.error'].message.value));
         this.setState(this.state);
-      })
+      });
     }
     else {
       console.log("requestor removed ");// I am only adding a single user. req[0] , others are ignored
@@ -246,7 +255,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public renderPeople(person: IPersonaProps): JSX.Element {
 
-    return <Persona
+    return (<Persona
       size={PersonaSize.large}
       primaryText={person.primaryText}
       secondaryText={person.secondaryText}
@@ -255,13 +264,13 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       imageUrl={person.imageUrl}
       imageShouldFadeIn={true}
 
-    />
+    />);
 
   }
 
   public renderTR(person: IPersonaProps): JSX.Element {
 
-    return <Persona
+    return (<Persona
       size={PersonaSize.extraLarge}
       primaryText={person.primaryText}
       secondaryText={person.secondaryText}
@@ -270,25 +279,31 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       imageUrl={person.imageUrl}
       imageInitials=""
 
-    />
+    />);
 
   }
 
   public SaveButton(): JSX.Element {
     if (this.props.mode === modes.DISPLAY) {
-      return <div />
+      return <div />;
     } else return (
       <span style={{ margin: 20 }}>
         <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
           Save
         </a>
       </span>
-    )
+    );
   }
   public ModeDisplay(): JSX.Element {
     return (
       <Label>MODE : {modes[this.props.mode]}</Label>
-    )
+    );
+
+  }
+  public StatusDisplay(): JSX.Element {
+    return (
+      <Label>Status : {(this.state.isDirty) ? "Unsaved" : "Saved"}</Label>
+    );
 
   }
   public getTechSpecs() {
@@ -298,23 +313,24 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         title: techSpec.title,
         selected: ((this.state.tr.TechSpecId) ? this.state.tr.TechSpecId.indexOf(techSpec.id) != -1 : null),
         id: techSpec.id
-      }
+      };
     });
     return _.sortBy(x, "selected").reverse();
 
   }
   public toggleTechSpec(isSelected: boolean, id: number) {
     debugger;
+    this.state.isDirty = true;
     if (isSelected) {
       if (this.state.tr.TechSpecId) {
         this.state.tr.TechSpecId.push(id);//addit
       }
       else {
-        this.state.tr.TechSpecId = [id]
+        this.state.tr.TechSpecId = [id];
       }
     }
     else {
-      this.state.tr.TechSpecId = _.filter(this.state.tr.TechSpecId, function (x) { return x != id });//remove it
+      this.state.tr.TechSpecId = _.filter(this.state.tr.TechSpecId, (x) => { return x != id; });//remove it
     }
     this.setState(this.state);
   }
@@ -325,12 +341,15 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         checked={item.selected}
         onText="On Team"
         offText=""
-        onChanged={e => { this.toggleTechSpec(e, item.id) }}
+        onChanged={e => { this.toggleTechSpec(e, item.id); }}
       />
 
     );
   }
-
+  public renderDate(item?: any, index?: number, column?: IColumn): any {
+    debugger;
+    return moment(item[column.fieldName]).format("MMM Do YYYY");
+  }
   public render(): React.ReactElement<ITrFormProps> {
     const suggestionProps: IBasePickerSuggestionsProps = {
       suggestionsHeaderText: 'Suggested People',
@@ -338,7 +357,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       loadingText: 'Loading',
 
     };
-    console.log("WorkTypeID is" + this.props.tr.WorkTypeId);
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
       return {
         key: wt.id,
@@ -358,7 +376,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         });
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
-
         return (eu.applicationTypeId === this.props.tr.ApplicationTypeId);
       })
         .map((eu) => {
@@ -373,7 +390,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
         <MessageDisplay messages={this.state.errorMessages}
           hideMessage={this.removeMessage.bind(this)} />
-        <this.ModeDisplay />
+        <div style={{ float: "left" }}> <this.ModeDisplay /></div>
+        <div style={{ float: "right" }}><this.StatusDisplay /></div>
+        <div style={{ clear: "both" }}></div>
         <table>
 
           <tr>
@@ -382,6 +401,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             </td>
             <td>
               <TextField value={this.state.tr.Title} onChanged={e => {
+                this.state.isDirty = true;
                 this.state.tr.Title = e; this.setState(this.state);
               }} />
             </td>
@@ -389,20 +409,25 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label >Work Type</Label>
             </td>
             <td>
-              <Dropdown label='' selectedKey={this.state.tr.WorkTypeId} options={worktypeDropDoownoptions} onChanged={e => {
-
-                this.state.tr.WorkTypeId = e.key as number;
-                console.log("WorkType changing to " + this.state.tr.WorkTypeId);
-                this.setState(this.state);
-                console.log("WorkType changed to " + this.state.tr.WorkTypeId);
-              }} />
+              <Dropdown label=''
+                selectedKey={this.state.tr.WorkTypeId}
+                options={worktypeDropDoownoptions}
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.WorkTypeId = e.key as number;
+                  this.setState(this.state);
+                }} />
             </td>
 
             <td>
               <Label >Site</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Site} onChanged={e => { this.state.tr.Site = e; }} />
+              <TextField value={this.state.tr.Site} onChanged={e => {
+                this.state.isDirty = true;
+                this.state.tr.Site = e;
+                this.setState(this.state);
+              }} />
             </td>
 
           </tr>
@@ -418,14 +443,26 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 pickerSuggestionsProps={suggestionProps}
                 getTextFromItem={this.getTextFromItem}
                 onRenderSuggestionsItem={this.renderTR}
-                onChange={e => { this.state.tr.ParentTRId = (e.length > 0) ? parseInt(e[0].id) : null; }}
+                onChange={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.ParentTRId = (e.length > 0) ? parseInt(e[0].id) : null;
+                  this.setState(this.state);
+                }}
               />
             </td>
             <td>
               <Label >Application Type</Label>
             </td>
             <td>
-              <Dropdown label='' selectedKey={this.state.tr.ApplicationTypeId} options={applicationtypeDropDoownoptions} onChanged={e => { this.state.tr.ApplicationTypeId = e.key as number; this.setState(this.state); }} />
+              <Dropdown label=''
+                selectedKey={this.state.tr.ApplicationTypeId}
+                options={applicationtypeDropDoownoptions}
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.ApplicationTypeId = e.key as number;
+                  this.setState(this.state);
+                }}
+              />
             </td>
             <td>
               <Label >Priority</Label>
@@ -439,7 +476,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                   { key: 'Low', text: 'Low' },
 
                 ]}
-                onChanged={e => { this.state.tr.TRPriority = e.text; }}
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.TRPriority = e.text;
+                  this.setState(this.state);
+                }}
                 selectedKey={this.state.tr.TRPriority} />
             </td>
 
@@ -449,7 +490,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label>CER #</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.CER} onChanged={e => { this.state.tr.CER = e; }} />
+              <TextField value={this.state.tr.CER} onChanged={e => { this.state.isDirty = true; this.state.tr.CER = e; }} />
             </td>
             <td>
               <Label>Requestor</Label>
@@ -457,8 +498,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
               <Dropdown
                 label=""
-                options={this.props.requestors.map((r) => { return { key: r.id, text: r.title } })}
-                onChanged={e => { this.state.tr.RequestorId = e.key as number; }}
+                options={this.props.requestors.map((r) => { return { key: r.id, text: r.title }; })}
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.RequestorId = e.key as number;
+                  this.setState(this.state);
+                }}
                 selectedKey={this.state.tr.RequestorId}
               />
               {/*<NormalPeoplePicker
@@ -474,7 +519,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label>Customer</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Customer} onChanged={e => { this.state.tr.Customer = e; }} />
+              <TextField value={this.state.tr.Customer}
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.Customer = e;
+                  this.setState(this.state);
+                }} />
 
             </td>
 
@@ -487,13 +537,24 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
               <DatePicker
                 value={(this.state.tr.InitiationDate) ? moment(this.state.tr.InitiationDate).toDate() : null}
-                onSelectDate={e => { this.state.tr.InitiationDate = moment(e).toISOString(); }} />
+                onSelectDate={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.InitiationDate = moment(e).toISOString();
+                  this.setState(this.state);
+                }} />
             </td>
             <td>
               <Label >End Use</Label>
             </td>
             <td>
-              <Dropdown label='' selectedKey={this.state.tr.EndUseId} options={enduseDropDoownoptions} onChanged={e => { ; this.state.tr.EndUseId = e.key as number; this.setState(this.state); }} />
+              <Dropdown label=''
+                selectedKey={this.state.tr.EndUseId}
+                options={enduseDropDoownoptions}
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.EndUseId = e.key as number;
+                  this.setState(this.state);
+                }} />
             </td>
             <td>
               <Label >Status</Label>
@@ -507,7 +568,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                   { key: 'Complete', text: 'Complete' },
                   { key: 'Canceled', text: 'Canceled' },
                 ]}
-                onChanged={e => { this.state.tr.Status = e.text; }}
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.Status = e.text;
+                  this.setState(this.state);
+                }}
                 selectedKey={this.state.tr.Status} />
 
             </td>
@@ -521,7 +586,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
               <DatePicker
                 value={(this.state.tr.TRDueDate) ? moment(this.state.tr.InitiationDate).toDate() : null}
-                onSelectDate={e => { this.state.tr.TRDueDate = moment(e).toISOString(); }} />
+                onSelectDate={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.TRDueDate = moment(e).toISOString();
+                  this.setState(this.state);
+                }} />
             </td>
             <td>
               <Label >Actual Start Date</Label>
@@ -529,7 +598,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
               <DatePicker
                 value={(this.state.tr.ActualStartDate) ? moment(this.state.tr.ActualStartDate).toDate() : null}
-                onSelectDate={e => { this.state.tr.ActualStartDate = moment(e).toISOString(); }} />
+                onSelectDate={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.ActualStartDate = moment(e).toISOString();
+                  this.setState(this.state);
+                }} />
             </td>
             <td>
               <Label >Actual Completion Date</Label>
@@ -537,7 +610,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
               <DatePicker
                 value={(this.state.tr.ActualCompletionDate) ? moment(this.state.tr.ActualCompletionDate).toDate() : null}
-                onSelectDate={e => { this.state.tr.ActualCompletionDate = moment(e).toISOString(); }} />
+                onSelectDate={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.ActualCompletionDate = moment(e).toISOString();
+                  this.setState(this.state);
+                }} />
             </td>
 
           </tr>
@@ -549,7 +626,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
               <TextField datatype="number"
                 value={(this.state.tr.EstimatedHours) ? this.state.tr.EstimatedHours.toString() : null}
-                onChanged={e => { this.state.tr.EstimatedHours = parseInt(e) }} />
+                onChanged={e => {
+                  this.state.isDirty = true;
+                  this.state.tr.EstimatedHours = parseInt(e);
+                  this.setState(this.state);
+                }} />
             </td>
             <td>
               <Label ></Label>
@@ -582,7 +663,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Test Params
              </tabs.Tab>
             <tabs.Tab>
-              Tech Spec
+              Tech Spec({(this.state.tr.TechSpecId)?this.state.tr.TechSpecId.length:0})
              </tabs.Tab>
             <tabs.Tab>
               staff cc
@@ -594,7 +675,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Tests
              </tabs.Tab>
             <tabs.Tab>
-              formulae
+              Formulae
+             </tabs.Tab>
+            <tabs.Tab>
+              Child TRs({(this.props.childTRs)?this.props.childTRs.length:0})
              </tabs.Tab>
           </tabs.TabList>
           <tabs.TabPanel >
@@ -639,7 +723,24 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <h2>these are teh tests</h2>
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>formulae?></h2>
+            <h2>Formulae></h2>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+
+            <DetailsList
+              layoutMode={DetailsListLayoutMode.fixedColumns}
+              items={this.props.childTRs}
+              setKey="id"
+              columns={[
+                { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
+                { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
+                { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
+                { key: "TRDueDate", onRender: this.renderDate, name: "Due Date", fieldName: "TRDueDate", minWidth: 80 },
+                { key: "ActualStartDate", onRender: this.renderDate, name: "Actual Start Date", fieldName: "ActualStartDate", minWidth: 90 },
+                { key: "ActualCompetionDate", onRender: this.renderDate, name: "Actual Competion<br />Date", fieldName: "ActualCompetionDate", minWidth: 80 },
+
+              ]}
+            />
           </tabs.TabPanel>
         </tabs.Tabs>
 
@@ -650,7 +751,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         </a>
         </span>
 
-        {/*<Button buttonType={ButtonType.normal} onClick={this.save.bind(this)}>Save Buttom</Button>*/}
       </div>
     );
   }

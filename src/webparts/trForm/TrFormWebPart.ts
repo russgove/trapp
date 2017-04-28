@@ -2,13 +2,12 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
 import { SearchQuery, SearchResults, SortDirection } from "sp-pnp-js";
-import { Version, UrlQueryParameterCollection, UrlUtilities } from '@microsoft/sp-core-library';
+import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
-  IPropertyPaneConfiguration,
-  PropertyPaneTextField, PropertyPaneDropdown
+  IPropertyPaneConfiguration, PropertyPaneDropdown
 } from '@microsoft/sp-webpart-base';
-import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
+
 import { TR, WorkType, ApplicationType, EndUse, modes, User } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
@@ -16,14 +15,15 @@ import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
 import {
-  Dropdown, IDropdownProps, IPersonaProps, PersonaPresence
+   IPersonaProps, PersonaPresence
 } from 'office-ui-fabric-react';
 
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
   private tr: TR;
-  private workTypes: Array<WorkType> = [];
-  private applicationTypes: Array<ApplicationType> = [];
-  private endUses: Array<EndUse> = [];
+  private childTRs: Array<TR>;
+
+
+
   private reactElement: React.ReactElement<ITrFormProps>;
   private trContentTypeID: string;
   public onInit(): Promise<void> {
@@ -42,13 +42,27 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
 
-    let formProps: ITrFormProps = { techSpecs: [], requestors: [], cancel: this.cancel.bind(this), ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch.bind(this), peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save.bind(this) };
+    let formProps: ITrFormProps = {
+      childTRs: [],
+      techSpecs: [],
+      requestors: [],
+      cancel: this.cancel.bind(this),
+      ensureUser: this.ensureUser,
+      mode: this.properties.mode,
+      TRsearch: this.TRsearch.bind(this),
+      peoplesearch: this.peoplesearch,
+      workTypes: [],
+      applicationTypes: [],
+      endUses: [],
+      tr: new TR(),
+      save: this.save.bind(this)
+    };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
     pnp.sp.web.contentTypes.inBatch(batch).get()
       .then((contentTypes) => {
         debugger;
-        const trContentTyoe = _.find(contentTypes, (contentType) => { return  contentType["Name"] === "TechnicalRequest" });
+        const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest" ;});
         this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
       })
       .catch((error) => {
@@ -121,9 +135,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
         let fields = "*,ParentTR/Title,Requestor/Title";
+        // get the requested tr
         pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
-          .then((item) => {
 
+          .then((item) => {
             formProps.tr = new TR();
             formProps.tr.Id = item.Id;
             formProps.tr.ActualCompletionDate = item.ActualCompletionDate;
@@ -134,7 +149,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             formProps.tr.TRDueDate = item.TRDueDate;
             formProps.tr.EstimatedHours = item.EstimatedHours;
             formProps.tr.InitiationDate = item.InitiationDate;
-
             formProps.tr.TRPriority = item.TRPriority;
             formProps.tr.RequestorId = item.RequestorId;
             if (item.Requestor) {
@@ -161,6 +175,49 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             console.log(error.message);
 
           });
+        // get the Child trs
+        const self = this;
+        pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+          .then((items) => {
+            // this may resilve befor we get the mainn tr, so jyst stash them away for now.
+            for (const item of items) {
+              let childtr: TR = new TR();
+              childtr.Id = item.Id;
+              childtr.ActualCompletionDate = item.ActualCompletionDate;
+              childtr.ApplicationTypeId = item.ApplicationTypeId;
+              childtr.ActualStartDate = item.ActualStartDate;
+              childtr.CER = item.CER;
+              childtr.Customer = item.Customer;
+              childtr.TRDueDate = item.TRDueDate;
+              childtr.EstimatedHours = item.EstimatedHours;
+              childtr.InitiationDate = item.InitiationDate;
+              childtr.TRPriority = item.TRPriority;
+              childtr.RequestorId = item.RequestorId;
+              if (item.Requestor) {
+                childtr.RequestorName = item.Requestor.Title;
+              }
+              childtr.Site = item.Site;
+              childtr.Status = item.Status;
+              childtr.EndUseId = item.EndUseId;
+              childtr.WorkTypeId = item.WorkTypeId;
+              childtr.Title = item.Title;
+              childtr.TitleArea = item.TitleArea;
+              childtr.DescriptionArea = item.DescriptionArea;
+              childtr.SummaryArea = item.SummaryArea;
+              childtr.ParentTRId = item.ParentTRId;
+              if (item.ParentTR) {
+                childtr.ParentTR = item.ParentTR.Title;
+              }
+              debugger;
+              childtr.TechSpecId = item.TechSpecId;
+              formProps.childTRs.push(childtr);
+            }
+          })
+          .catch((error) => {
+            console.log("ERROR, An error occured fetching the listitem");
+            console.log(error.message);
+
+          });
       }
     }
     else {
@@ -168,6 +225,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
 
     batch.execute().then((value) => {
+
       this.reactElement = React.createElement(TrForm, formProps);
       ReactDom.render(this.reactElement, this.domElement);
     }
@@ -207,11 +265,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public TRsearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
 
-    let queryText="{0} Path:{1}* ContentTypeId:{2}*"
-    queryText=queryText
-    .replace("{0}",searchText)
-    .replace("{1}",this.context.pageContext.web.absoluteUrl)
-    .replace("{2}",this.trContentTypeID);
+    let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
+    queryText = queryText
+      .replace("{0}", searchText)
+      .replace("{1}", this.context.pageContext.web.absoluteUrl)
+      .replace("{2}", this.trContentTypeID);
     let sq: SearchQuery = {
       Querytext: queryText,
       RowLimit: 50,
@@ -291,10 +349,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let copy = _.clone(tr) as any;
     delete copy.RequestorName;
     delete copy.ParentTR;
-    let temp = copy.TechSpecId;
+    let technicalSpecialists = (copy.TechSpecId) ? copy.TechSpecId : [];
     delete copy.TechSpecId;
     copy["TechSpecId"] = {};
-    copy["TechSpecId"]["results"] = temp;
+    copy["TechSpecId"]["results"] = technicalSpecialists;
+
 
 
 
