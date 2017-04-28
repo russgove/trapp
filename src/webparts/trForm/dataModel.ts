@@ -21,7 +21,7 @@ export class TR {
         this.ParentTRId = null;
         this.Title = null;
         this.CER = null;
-        this.InitiationDate =null; //moment(new Date()).toISOString();
+        this.InitiationDate = null; //moment(new Date()).toISOString();
         this.TRDueDate = null;//;moment(new Date()).toISOString();
         this.ActualStartDate = null;//moment(new Date()).toISOString();
         this.ActualCompletionDate = null;//= moment(new Date()).toISOString();
@@ -29,8 +29,8 @@ export class TR {
         this.RequestorName = null;
         this.EstimatedHours = null;
         this.Site = null;
- 
-        this.TRPriority =null;
+
+        this.TRPriority = null;
         this.Customer = null;
         this.Status = null;
         this.ApplicationTypeId = null;
@@ -38,9 +38,10 @@ export class TR {
         this.TitleArea = null;
         this.DescriptionArea = null;
         this.SummaryArea = null;
-                this.TestParamsArea = null;
+        this.TestParamsArea = null;
+        this.FormulaeArea = null;
         this.WorkTypeId = null;
-           this.TechSpecId = null;
+        this.TechSpecId = null;
 
     }
     public Id: number;
@@ -53,7 +54,7 @@ export class TR {
     public ActualStartDate: string;
     public ActualCompletionDate: string;
     public RequestorId: number;
-    public RequestorName:string;
+    public RequestorName: string;
     public EstimatedHours: number;
     public Site: string;
     public TRPriority: string;
@@ -64,10 +65,11 @@ export class TR {
     public TitleArea: string;
     public DescriptionArea: string;
     public SummaryArea: string;
+    public FormulaeArea: string;
     public TestParamsArea: string;
     public WorkTypeId: number;
-    public TechSpecId:Array<number>;
-   
+    public TechSpecId: Array<number>;
+
 
 }
 export class WorkType {
@@ -76,14 +78,14 @@ export class WorkType {
         public workType: string) { }
 
 }
-export class User{
+export class User {
     public constructor(
         public id: number,
         public title: string,
-        public position:string,
-        public department:string,
-        ) { }
-    
+        public position: string,
+        public department: string,
+    ) { }
+
 }
 export class ApplicationType {
     public constructor(

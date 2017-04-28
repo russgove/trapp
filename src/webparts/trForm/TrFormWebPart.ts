@@ -15,7 +15,7 @@ import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
 import {
-   IPersonaProps, PersonaPresence
+  IPersonaProps, PersonaPresence
 } from 'office-ui-fabric-react';
 
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
@@ -35,6 +35,36 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
       //  this.loadData();
     });
+  }
+  private moveFieldsToTR(tr: TR, item: any) {
+    tr.Id = item.Id;
+    tr.ActualCompletionDate = item.ActualCompletionDate;
+    tr.ApplicationTypeId = item.ApplicationTypeId;
+    tr.ActualStartDate = item.ActualStartDate;
+    tr.CER = item.CER;
+    tr.Customer = item.Customer;
+    tr.TRDueDate = item.TRDueDate;
+    tr.EstimatedHours = item.EstimatedHours;
+    tr.InitiationDate = item.InitiationDate;
+    tr.TRPriority = item.TRPriority;
+    tr.RequestorId = item.RequestorId;
+    if (item.Requestor) {
+      tr.RequestorName = item.Requestor.Title;
+    }
+    tr.Site = item.Site;
+    tr.Status = item.Status;
+    tr.EndUseId = item.EndUseId;
+    tr.WorkTypeId = item.WorkTypeId;
+    tr.Title = item.Title;
+    tr.TitleArea = item.TitleArea;
+    tr.FormulaeArea = item.FormulaeArea;
+    tr.DescriptionArea = item.DescriptionArea;
+    tr.SummaryArea = item.SummaryArea;
+    tr.ParentTRId = item.ParentTRId;
+    if (item.ParentTR) {
+      tr.ParentTR = item.ParentTR.Title;
+    }
+    tr.TechSpecId = item.TechSpecId;
   }
   public render(): void {
     // hide the ribbon
@@ -61,8 +91,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     // get the Technincal Request content type so we can use it later in searches
     pnp.sp.web.contentTypes.inBatch(batch).get()
       .then((contentTypes) => {
-        debugger;
-        const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest" ;});
+    
+        const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest"; });
         this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
       })
       .catch((error) => {
@@ -140,34 +170,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           .then((item) => {
             formProps.tr = new TR();
-            formProps.tr.Id = item.Id;
-            formProps.tr.ActualCompletionDate = item.ActualCompletionDate;
-            formProps.tr.ApplicationTypeId = item.ApplicationTypeId;
-            formProps.tr.ActualStartDate = item.ActualStartDate;
-            formProps.tr.CER = item.CER;
-            formProps.tr.Customer = item.Customer;
-            formProps.tr.TRDueDate = item.TRDueDate;
-            formProps.tr.EstimatedHours = item.EstimatedHours;
-            formProps.tr.InitiationDate = item.InitiationDate;
-            formProps.tr.TRPriority = item.TRPriority;
-            formProps.tr.RequestorId = item.RequestorId;
-            if (item.Requestor) {
-              formProps.tr.RequestorName = item.Requestor.Title;
-            }
-            formProps.tr.Site = item.Site;
-            formProps.tr.Status = item.Status;
-            formProps.tr.EndUseId = item.EndUseId;
-            formProps.tr.WorkTypeId = item.WorkTypeId;
-            formProps.tr.Title = item.Title;
-            formProps.tr.TitleArea = item.TitleArea;
-            formProps.tr.DescriptionArea = item.DescriptionArea;
-            formProps.tr.SummaryArea = item.SummaryArea;
-            formProps.tr.ParentTRId = item.ParentTRId;
-            if (item.ParentTR) {
-              formProps.tr.ParentTR = item.ParentTR.Title;
-            }
-            debugger;
-            formProps.tr.TechSpecId = item.TechSpecId;
+            this.moveFieldsToTR(formProps.tr, item);
+
 
           })
           .catch((error) => {
@@ -176,40 +180,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Child trs
-        const self = this;
+        
         pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             for (const item of items) {
               let childtr: TR = new TR();
-              childtr.Id = item.Id;
-              childtr.ActualCompletionDate = item.ActualCompletionDate;
-              childtr.ApplicationTypeId = item.ApplicationTypeId;
-              childtr.ActualStartDate = item.ActualStartDate;
-              childtr.CER = item.CER;
-              childtr.Customer = item.Customer;
-              childtr.TRDueDate = item.TRDueDate;
-              childtr.EstimatedHours = item.EstimatedHours;
-              childtr.InitiationDate = item.InitiationDate;
-              childtr.TRPriority = item.TRPriority;
-              childtr.RequestorId = item.RequestorId;
-              if (item.Requestor) {
-                childtr.RequestorName = item.Requestor.Title;
-              }
-              childtr.Site = item.Site;
-              childtr.Status = item.Status;
-              childtr.EndUseId = item.EndUseId;
-              childtr.WorkTypeId = item.WorkTypeId;
-              childtr.Title = item.Title;
-              childtr.TitleArea = item.TitleArea;
-              childtr.DescriptionArea = item.DescriptionArea;
-              childtr.SummaryArea = item.SummaryArea;
-              childtr.ParentTRId = item.ParentTRId;
-              if (item.ParentTR) {
-                childtr.ParentTR = item.ParentTR.Title;
-              }
-              debugger;
-              childtr.TechSpecId = item.TechSpecId;
+              this.moveFieldsToTR(childtr, item);
               formProps.childTRs.push(childtr);
             }
           })

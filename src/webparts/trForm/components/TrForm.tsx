@@ -47,6 +47,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.StatusDisplay = this.StatusDisplay.bind(this);
     this.save = this.save.bind(this);
     this.cancel = this.cancel.bind(this);
+    this.rendeChildTRAsLink = this.rendeChildTRAsLink.bind(this);
+    this.selectChildTR = this.selectChildTR.bind(this);
 
   }
 
@@ -87,6 +89,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         this.ckeditor.remove("tronoxtrtextarea-testparams");
         console.log("removed tronoxtrtextarea-testparams");
         break;
+      case 8:
+        let data4 = this.ckeditor.instances["tronoxtrtextarea-formulae"].getData();
+        this.ckeditor.remove("tronoxtrtextarea-formulae");
+        console.log("removed tronoxtrtextarea-formulae");
+        break;
       default:
 
     }
@@ -123,6 +130,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           });
         }
         break;
+      case 8:
+        if (this.ckeditor.instances["tronoxtrtextarea-formulae"] === undefined) {
+          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+            this.ckeditor.replace("tronoxtrtextarea-formulae");
+            console.log("created tronoxtrtextarea-formulae");
+          });
+        }
+        break;
       default:
 
     }
@@ -131,7 +146,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
   }
   public isValid(): boolean {
-    debugger;
+
     this.state.errorMessages = [];
     let errorsFound = false;
     if (!this.state.tr.Title) {
@@ -189,6 +204,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           break;
         case "tronoxtrtextarea-summary":
           this.state.tr.SummaryArea = data;
+          break;
+        case "tronoxtrtextarea-formulae":
+          this.state.tr.FormulaeArea = data;
           break;
         default:
 
@@ -307,7 +325,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
   }
   public getTechSpecs() {
-    debugger;
+
     var x = _.map(this.props.techSpecs, (techSpec) => {
       return {
         title: techSpec.title,
@@ -319,7 +337,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
   }
   public toggleTechSpec(isSelected: boolean, id: number) {
-    debugger;
+
     this.state.isDirty = true;
     if (isSelected) {
       if (this.state.tr.TechSpecId) {
@@ -346,8 +364,27 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     );
   }
-  public renderDate(item?: any, index?: number, column?: IColumn): any {
+  //make the child tr the currently selected tr
+  public selectChildTR(trId:number): any {
+    const childTr=_.find(this.props.childTRs,(tr)=>{return tr.Id=trId;});
+    
+    if (childTr){
+      console.log("switching to tr "+trId);
+      this.state.tr=childTr;
+      this.setState(this.state);
+      // now get its childerm, need to move children to state
+    }
+
+    return false;
+  }
+  public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     debugger;
+    return (<a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
+      {item[column.fieldName]}
+    </a>);
+  }
+  public renderDate(item?: any, index?: number, column?: IColumn): any {
+
     return moment(item[column.fieldName]).format("MMM Do YYYY");
   }
   public render(): React.ReactElement<ITrFormProps> {
@@ -663,7 +700,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Test Params
              </tabs.Tab>
             <tabs.Tab>
-              Tech Spec({(this.state.tr.TechSpecId)?this.state.tr.TechSpecId.length:0})
+              Tech Spec({(this.state.tr.TechSpecId) ? this.state.tr.TechSpecId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
               staff cc
@@ -678,7 +715,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Formulae
              </tabs.Tab>
             <tabs.Tab>
-              Child TRs({(this.props.childTRs)?this.props.childTRs.length:0})
+              Child TRs({(this.props.childTRs) ? this.props.childTRs.length : 0})
              </tabs.Tab>
           </tabs.TabList>
           <tabs.TabPanel >
@@ -723,7 +760,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <h2>these are teh tests</h2>
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>Formulae></h2>
+            <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" style={{ display: "none" }}>
+              {this.state.tr.FormulaeArea}
+            </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
 
@@ -732,7 +771,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               items={this.props.childTRs}
               setKey="id"
               columns={[
-                { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
+                { key: "Title", onRender: this.rendeChildTRAsLink, name: "Request #", fieldName: "Title", minWidth: 80, },
                 { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
                 { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
                 { key: "TRDueDate", onRender: this.renderDate, name: "Due Date", fieldName: "TRDueDate", minWidth: 80 },
