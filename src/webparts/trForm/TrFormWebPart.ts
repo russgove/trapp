@@ -25,6 +25,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   private applicationTypes: Array<ApplicationType> = [];
   private endUses: Array<EndUse> = [];
   private reactElement: React.ReactElement<ITrFormProps>;
+  private trContentTypeID: string;
   public onInit(): Promise<void> {
 
     return super.onInit().then(_ => {
@@ -41,8 +42,20 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
 
-    let formProps: ITrFormProps = { techSpecs: [], requestors: [], cancel: this.cancel.bind(this), ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save.bind(this) };
+    let formProps: ITrFormProps = { techSpecs: [], requestors: [], cancel: this.cancel.bind(this), ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch.bind(this), peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save.bind(this) };
     let batch = pnp.sp.createBatch();
+    // get the Technincal Request content type so we can use it later in searches
+    pnp.sp.web.contentTypes.inBatch(batch).get()
+      .then((contentTypes) => {
+        debugger;
+        const trContentTyoe = _.find(contentTypes, (contentType) => { return  contentType["Name"] === "TechnicalRequest" });
+        this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching content types'");
+        console.log(error.message);
+
+      });
 
     pnp.sp.web.siteGroups.getByName("TR YY Tech Specialists").users.inBatch(batch).get()
       .then((items) => {
@@ -194,9 +207,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public TRsearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
 
-
+    let queryText="{0} Path:{1}* ContentTypeId:{2}*"
+    queryText=queryText
+    .replace("{0}",searchText)
+    .replace("{1}",this.context.pageContext.web.absoluteUrl)
+    .replace("{2}",this.trContentTypeID);
     let sq: SearchQuery = {
-      Querytext: searchText + " Path:https://tronoxglobal.sharepoint.com/sites/TR/TRs ContentTypeId:0x0100A87C11965AD4494DA4E5CB2CC25622BB",
+      Querytext: queryText,
       RowLimit: 50,
       SelectProperties: ["Title", "MailBoxOWSTEXT", "ListItemID", "CEROWSTEXT", "CustomerOWSTEXT", "SiteOWSTEXT"]
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable

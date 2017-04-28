@@ -296,7 +296,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     var x = _.map(this.props.techSpecs, (techSpec) => {
       return {
         title: techSpec.title,
-        selected: ((this.state.tr.TechSpecId)?this.state.tr.TechSpecId.indexOf(techSpec.id) != -1:null),
+        selected: ((this.state.tr.TechSpecId) ? this.state.tr.TechSpecId.indexOf(techSpec.id) != -1 : null),
         id: techSpec.id
       }
     });
@@ -306,7 +306,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   public toggleTechSpec(isSelected: boolean, id: number) {
     debugger;
     if (isSelected) {
-      this.state.tr.TechSpecId.push(id);//addit
+      if (this.state.tr.TechSpecId) {
+        this.state.tr.TechSpecId.push(id);//addit
+      }
+      else {
+        this.state.tr.TechSpecId = [id]
+      }
     }
     else {
       this.state.tr.TechSpecId = _.filter(this.state.tr.TechSpecId, function (x) { return x != id });//remove it
@@ -552,7 +557,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
 
             <td>
-              <Label >Actual Completion Date</Label>
+              <Label ></Label>
             </td>
             <td>
 
