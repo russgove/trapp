@@ -40,7 +40,7 @@ export class TR {
         this.SummaryArea = null;
                 this.TestParamsArea = null;
         this.WorkTypeId = null;
-           this.TechSpecId = [];
+           this.TechSpecId = null;
 
     }
     public Id: number;

@@ -296,7 +296,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     var x = _.map(this.props.techSpecs, (techSpec) => {
       return {
         title: techSpec.title,
-        selected: (this.state.tr.TechSpecId.indexOf(techSpec.id) != -1),
+        selected: ((this.state.tr.TechSpecId)?this.state.tr.TechSpecId.indexOf(techSpec.id) != -1:null),
         id: techSpec.id
       }
     });

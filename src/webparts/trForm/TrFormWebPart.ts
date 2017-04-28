@@ -41,13 +41,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
 
-    let formProps: ITrFormProps = { techSpecs:[],requestors: [], cancel: this.cancel.bind(this), ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save.bind(this) };
+    let formProps: ITrFormProps = { techSpecs: [], requestors: [], cancel: this.cancel.bind(this), ensureUser: this.ensureUser, mode: this.properties.mode, TRsearch: this.TRsearch, peoplesearch: this.peoplesearch, workTypes: [], applicationTypes: [], endUses: [], tr: new TR(), save: this.save.bind(this) };
     let batch = pnp.sp.createBatch();
-    
+
     pnp.sp.web.siteGroups.getByName("TR YY Tech Specialists").users.inBatch(batch).get()
       .then((items) => {
         formProps.techSpecs = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"],item["Title"],item["Title"]);
+          return new User(item["Id"], item["Title"], item["Title"], item["Title"]);
         });
       })
       .catch((error) => {
@@ -55,10 +55,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-       pnp.sp.web.siteGroups.getByName("TR YY Requestors").users.inBatch(batch).get()
+    pnp.sp.web.siteGroups.getByName("TR YY Requestors").users.inBatch(batch).get()
       .then((items) => {
         formProps.requestors = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"],item["Title"],item["Title"]);
+          return new User(item["Id"], item["Title"], item["Title"], item["Title"]);
         });
       })
       .catch((error) => {
@@ -103,14 +103,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       });
     var queryParameters = new UrlQueryParameterCollection(window.location.href);
- 
+
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
         let fields = "*,ParentTR/Title,Requestor/Title";
         pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
           .then((item) => {
-     
+
             formProps.tr = new TR();
             formProps.tr.Id = item.Id;
             formProps.tr.ActualCompletionDate = item.ActualCompletionDate;
@@ -140,7 +140,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               formProps.tr.ParentTR = item.ParentTR.Title;
             }
             debugger;
-            formProps.tr.TechSpecId=item.TechSpecId;
+            formProps.tr.TechSpecId = item.TechSpecId;
 
           })
           .catch((error) => {
@@ -203,7 +203,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       // SelectProperties: ["*"]
     };
     console.log(sq);
-  
+
     return pnp.sp.search(sq).then((results: SearchResults) => {
       let resultsPersonas: Array<IPersonaProps> = [];
       for (let element of results.PrimarySearchResults) {
@@ -259,7 +259,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     return pnp.sp.web.ensureUser(email);
   }
 
- 
+
   private navigateToSource() {
     let queryParameters = new UrlQueryParameterCollection(window.location.href);
     let encodedSource = queryParameters.getValue("Source");
@@ -271,26 +271,31 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   private save(tr: TR): Promise<any> {
     // remove lookups
-    let copy = _.clone(tr);
+    let copy = _.clone(tr) as any;
     delete copy.RequestorName;
     delete copy.ParentTR;
+    let temp = copy.TechSpecId;
+    delete copy.TechSpecId;
+    copy["TechSpecId"] = {};
+    copy["TechSpecId"]["results"] = temp;
 
-   
+
+
     if (tr.Id !== null) {
       return pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(tr.Id).update(copy).then((x) => {
-     
+
         this.navigateToSource();
       });
     }
     else {
       return pnp.sp.web.lists.getByTitle("Technical Requests").items.add(copy).then((x) => {
-      
+
         this.navigateToSource();
 
       });
     }
 
-   }
+  }
   private cancel(): void {
     this.navigateToSource();
 
