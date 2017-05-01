@@ -25,7 +25,7 @@ import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs";
 export interface inITrFormState {
   tr: TR;
-  childTRs:Array<TR>,
+  childTRs: Array<TR>,
   errorMessages: Array<md.Message>;
   resultsPersonas: Array<IPersonaProps>;
   isDirty: boolean;
@@ -39,7 +39,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     super(props);
     this.state = {
       tr: props.tr,
-      childTRs:props.subTRs,
+      childTRs: props.subTRs,
       errorMessages: [],
       resultsPersonas: [],
       isDirty: false,
@@ -308,9 +308,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       return <div />;
     } else return (
       <span style={{ margin: 20 }}>
-        <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+        <Link href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+          <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
           Save
-        </a>
+        </Link>
       </span>
     );
   }
@@ -374,11 +375,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       console.log("switching to tr " + trId);
       delete this.state.tr;
       this.state.tr = childTr
-      this.state.childTRs=[];
+      this.state.childTRs = [];
       this.setState(this.state);
       // now get its childerm, need to move children to state
-      this.props.getChildTr(this.state.tr.Id).then((trs)=>{
-        this.state.childTRs=trs;
+      this.props.getChildTr(this.state.tr.Id).then((trs) => {
+        this.state.childTRs = trs;
         this.setState(this.state);
       });
     }
@@ -387,9 +388,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     debugger;
-    return (<a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
+    return (<i
+      onClick={(e) => { debugger; this.selectChildTR(item.Id) }}
+      className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>);
+    /*return (<a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
       {item[column.fieldName]}
-    </a>);
+    </a>);*/
   }
   public renderDate(item?: any, index?: number, column?: IColumn): any {
 
@@ -481,23 +485,30 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label  >Parent TR</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.ParentTR} onChanged={e => {
-                this.state.isDirty = true;
-                this.state.tr.ParentTR = e;
-                this.setState(this.state);
-              }} />
-              {/*<NormalPeoplePicker
-                defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
-                onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
-                pickerSuggestionsProps={suggestionProps}
-                getTextFromItem={this.getTextFromItem}
-                onRenderSuggestionsItem={this.renderTR}
-                onChange={e => {
-                  this.state.isDirty = true;
-                  this.state.tr.ParentTRId = (e.length > 0) ? parseInt(e[0].id) : null;
-                  this.setState(this.state);
-                }}
-              />*/}
+              <div>
+  <TextField value={this.state.tr.ParentTR} />
+                <div style={{ float: "left" }}>
+                  <NormalPeoplePicker
+                    defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
+                    onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
+                    pickerSuggestionsProps={suggestionProps}
+                    getTextFromItem={this.getTextFromItem}
+                    onRenderSuggestionsItem={this.renderTR}
+                    key="PARENTTR"
+                    onChange={e => {
+                      this.state.isDirty = true;
+                      this.state.tr.ParentTRId = (e.length > 0) ? parseInt(e[0].id) : null;
+                      this.setState(this.state);
+                    }}
+                  />
+                </div>
+                <div style={{ float: "right" }}>               <i
+                  onClick={(e) => { debugger; this.selectChildTR(1) }}
+                  className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
+                </div>
+                <div style={{ clear: "both" }}></div>
+
+              </div>
             </td>
             <td>
               <Label >Application Type</Label>
@@ -783,7 +794,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               items={this.state.childTRs}
               setKey="id"
               columns={[
-                { key: "Title", onRender: this.rendeChildTRAsLink, name: "Request #", fieldName: "Title", minWidth: 80, },
+                { key: "Edit", onRender: this.rendeChildTRAsLink, name: "", fieldName: "Title", minWidth: 20, },
+
+                { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
                 { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
                 { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
                 { key: "TRDueDate", onRender: this.renderDate, name: "Due Date", fieldName: "TRDueDate", minWidth: 80 },
@@ -797,9 +810,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
         <this.SaveButton />
         <span style={{ margin: 20 }}>
-          <a href="#" onClick={this.cancel} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+          <Link href="#" onClick={this.cancel} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+            <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
             Cancel
-        </a>
+        </Link>
         </span>
 
       </div>
