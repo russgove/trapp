@@ -25,6 +25,7 @@ import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs";
 export interface inITrFormState {
   tr: TR;
+  childTRs:Array<TR>,
   errorMessages: Array<md.Message>;
   resultsPersonas: Array<IPersonaProps>;
   isDirty: boolean;
@@ -38,6 +39,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     super(props);
     this.state = {
       tr: props.tr,
+      childTRs:props.subTRs,
       errorMessages: [],
       resultsPersonas: [],
       isDirty: false,
@@ -365,14 +367,20 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     );
   }
   //make the child tr the currently selected tr
-  public selectChildTR(trId:number): any {
-    const childTr=_.find(this.props.childTRs,(tr)=>{return tr.Id=trId;});
-    
-    if (childTr){
-      console.log("switching to tr "+trId);
-      this.state.tr=childTr;
+  public selectChildTR(trId: number): any {
+    const childTr = _.find(this.state.childTRs, (tr) => { return tr.Id === trId; });
+    debugger;
+    if (childTr) {
+      console.log("switching to tr " + trId);
+      delete this.state.tr;
+      this.state.tr = childTr
+      this.state.childTRs=[];
       this.setState(this.state);
       // now get its childerm, need to move children to state
+      this.props.getChildTr(this.state.tr.Id).then((trs)=>{
+        this.state.childTRs=trs;
+        this.setState(this.state);
+      });
     }
 
     return false;
@@ -473,8 +481,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label  >Parent TR</Label>
             </td>
             <td>
-
-              <NormalPeoplePicker
+              <TextField value={this.state.tr.ParentTR} onChanged={e => {
+                this.state.isDirty = true;
+                this.state.tr.ParentTR = e;
+                this.setState(this.state);
+              }} />
+              {/*<NormalPeoplePicker
                 defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
                 onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
                 pickerSuggestionsProps={suggestionProps}
@@ -485,7 +497,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                   this.state.tr.ParentTRId = (e.length > 0) ? parseInt(e[0].id) : null;
                   this.setState(this.state);
                 }}
-              />
+              />*/}
             </td>
             <td>
               <Label >Application Type</Label>
@@ -715,7 +727,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Formulae
              </tabs.Tab>
             <tabs.Tab>
-              Child TRs({(this.props.childTRs) ? this.props.childTRs.length : 0})
+              Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})
              </tabs.Tab>
           </tabs.TabList>
           <tabs.TabPanel >
@@ -768,7 +780,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
-              items={this.props.childTRs}
+              items={this.state.childTRs}
               setKey="id"
               columns={[
                 { key: "Title", onRender: this.rendeChildTRAsLink, name: "Request #", fieldName: "Title", minWidth: 80, },

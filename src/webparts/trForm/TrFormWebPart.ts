@@ -66,6 +66,21 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     tr.TechSpecId = item.TechSpecId;
   }
+  public getChildTR(id: number): Promise<Array<TR>> {
+          let fields = "*,ParentTR/Title,Requestor/Title";
+    return pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).get()
+      .then((items) => {
+        let childTrs = new Array<TR>();
+
+        for (const item of items) {
+          let childtr: TR = new TR();
+          this.moveFieldsToTR(childtr, item);
+          childTrs.push(childtr);
+        }
+        return childTrs;
+      });
+
+  }
   public render(): void {
     // hide the ribbon
     if (document.getElementById("s4-ribbonrow")) {
@@ -73,7 +88,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
 
     let formProps: ITrFormProps = {
-      childTRs: [],
+      subTRs: [],
       techSpecs: [],
       requestors: [],
       cancel: this.cancel.bind(this),
@@ -85,13 +100,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       applicationTypes: [],
       endUses: [],
       tr: new TR(),
-      save: this.save.bind(this)
+      save: this.save.bind(this),
+      getChildTr: this.getChildTR.bind(this)
     };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
     pnp.sp.web.contentTypes.inBatch(batch).get()
       .then((contentTypes) => {
-    
+
         const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest"; });
         this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
       })
@@ -180,14 +196,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Child trs
-        
+
         pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             for (const item of items) {
               let childtr: TR = new TR();
               this.moveFieldsToTR(childtr, item);
-              formProps.childTRs.push(childtr);
+              formProps.subTRs.push(childtr);
             }
           })
           .catch((error) => {
