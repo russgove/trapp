@@ -228,13 +228,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Child trs
-<<<<<<< HEAD
-        
+    
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
-=======
 
-        pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
->>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             for (const item of items) {

@@ -246,16 +246,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       return <div />;
     } else return (
       <span style={{ margin: 20 }}>
-<<<<<<< HEAD
+
         <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
           <i className="ms-Icon ms-Icon--Save"></i>Save
         </a>
-=======
-        <Link href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
-          <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
-          Save
-        </Link>
->>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
+
       </span>
     );
   }
@@ -321,14 +316,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.setState(this.state);
   }
   //make the child tr the currently selected tr
-<<<<<<< HEAD
-  public selectChildTR(trId:number): any {
-    const childTr=_.find(this.props.childTRs,(tr)=>{return tr.Id===trId;});
-    
-    if (childTr){
-      console.log("switching to tr "+trId);
-      this.state.tr=childTr;
-=======
+
   public selectChildTR(trId: number): any {
     const childTr = _.find(this.state.childTRs, (tr) => { return tr.Id === trId; });
     debugger;
@@ -339,7 +327,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       debugger;
       this.updateCKEditorText(this.state.tr);
       this.state.childTRs = [];
->>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
+
       this.setState(this.state);
       // now get its children, need to move children to state
       this.props.fetchChildTr(this.state.tr.Id).then((trs) => {
@@ -352,7 +340,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     debugger;
-<<<<<<< HEAD
+
     return (
       <div>
         <div className='ms-Icon ms-Icon--directions'></div>
@@ -361,14 +349,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     </a>
        </div>
     );
-=======
-    return (<i
-      onClick={(e) => { debugger; this.selectChildTR(item.Id) }}
-      className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>);
-    /*return (<a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
-      {item[column.fieldName]}
-    </a>);*/
->>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
+
   }
   public parentTRSelected(id: number, title: string) {
     this.state.tr.ParentTR = title;
@@ -480,7 +461,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                   {this.state.tr.ParentTR}
                 </Label>
 
-<<<<<<< HEAD
+{/*<<<<<<< HEAD
               <NormalPeoplePicker
                 defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
                 onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
@@ -494,14 +475,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 }}
               />
               <i className="ms-Icon ms-Icon--View"></i>
-=======
+=======*/}
                 <i onClick={this.editParentTR}
                   className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
                 <i onClick={(e) => { debugger; this.state.showTRSearch = true; this.setState(this.state); }}
                   className="ms-Icon ms-Icon--Search" aria-hidden="true"></i>
 
               </div>
->>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
+
             </td>
             <td>
               <Label >Application Type</Label>
@@ -781,14 +762,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               setKey="id"
               selectionMode={SelectionMode.none}
               columns={[
-<<<<<<< HEAD
-               { key: "Id",  name: "Id", fieldName: "Id", minWidth: 80, },
-                { key: "Title", onRender: this.rendeChildTRAsLink, name: "Request #", fieldName: "Title", minWidth: 80, },
-=======
+
                 { key: "Edit", onRender: this.rendeChildTRAsLink, name: "", fieldName: "Title", minWidth: 20, },
 
                 { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
->>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
+
                 { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
                 { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
                 { key: "TRDueDate", onRender: this.renderDate, name: "Due Date", fieldName: "TRDueDate", minWidth: 80 },
