@@ -13,7 +13,7 @@ import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
-import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn } from 'office-ui-fabric-react/lib/DetailsList';
+import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
@@ -23,11 +23,13 @@ import * as _ from "lodash";
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs";
+import TRPicker from "./TRPicker";
 export interface inITrFormState {
   tr: TR;
+  childTRs: Array<TR>,
   errorMessages: Array<md.Message>;
-  resultsPersonas: Array<IPersonaProps>;
   isDirty: boolean;
+  showTRSearch: boolean;
 }
 
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
@@ -38,9 +40,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     super(props);
     this.state = {
       tr: props.tr,
+      childTRs: props.subTRs,
       errorMessages: [],
-      resultsPersonas: [],
+
       isDirty: false,
+      showTRSearch: false
     };
     this.SaveButton = this.SaveButton.bind(this);
     this.ModeDisplay = this.ModeDisplay.bind(this);
@@ -49,18 +53,19 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.cancel = this.cancel.bind(this);
     this.rendeChildTRAsLink = this.rendeChildTRAsLink.bind(this);
     this.selectChildTR = this.selectChildTR.bind(this);
+    this.cancelTrSearch = this.cancelTrSearch.bind(this);
+    this.parentTRSelected = this.parentTRSelected.bind(this);
+    this.editParentTR = this.editParentTR.bind(this);
 
   }
 
-  public componentWillReceiveProps(nextProps: ITrFormProps, nextContext: any) {
 
-  }
   public componentDidMount() {
 
     var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
-      this.ckeditor.replace("tronoxtrtextarea-title");
+      this.ckeditor.replace("tronoxtrtextarea-title"); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
 
     });
 
@@ -68,35 +73,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public tabChanged(newTabID, oldTabID) {
 
-    switch (oldTabID) {
-      case 0:
-        let data = this.ckeditor.instances["tronoxtrtextarea-title"].getData();
-        this.ckeditor.remove("tronoxtrtextarea-title");
-        console.log("removed tronoxtrtextarea-title");
-        break;
-      case 1:
-        let data1 = this.ckeditor.instances["tronoxtrtextarea-description"].getData();
-        this.ckeditor.remove("tronoxtrtextarea-description");
-        console.log("removed tronoxtrtextarea-description");
-        break;
-      case 2:
-        let data2 = this.ckeditor.instances["tronoxtrtextarea-summary"].getData();
-        this.ckeditor.remove("tronoxtrtextarea-summary");
-        console.log("removed tronoxtrtextarea-summary");
-        break;
-      case 3:
-        let data3 = this.ckeditor.instances["tronoxtrtextarea-testparams"].getData();
-        this.ckeditor.remove("tronoxtrtextarea-testparams");
-        console.log("removed tronoxtrtextarea-testparams");
-        break;
-      case 8:
-        let data4 = this.ckeditor.instances["tronoxtrtextarea-formulae"].getData();
-        this.ckeditor.remove("tronoxtrtextarea-formulae");
-        console.log("removed tronoxtrtextarea-formulae");
-        break;
-      default:
-
-    }
+    
     switch (newTabID) {
       case 0:
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
@@ -212,7 +189,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
       }
     }
-
     if (this.isValid()) {
       this.props.save(this.state.tr)
         .then((result) => {
@@ -234,71 +210,35 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     return false; // stop postback
 
   }
+  public updateCKEditorText(tr: TR) { // updates the text in all the existingck editors after we loaded a new TR (parent or child)
+    for (let instanceName in this.ckeditor.instances) {
+      let instance = this.ckeditor.instances[instanceName];
+      switch (instanceName) {
+        case "tronoxtrtextarea-title":
+          instance.setData(tr.TitleArea);
+          break;
+        case "tronoxtrtextarea-description":
+          instance.setData(tr.DescriptionArea);
+          break;
+        case "tronoxtrtextarea-summary":
+          instance.setData(tr.SummaryArea);
+          break;
+        case "tronoxtrtextarea-formulae":
+          instance.setData(tr.FormulaeArea);
+          break;
+        default:
 
-  public resolveSuggestions(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
-
-    return this.props.peoplesearch(searchText, currentSelected);
+      }
+    }
   }
-  public resolveSuggestionsTR(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps> | IPersonaProps[] {
 
-    return this.props.TRsearch(searchText, currentSelected);
-  }
+
+
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
     _.remove(messageList, {
       Id: messageId
     });
     this.setState(this.state);
-  }
-  public getTextFromItem(persona: IPersonaProps): string {
-
-    return persona.primaryText;
-  }
-  public requestorChanged(req: Array<IPersonaProps>) { // need to call ensure user
-    this.state.isDirty = true;
-    if (req.length > 0) {
-      console.log("requestor changedd " + req[0].optionalText);// I am only adding a single user. req[0] , others are ignored
-      const email = req[0].optionalText;
-      this.props.ensureUser(email).then((user) => {
-        this.state.tr.RequestorId = user.data.Id;
-        this.setState(this.state);
-      }).catch((error) => {
-        this.state.errorMessages.push(new md.Message(error.data.responseBody['odata.error'].message.value));
-        this.setState(this.state);
-      });
-    }
-    else {
-      console.log("requestor removed ");// I am only adding a single user. req[0] , others are ignored
-      this.state.tr.RequestorId = null;
-    }
-  }
-  public renderPeople(person: IPersonaProps): JSX.Element {
-
-    return (<Persona
-      size={PersonaSize.large}
-      primaryText={person.primaryText}
-      secondaryText={person.secondaryText}
-
-      tertiaryText={person.tertiaryText}
-      imageUrl={person.imageUrl}
-      imageShouldFadeIn={true}
-
-    />);
-
-  }
-
-  public renderTR(person: IPersonaProps): JSX.Element {
-
-    return (<Persona
-      size={PersonaSize.extraLarge}
-      primaryText={person.primaryText}
-      secondaryText={person.secondaryText}
-
-      tertiaryText={person.tertiaryText}
-      imageUrl={person.imageUrl}
-      imageInitials=""
-
-    />);
-
   }
 
   public SaveButton(): JSX.Element {
@@ -306,9 +246,16 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       return <div />;
     } else return (
       <span style={{ margin: 20 }}>
+<<<<<<< HEAD
         <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
           <i className="ms-Icon ms-Icon--Save"></i>Save
         </a>
+=======
+        <Link href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+          <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
+          Save
+        </Link>
+>>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
       </span>
     );
   }
@@ -364,21 +311,48 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     );
   }
+
+  public renderDate(item?: any, index?: number, column?: IColumn): any {
+
+    return moment(item[column.fieldName]).format("MMM Do YYYY");
+  }
+  public cancelTrSearch(): void {
+    this.state.showTRSearch = false;
+    this.setState(this.state);
+  }
   //make the child tr the currently selected tr
+<<<<<<< HEAD
   public selectChildTR(trId:number): any {
     const childTr=_.find(this.props.childTRs,(tr)=>{return tr.Id===trId;});
     
     if (childTr){
       console.log("switching to tr "+trId);
       this.state.tr=childTr;
+=======
+  public selectChildTR(trId: number): any {
+    const childTr = _.find(this.state.childTRs, (tr) => { return tr.Id === trId; });
+    debugger;
+    if (childTr) {
+      console.log("switching to tr " + trId);
+      delete this.state.tr;
+      this.state.tr = childTr
+      debugger;
+      this.updateCKEditorText(this.state.tr);
+      this.state.childTRs = [];
+>>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
       this.setState(this.state);
-      // now get its childerm, need to move children to state
+      // now get its children, need to move children to state
+      this.props.fetchChildTr(this.state.tr.Id).then((trs) => {
+        this.state.childTRs = trs;
+        this.setState(this.state);
+      });
     }
 
     return false;
   }
   public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     debugger;
+<<<<<<< HEAD
     return (
       <div>
         <div className='ms-Icon ms-Icon--directions'></div>
@@ -387,18 +361,41 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     </a>
        </div>
     );
+=======
+    return (<i
+      onClick={(e) => { debugger; this.selectChildTR(item.Id) }}
+      className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>);
+    /*return (<a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
+      {item[column.fieldName]}
+    </a>);*/
+>>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
   }
-  public renderDate(item?: any, index?: number, column?: IColumn): any {
+  public parentTRSelected(id: number, title: string) {
+    this.state.tr.ParentTR = title;
+    this.state.tr.ParentTRId = id;
+    this.state.isDirty = true;
+    this.cancelTrSearch();
+  }
+  public editParentTR() {
+    debugger;
+    if (this.state.tr.ParentTRId) {
+      const parentId = this.state.tr.ParentTRId;
+      this.props.fetchTR(parentId).then((parentTR) => {
+        debugger;
+        this.state.tr = parentTR;
+        this.state.childTRs = [];
+        this.setState(this.state);
+        this.updateCKEditorText(this.state.tr);
+        this.props.fetchChildTr(parentId).then((subTRs) => {
+          this.state.childTRs = subTRs;
+          this.setState(this.state);
+        });
+      });
+    }
 
-    return moment(item[column.fieldName]).format("MMM Do YYYY");
+
   }
   public render(): React.ReactElement<ITrFormProps> {
-    const suggestionProps: IBasePickerSuggestionsProps = {
-      suggestionsHeaderText: 'Suggested People',
-      noResultsFoundText: 'No results found',
-      loadingText: 'Loading',
-
-    };
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
       return {
         key: wt.id,
@@ -478,7 +475,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label  >Parent TR</Label>
             </td>
             <td>
+              <div>
+                <Label style={{ "display": "inline" }}>
+                  {this.state.tr.ParentTR}
+                </Label>
 
+<<<<<<< HEAD
               <NormalPeoplePicker
                 defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
                 onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
@@ -492,6 +494,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 }}
               />
               <i className="ms-Icon ms-Icon--View"></i>
+=======
+                <i onClick={this.editParentTR}
+                  className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
+                <i onClick={(e) => { debugger; this.state.showTRSearch = true; this.setState(this.state); }}
+                  className="ms-Icon ms-Icon--Search" aria-hidden="true"></i>
+
+              </div>
+>>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
             </td>
             <td>
               <Label >Application Type</Label>
@@ -549,14 +559,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 }}
                 selectedKey={this.state.tr.RequestorId}
               />
-              {/*<NormalPeoplePicker
-                defaultSelectedItems={this.state.tr.RequestorId ? [{ id: this.state.tr.RequestorId.toString(), primaryText: this.state.tr.RequestorName }] : []}
-                onResolveSuggestions={this.resolveSuggestions.bind(this)}
-                pickerSuggestionsProps={suggestionProps}
-                getTextFromItem={this.getTextFromItem}
-                onRenderSuggestionsItem={this.renderPeople}
-                onChange={this.requestorChanged.bind(this)}
-              />*/}
             </td>
             <td>
               <Label>Customer</Label>
@@ -721,7 +723,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Formulae
              </tabs.Tab>
             <tabs.Tab>
-              Child TRs({(this.props.childTRs) ? this.props.childTRs.length : 0})
+              Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})
              </tabs.Tab>
           </tabs.TabList>
           <tabs.TabPanel >
@@ -748,6 +750,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           <tabs.TabPanel>
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
+              selectionMode={SelectionMode.none}
               items={this.getTechSpecs()}
               setKey="id"
               columns={[
@@ -774,11 +777,18 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
-              items={this.props.childTRs}
+              items={this.state.childTRs}
               setKey="id"
+              selectionMode={SelectionMode.none}
               columns={[
+<<<<<<< HEAD
                { key: "Id",  name: "Id", fieldName: "Id", minWidth: 80, },
                 { key: "Title", onRender: this.rendeChildTRAsLink, name: "Request #", fieldName: "Title", minWidth: 80, },
+=======
+                { key: "Edit", onRender: this.rendeChildTRAsLink, name: "", fieldName: "Title", minWidth: 20, },
+
+                { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
+>>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
                 { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
                 { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
                 { key: "TRDueDate", onRender: this.renderDate, name: "Due Date", fieldName: "TRDueDate", minWidth: 80 },
@@ -792,11 +802,17 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
         <this.SaveButton />
         <span style={{ margin: 20 }}>
-          <a href="#" onClick={this.cancel} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+          <Link href="#" onClick={this.cancel} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+            <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
             Cancel
-        </a>
+        </Link>
         </span>
-
+        <TRPicker
+          isOpen={this.state.showTRSearch}
+          callSearch={this.props.TRsearch}
+          cancel={this.cancelTrSearch}
+          select={this.parentTRSelected}
+        />
       </div>
     );
   }

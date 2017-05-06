@@ -66,32 +66,78 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     tr.TechSpecId = item.TechSpecId;
   }
-  public render(): void {
-    // hide the ribbon
-    if (document.getElementById("s4-ribbonrow")) {
-      document.getElementById("s4-ribbonrow").style.display = "none";
+  public fetchTR(id: number): Promise<TR> {
+    let fields = "*,ParentTR/Title,Requestor/Title";
+    return pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(id).expand("ParentTR,Requestor").select(fields).get()
+      .then((item) => {
+        let tr = new TR();
+        this.moveFieldsToTR(tr, item);
+        return tr;
+      });
+  }
+  public fetchChildTR(id: number): Promise<Array<TR>> {
+    let fields = "*,ParentTR/Title,Requestor/Title";
+    return pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).get()
+      .then((items) => {
+        let childTrs = new Array<TR>();
+
+        for (const item of items) {
+          let childtr: TR = new TR();
+          this.moveFieldsToTR(childtr, item);
+          childTrs.push(childtr);
+        }
+        return childTrs;
+      });
+
+  }
+  // An accesser indicating whether or not the current page is in design mode.
+  public inDesignMode(): boolean {
+    if (document.getElementById("MSOLayout_InDesignMode")) {
+      console.log(
+        document.getElementById("MSOLayout_InDesignMode")
+      )
+      if (document.getElementById("MSOLayout_InDesignMode").innerText === "1") {
+        return true;
+      }
+      else {
+        console.log ('document.getElementById("MSOLayout_InDesignMode") is null')
+        return false;
+      }
+    }
+    else {
+      console.log("document.getElementById(MSOLayout_InDesignMode) is false");
+      return false;
     }
 
+  }
+  public render(): void {
+    // hide the ribbon
+    //if (!this.inDesignMode())
+      if (document.getElementById("s4-ribbonrow")) {
+        document.getElementById("s4-ribbonrow").style.display = "none";
+     }
+
     let formProps: ITrFormProps = {
-      childTRs: [],
+      subTRs: [],
       techSpecs: [],
       requestors: [],
       cancel: this.cancel.bind(this),
-      ensureUser: this.ensureUser,
       mode: this.properties.mode,
       TRsearch: this.TRsearch.bind(this),
-      peoplesearch: this.peoplesearch,
       workTypes: [],
       applicationTypes: [],
       endUses: [],
       tr: new TR(),
-      save: this.save.bind(this)
+      save: this.save.bind(this),
+      fetchChildTr: this.fetchChildTR.bind(this),
+      fetchTR: this.fetchTR.bind(this),
     };
     let batch = pnp.sp.createBatch();
+    this.context.pageContext.web.title
     // get the Technincal Request content type so we can use it later in searches
     pnp.sp.web.contentTypes.inBatch(batch).get()
       .then((contentTypes) => {
-    
+
         const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest"; });
         this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
       })
@@ -101,25 +147,27 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       });
 
-    pnp.sp.web.siteGroups.getByName("TR YY Tech Specialists").users.inBatch(batch).get()
+    const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
+    pnp.sp.web.siteGroups.getByName(techspecGroupName).users.inBatch(batch).get()
       .then((items) => {
         formProps.techSpecs = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"], item["Title"], item["Title"]);
+          return new User(item["Id"], item["Title"], item["Title"], item["Title"])
         });
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching Tech Specialists'");
+        console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
         console.log(error.message);
 
       });
-    pnp.sp.web.siteGroups.getByName("TR YY Requestors").users.inBatch(batch).get()
+    const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
+    pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.inBatch(batch).get()
       .then((items) => {
         formProps.requestors = _.map(items, (item) => {
           return new User(item["Id"], item["Title"], item["Title"], item["Title"]);
         });
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching Requestors'");
+        console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
         console.log(error.message);
 
       });
@@ -180,14 +228,19 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Child trs
+<<<<<<< HEAD
         
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+=======
+
+        pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+>>>>>>> 90ebe7255823e26cd7f714fc77a9b6dd6128d2e0
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             for (const item of items) {
               let childtr: TR = new TR();
               this.moveFieldsToTR(childtr, item);
-              formProps.childTRs.push(childtr);
+              formProps.subTRs.push(childtr);
             }
           })
           .catch((error) => {
@@ -196,10 +249,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
       }
+      else {
+        console.log("ERROR, Id not specified with Display or Edit form");
+      }
     }
-    else {
-      console.log("ERROR, Id not specified with New or Edit form");
-    }
+
 
     batch.execute().then((value) => {
 
@@ -240,7 +294,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ]
     };
   }
-  public TRsearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
+  public TRsearch(searchText: string): Promise<TR[]> {
 
     let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
     queryText = queryText
@@ -250,65 +304,30 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let sq: SearchQuery = {
       Querytext: queryText,
       RowLimit: 50,
-      SelectProperties: ["Title", "MailBoxOWSTEXT", "ListItemID", "CEROWSTEXT", "CustomerOWSTEXT", "SiteOWSTEXT"]
+      SelectProperties: ["Title", "ListItemID", "CEROWSTEXT", "CustomerOWSTEXT", "SiteOWSTEXT"]
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
     };
     console.log(sq);
 
     return pnp.sp.search(sq).then((results: SearchResults) => {
-      let resultsPersonas: Array<IPersonaProps> = [];
-      for (let element of results.PrimarySearchResults) {
-        const temp = element as any;
-        let personapprop: IPersonaProps = {
-          primaryText: temp.Title,
-          secondaryText: temp.CustomerOWSTEXT,
-          tertiaryText: temp.SiteOWSTEXT,
-          presence: PersonaPresence.none,
-          id: temp.ListItemID
-        };
-        resultsPersonas.push(personapprop);
-      }
-      return _.sortBy(resultsPersonas, "primaryText");
+      let returnValue: Array<TR> = [];
+      for (let sr of results.PrimarySearchResults) {
+        const temp = sr as any;
+        let tr: TR = new TR();
+        tr.Id = temp.ListItemID;
+        tr.Title = temp.Title;
+        tr.Customer = temp.CustomerOWSTEXT;
+        tr.Site = temp.SiteOWSTEXT;
+        tr.CER = temp.CEROWSTEXT;
+        returnValue.push(tr);
+      };
+
+
+      return _.sortBy(returnValue, "Title");
     });
 
 
-  }
-  public peoplesearch(searchText: string, currentSelected: IPersonaProps[]): Promise<IPersonaProps[]> {
-
-
-    let sq: SearchQuery = {
-      Querytext: "Title:" + searchText + "* ContentClass=urn:content-class:SPSPeople",
-      SourceId: "b09a7990-05ea-4af9-81ef-edfab16c4e31",  //http://www.dotnetmafia.com/blogs/dotnettipoftheday/archive/2013/01/04/list-of-common-sharepoint-2013-result-source-ids.aspx
-      RowLimit: 50,
-      SelectProperties: ["PreferredName", "Department", "JobTitle", "PictureURL",
-        "OfficeNumber", "WorkEmail"]
-      ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
-      // SelectProperties: ["*"]
-    };
-    return pnp.sp.search(sq).then((results: SearchResults) => {
-      let resultsPersonas: Array<IPersonaProps> = [];
-      for (let element of results.PrimarySearchResults) {
-        const temp = element as any;
-        let personapprop: IPersonaProps = {
-          primaryText: temp.PreferredName,
-          secondaryText: temp.JobTitle,
-          tertiaryText: (temp.OfficeNumber) ? temp.Department + "(" + temp.OfficeNumber + ") " : temp.Department,
-          imageUrl: temp.PictureURL,
-          imageInitials: temp.contentclass,
-          presence: PersonaPresence.none,
-          optionalText: temp.WorkEmail // need this for ensureuser
-
-        };
-        resultsPersonas.push(personapprop);
-      }
-      return _.sortBy(resultsPersonas, "primaryText");
-    });
-
-
-  }
-  protected ensureUser(email): Promise<any> {
-    return pnp.sp.web.ensureUser(email);
   }
 
 
@@ -334,13 +353,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
 
-    if (tr.Id !== null) {
+    if (copy.Id !== null) {
       return pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(tr.Id).update(copy).then((x) => {
 
         this.navigateToSource();
       });
     }
     else {
+      delete copy.Id;
       return pnp.sp.web.lists.getByTitle("Technical Requests").items.add(copy).then((x) => {
 
         this.navigateToSource();
