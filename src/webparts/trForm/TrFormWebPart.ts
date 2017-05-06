@@ -43,23 +43,23 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.ActualStartDate = item.ActualStartDate;
     tr.CER = item.CER;
     tr.Customer = item.Customer;
-    tr.TRDueDate = item.TRDueDate;
-    tr.EstimatedHours = item.EstimatedHours;
-    tr.InitiationDate = item.InitiationDate;
+    tr.RequiredDate = item.RequiredDate;
+    tr.EstManHours = item.EstimatedHours;
+    tr.RequestDate = item.RequestDate;
     tr.TRPriority = item.TRPriority;
     tr.RequestorId = item.RequestorId;
     if (item.Requestor) {
       tr.RequestorName = item.Requestor.Title;
     }
     tr.Site = item.Site;
-    tr.Status = item.Status;
+    tr.TRStatus = item.TRStatus;
     tr.EndUseId = item.EndUseId;
     tr.WorkTypeId = item.WorkTypeId;
     tr.Title = item.Title;
-    tr.TitleArea = item.TitleArea;
+    tr.RequestTitle = item.RequestTitle;
     tr.FormulaeArea = item.FormulaeArea;
-    tr.DescriptionArea = item.DescriptionArea;
-    tr.SummaryArea = item.SummaryArea;
+    tr.Description = item.Description;
+    tr.Summary = item.Summary;
     tr.ParentTRId = item.ParentTRId;
     if (item.ParentTR) {
       tr.ParentTR = item.ParentTR.Title;
@@ -135,17 +135,17 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let batch = pnp.sp.createBatch();
     this.context.pageContext.web.title
     // get the Technincal Request content type so we can use it later in searches
-    pnp.sp.web.contentTypes.inBatch(batch).get()
-      .then((contentTypes) => {
+    // pnp.sp.web.contentTypes.inBatch(batch).get()
+    //   .then((contentTypes) => {
 
-        const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest"; });
-        this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching content types'");
-        console.log(error.message);
+    //     const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest"; });
+    //     this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching content types'");
+    //     console.log(error.message);
 
-      });
+    //   });
 
     const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
     pnp.sp.web.siteGroups.getByName(techspecGroupName).users.inBatch(batch).get()
@@ -178,7 +178,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching 'End uses'");
+        console.log("ERROR, An error occured fetching 'End uses' from list named "+this.properties.endUseListName);
         console.log(error.message);
 
       });
@@ -190,7 +190,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Work Types'");
+        console.log("ERROR, An error occured fetching 'Work Types' from list named "+this.properties.workTypeListName);
         console.log(error.message);
 
       });
@@ -203,7 +203,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Application Types'");
+        console.log("ERROR, An error occured fetching 'Application Types' from list named "+this.properties.applicationTYpeListName);
         console.log(error.message);
 
       });
@@ -213,8 +213,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
         let fields = "*,ParentTR/Title,Requestor/Title";
+        let expands="ParentTR,Requestor";
         // get the requested tr
-        pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+        pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand(expands).select(fields).inBatch(batch).get()
 
           .then((item) => {
             formProps.tr = new TR();
@@ -223,7 +224,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           })
           .catch((error) => {
-            console.log("ERROR, An error occured fetching the listitem");
+            console.log("ERROR, An error occured fetching the listitem  from list named "+this.properties.technicalRequestListName);;
             console.log(error.message);
 
           });
@@ -240,7 +241,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
           })
           .catch((error) => {
-            console.log("ERROR, An error occured fetching the listitem");
+            console.log("ERROR, An error occured fetching child trs  from list named "+this.properties.technicalRequestListName);
             console.log(error.message);
 
           });

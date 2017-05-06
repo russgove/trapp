@@ -21,24 +21,24 @@ export class TR {
         this.ParentTRId = null;
         this.Title = null;
         this.CER = null;
-        this.InitiationDate = null; //moment(new Date()).toISOString();
-        this.TRDueDate = null;//;moment(new Date()).toISOString();
+        this.RequestDate = null; //moment(new Date()).toISOString();
+        this.RequiredDate = null;//;moment(new Date()).toISOString();
         this.ActualStartDate = null;//moment(new Date()).toISOString();
         this.ActualCompletionDate = null;//= moment(new Date()).toISOString();
         this.RequestorId = null;
         this.RequestorName = null;
-        this.EstimatedHours = null;
+        this.EstManHours = null;
         this.Site = null;
 
         this.TRPriority = null;
         this.Customer = null;
-        this.Status = null;
+        this.TRStatus = null;
         this.ApplicationTypeId = null;
         this.EndUseId = null;
-        this.TitleArea = null;
-        this.DescriptionArea = null;
-        this.SummaryArea = null;
-        this.TestParamsArea = null;
+        this.RequestTitle = null;
+        this.Description = null;
+        this.Summary = null;
+        this.TestingParameters = null;
         this.FormulaeArea = null;
         this.WorkTypeId = null;
         this.TechSpecId = null;
@@ -49,24 +49,24 @@ export class TR {
     public ParentTRId: number;
     public Title: string;
     public CER: string;
-    public InitiationDate: string;
-    public TRDueDate: string;
+    public RequestDate: string;//InitiationDate
+    public RequiredDate: string;//TRDueDate
     public ActualStartDate: string;
     public ActualCompletionDate: string;
     public RequestorId: number;
     public RequestorName: string;
-    public EstimatedHours: number;
+    public EstManHours: number;//Edtimated hours
     public Site: string;
-    public TRPriority: string;
+    public TRPriority: string;//TRPriority
     public Customer: string;
-    public Status: string;
+    public TRStatus: string;
     public ApplicationTypeId: number;
     public EndUseId: number;
-    public TitleArea: string;
-    public DescriptionArea: string;
-    public SummaryArea: string;
+    public RequestTitle: string;//TitleArea
+    public Description: string;//DescriptionArea
+    public Summary: string;//SummaryArea
     public FormulaeArea: string;
-    public TestParamsArea: string;
+    public TestingParameters: string;//TestParamsArea
     public WorkTypeId: number;
     public TechSpecId: Array<number>;
 
@@ -89,7 +89,7 @@ export class User {
 }
 export class ApplicationType {
     public constructor(
-        public id: string,
+        public id: number,
         public applicationType: string,
 
         public workTypeIds: number[]
@@ -99,7 +99,7 @@ export class ApplicationType {
 }
 export class EndUse {
     public constructor(
-        public id: string,
+        public id: number,
         public endUse: string,
         public applicationTypeId: number,
     ) { }

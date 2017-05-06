@@ -1,3 +1,5 @@
+///// Add tab for testinParameters text block
+
 import * as React from 'react';
 import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
@@ -73,7 +75,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public tabChanged(newTabID, oldTabID) {
 
-    
+
     switch (newTabID) {
       case 0:
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
@@ -138,11 +140,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       this.state.errorMessages.push(new md.Message("Application Type is required"));
       errorsFound = true;
     }
-    if (!this.state.tr.InitiationDate) {
+    if (!this.state.tr.RequestDate) {
       this.state.errorMessages.push(new md.Message("Initiation Date   is required"));
       errorsFound = true;
     }
-    if (!this.state.tr.TRDueDate) {
+    if (!this.state.tr.RequiredDate) {
       this.state.errorMessages.push(new md.Message("Due Date  is required"));
       errorsFound = true;
     }
@@ -154,7 +156,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       this.state.errorMessages.push(new md.Message("Proiority  is required"));
       errorsFound = true;
     }
-    if (!this.state.tr.Status) {
+    if (!this.state.tr.TRStatus) {
       this.state.errorMessages.push(new md.Message("Status  is required"));
       errorsFound = true;
     }
@@ -174,18 +176,19 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       let data = instance.getData();
       switch (instanceName) {
         case "tronoxtrtextarea-title":
-          this.state.tr.TitleArea = data;
+          this.state.tr.RequestTitle = data;
           break;
         case "tronoxtrtextarea-description":
-          this.state.tr.DescriptionArea = data;
+          this.state.tr.Description = data;
           break;
         case "tronoxtrtextarea-summary":
-          this.state.tr.SummaryArea = data;
+          this.state.tr.Summary = data;
           break;
         case "tronoxtrtextarea-formulae":
           this.state.tr.FormulaeArea = data;
           break;
         default:
+          alert("Text aea missing in save");
 
       }
     }
@@ -215,13 +218,13 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       let instance = this.ckeditor.instances[instanceName];
       switch (instanceName) {
         case "tronoxtrtextarea-title":
-          instance.setData(tr.TitleArea);
+          instance.setData(tr.RequestTitle);
           break;
         case "tronoxtrtextarea-description":
-          instance.setData(tr.DescriptionArea);
+          instance.setData(tr.Description);
           break;
         case "tronoxtrtextarea-summary":
-          instance.setData(tr.SummaryArea);
+          instance.setData(tr.Summary);
           break;
         case "tronoxtrtextarea-formulae":
           instance.setData(tr.FormulaeArea);
@@ -344,10 +347,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     return (
       <div>
         <div className='ms-Icon ms-Icon--directions'></div>
-    <a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
-      {item[column.fieldName]}
-    </a>
-       </div>
+        <a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
+          {item[column.fieldName]}
+        </a>
+      </div>
     );
 
   }
@@ -383,10 +386,13 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         text: wt.workType
       };
     });
+    debugger;
     let applicationtypeDropDoownoptions =
       _.filter(this.props.applicationTypes, (at) => {
+        // show if its valid for the selected Worktype, OR if its already on the tr
+       return (at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1 
+       || at.id === this.props.tr.ApplicationTypeId)
 
-        return at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1;
       })
         .map((at) => {
           return {
@@ -396,7 +402,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         });
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
-        return (eu.applicationTypeId === this.props.tr.ApplicationTypeId);
+            // show if its valid for the selected ApplicationType, OR if its already on the tr
+        return (eu.applicationTypeId === this.props.tr.ApplicationTypeId
+        ||eu.id === this.props.tr.EndUseId  );
       })
         .map((eu) => {
           return {
@@ -461,7 +469,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                   {this.state.tr.ParentTR}
                 </Label>
 
-{/*<<<<<<< HEAD
+                {/*<<<<<<< HEAD
               <NormalPeoplePicker
                 defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
                 onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
@@ -562,10 +570,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
 
               <DatePicker
-                value={(this.state.tr.InitiationDate) ? moment(this.state.tr.InitiationDate).toDate() : null}
+                value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
                 onSelectDate={e => {
                   this.state.isDirty = true;
-                  this.state.tr.InitiationDate = moment(e).toISOString();
+                  this.state.tr.RequestDate = moment(e).toISOString();
                   this.setState(this.state);
                 }} />
             </td>
@@ -591,15 +599,15 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 options={[
                   { key: 'Pending', text: 'Pending' },
                   { key: 'In Progress', text: 'In Progress' },
-                  { key: 'Complete', text: 'Complete' },
+                  { key: 'Completed', text: 'Completed' },
                   { key: 'Canceled', text: 'Canceled' },
                 ]}
                 onChanged={e => {
                   this.state.isDirty = true;
-                  this.state.tr.Status = e.text;
+                  this.state.tr.TRStatus = e.text;
                   this.setState(this.state);
                 }}
-                selectedKey={this.state.tr.Status} />
+                selectedKey={this.state.tr.TRStatus} />
 
             </td>
 
@@ -611,10 +619,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
 
               <DatePicker
-                value={(this.state.tr.TRDueDate) ? moment(this.state.tr.InitiationDate).toDate() : null}
+                value={(this.state.tr.RequiredDate) ? moment(this.state.tr.RequiredDate).toDate() : null}
                 onSelectDate={e => {
                   this.state.isDirty = true;
-                  this.state.tr.TRDueDate = moment(e).toISOString();
+                  this.state.tr.RequiredDate = moment(e).toISOString();
                   this.setState(this.state);
                 }} />
             </td>
@@ -651,10 +659,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             <td>
 
               <TextField datatype="number"
-                value={(this.state.tr.EstimatedHours) ? this.state.tr.EstimatedHours.toString() : null}
+                value={(this.state.tr.EstManHours) ? this.state.tr.EstManHours.toString() : null}
                 onChanged={e => {
                   this.state.isDirty = true;
-                  this.state.tr.EstimatedHours = parseInt(e);
+                  this.state.tr.EstManHours = parseInt(e);
                   this.setState(this.state);
                 }} />
             </td>
@@ -710,22 +718,22 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           <tabs.TabPanel >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
-              {this.state.tr.TitleArea}
+              {this.state.tr.RequestTitle}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
             <textarea name="tronoxtrtextarea-description" id="tronoxtrtextarea-description" style={{ display: "none" }}>
-              {this.state.tr.DescriptionArea}
+              {this.state.tr.Description}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
             <textarea name="tronoxtrtextarea-summary" id="tronoxtrtextarea-summary" style={{ display: "none" }}>
-              {this.state.tr.SummaryArea}
+              {this.state.tr.Summary}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
             <textarea name="tronoxtrtextarea-testparams" id="tronoxtrtextarea-testparams" style={{ display: "none" }}>
-              {this.state.tr.TestParamsArea}
+              {this.state.tr.TestingParameters}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>

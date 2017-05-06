@@ -20,15 +20,15 @@
       "officeFabricIconFontName": "Page",
       "properties": {
         "mode": "Display",
-        "technicalRequestListName": "tblTechnicalRequests",
+        "technicalRequestListName": "tblRequest",
         "applicationTYpeListName": "tblApplicationType",
         "endUseListName": "tblEndUse",
         "workTypeListName": "tblRequestWorkType",
         "custonersListName": "tblParty",
         "pigmentListName": "tblPigment",
-        "propertyListName": "tblProperties", // properties are used to group tests
+        "propertyListName": "tblProperties",
         "testListName": "tblTest",
-        "propertyTestListName": "tblPropertyTest",
+        "propertyTestListName": "tblPropertyTest"
       }
     }
   ]
