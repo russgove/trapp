@@ -123,7 +123,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-    pnp.sp.web.lists.getByTitle("End Uses").items.inBatch(batch).get()
+    pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
           return new EndUse(item["Id"], item["Title"], item["ApplicationTypeId"]);
@@ -134,7 +134,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-    pnp.sp.web.lists.getByTitle("Work Types").items.inBatch(batch).get()
+    pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.workTypes = _.map(items, (item) => {
           return new WorkType(item["Id"], item["Title"]);
@@ -146,7 +146,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-    pnp.sp.web.lists.getByTitle("Application Types").items.inBatch(batch).get()
+    pnp.sp.web.lists.getByTitle(this.properties.applicationTYpeListName).items.inBatch(batch).get()
       .then((items) => {
 
         formProps.applicationTypes = _.map(items, (item) => {
@@ -166,7 +166,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         const id: number = parseInt(queryParameters.getValue("Id"));
         let fields = "*,ParentTR/Title,Requestor/Title";
         // get the requested tr
-        pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+        pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
 
           .then((item) => {
             formProps.tr = new TR();
@@ -181,7 +181,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           });
         // get the Child trs
         
-        pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+        pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             for (const item of items) {

@@ -9,17 +9,26 @@
     {
       "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
       "group": {
-        "default": "Under Development"
+        "default": "Techniacal Requests"
       },
       "title": {
-        "default": "TR-Form"
+        "default": "Technical Request Forms"
       },
       "description": {
-        "default": "Appused for mintaning TRs"
+        "default": "App used in new, edit and Display forms for Technical Requests"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "mode": "Display"
+        "mode": "Display",
+        "technicalRequestListName": "tblTechnicalRequests",
+        "applicationTYpeListName": "tblApplicationType",
+        "endUseListName": "tblEndUse",
+        "workTypeListName": "tblRequestWorkType",
+        "custonersListName": "tblParty",
+        "pigmentListName": "tblPigment",
+        "propertyListName": "tblProperties", // properties are used to group tests
+        "testListName": "tblTest",
+        "propertyTestListName": "tblPropertyTest",
       }
     }
   ]

@@ -307,7 +307,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     } else return (
       <span style={{ margin: 20 }}>
         <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
-          Save
+          <i className="ms-Icon ms-Icon--Save"></i>Save
         </a>
       </span>
     );
@@ -366,7 +366,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   //make the child tr the currently selected tr
   public selectChildTR(trId:number): any {
-    const childTr=_.find(this.props.childTRs,(tr)=>{return tr.Id=trId;});
+    const childTr=_.find(this.props.childTRs,(tr)=>{return tr.Id===trId;});
     
     if (childTr){
       console.log("switching to tr "+trId);
@@ -379,9 +379,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     debugger;
-    return (<a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
+    return (
+      <div>
+        <div className='ms-Icon ms-Icon--directions'></div>
+    <a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
       {item[column.fieldName]}
-    </a>);
+    </a>
+       </div>
+    );
   }
   public renderDate(item?: any, index?: number, column?: IColumn): any {
 
@@ -486,6 +491,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                   this.setState(this.state);
                 }}
               />
+              <i className="ms-Icon ms-Icon--View"></i>
             </td>
             <td>
               <Label >Application Type</Label>
@@ -771,6 +777,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               items={this.props.childTRs}
               setKey="id"
               columns={[
+               { key: "Id",  name: "Id", fieldName: "Id", minWidth: 80, },
                 { key: "Title", onRender: this.rendeChildTRAsLink, name: "Request #", fieldName: "Title", minWidth: 80, },
                 { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
                 { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
