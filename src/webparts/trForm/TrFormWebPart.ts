@@ -8,7 +8,7 @@ import {
   IPropertyPaneConfiguration, PropertyPaneDropdown
 } from '@microsoft/sp-webpart-base';
 
-import { TR, WorkType, ApplicationType, EndUse, modes, User } from "./dataModel";
+import { TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
@@ -42,7 +42,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.ApplicationTypeId = item.ApplicationTypeId;
     tr.ActualStartDate = item.ActualStartDate;
     tr.CER = item.CER;
-    tr.Customer = item.Customer;
+    tr.CustomerId = item.CustomerId;
+
     tr.RequiredDate = item.RequiredDate;
     tr.EstManHours = item.EstimatedHours;
     tr.RequestDate = item.RequestDate;
@@ -100,7 +101,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         return true;
       }
       else {
-        console.log ('document.getElementById("MSOLayout_InDesignMode") is null')
+        console.log('document.getElementById("MSOLayout_InDesignMode") is null')
         return false;
       }
     }
@@ -113,11 +114,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
-      if (document.getElementById("s4-ribbonrow")) {
-        document.getElementById("s4-ribbonrow").style.display = "none";
-     }
+    if (document.getElementById("s4-ribbonrow")) {
+      document.getElementById("s4-ribbonrow").style.display = "none";
+    }
 
     let formProps: ITrFormProps = {
+      customers: [],
       subTRs: [],
       techSpecs: [],
       requestors: [],
@@ -178,7 +180,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching 'End uses' from list named "+this.properties.endUseListName);
+        console.log("ERROR, An error occured fetching 'End uses' from list named " + this.properties.endUseListName);
         console.log(error.message);
 
       });
@@ -190,7 +192,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Work Types' from list named "+this.properties.workTypeListName);
+        console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
         console.log(error.message);
 
       });
@@ -203,7 +205,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       })
       .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Application Types' from list named "+this.properties.applicationTYpeListName);
+        console.log("ERROR, An error occured fetching 'Application Types' from list named " + this.properties.applicationTYpeListName);
         console.log(error.message);
 
       });
@@ -212,24 +214,27 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
-        let fields = "*,ParentTR/Title,Requestor/Title";
-        let expands="ParentTR,Requestor";
+        let fields = "*,ParentTR/Title,Requestor/Title,Customer/Title";
+        let expands = "ParentTR,Requestor,Customer";
         // get the requested tr
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand(expands).select(fields).inBatch(batch).get()
 
           .then((item) => {
             formProps.tr = new TR();
             this.moveFieldsToTR(formProps.tr, item);
+            if (item.Customer) {
+              formProps.customers.push(new Customer(item.CustomerId, item.Customer.Title));
+            }
 
 
           })
           .catch((error) => {
-            console.log("ERROR, An error occured fetching the listitem  from list named "+this.properties.technicalRequestListName);;
+            console.log("ERROR, An error occured fetching the listitem  from list named " + this.properties.technicalRequestListName);;
             console.log(error.message);
 
           });
         // get the Child trs
-    
+
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
 
           .then((items) => {
@@ -241,7 +246,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
           })
           .catch((error) => {
-            console.log("ERROR, An error occured fetching child trs  from list named "+this.properties.technicalRequestListName);
+            console.log("ERROR, An error occured fetching child trs  from list named " + this.properties.technicalRequestListName);
             console.log(error.message);
 
           });
@@ -253,9 +258,24 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
     batch.execute().then((value) => {
-
       this.reactElement = React.createElement(TrForm, formProps);
-      ReactDom.render(this.reactElement, this.domElement);
+      var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;
+      let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
+      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.inBatch(batch2).get()
+        .then((items) => {
+          formProps.customers = _.map(items, (item) => {
+            return new Customer(item["Id"], item["Title"]);
+          });
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Customers'");
+          console.log(error.message);
+        });
+      batch2.execute().then(() => {
+        //  formComponent.props = formProps; this did not work
+        formComponent.props.customers = formProps.customers;
+        formComponent.forceUpdate();
+      });
     }
     );
 
@@ -314,7 +334,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         let tr: TR = new TR();
         tr.Id = temp.ListItemID;
         tr.Title = temp.Title;
-        tr.Customer = temp.CustomerOWSTEXT;
+        tr.CustomerId = temp.CustomerOWSTEXT;
         tr.Site = temp.SiteOWSTEXT;
         tr.CER = temp.CEROWSTEXT;
         returnValue.push(tr);

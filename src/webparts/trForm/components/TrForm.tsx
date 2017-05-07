@@ -70,8 +70,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       this.ckeditor.replace("tronoxtrtextarea-title"); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
 
     });
-
-
+   
   }
   public tabChanged(newTabID, oldTabID) {
 
@@ -234,8 +233,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       }
     }
   }
-
-
+  public componentWillReceiveProps(nextProps) {
+    debugger;
+  }
 
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
     _.remove(messageList, {
@@ -380,6 +380,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
   }
   public render(): React.ReactElement<ITrFormProps> {
+
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
       return {
         key: wt.id,
@@ -390,8 +391,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     let applicationtypeDropDoownoptions =
       _.filter(this.props.applicationTypes, (at) => {
         // show if its valid for the selected Worktype, OR if its already on the tr
-       return (at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1 
-       || at.id === this.props.tr.ApplicationTypeId)
+        return (at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1
+          || at.id === this.props.tr.ApplicationTypeId)
 
       })
         .map((at) => {
@@ -402,9 +403,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         });
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
-            // show if its valid for the selected ApplicationType, OR if its already on the tr
+        // show if its valid for the selected ApplicationType, OR if its already on the tr
         return (eu.applicationTypeId === this.props.tr.ApplicationTypeId
-        ||eu.id === this.props.tr.EndUseId  );
+          || eu.id === this.props.tr.EndUseId);
       })
         .map((eu) => {
           return {
@@ -553,12 +554,16 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               <Label>Customer</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Customer}
+              <Dropdown
+                label=""
+                options={this.props.customers.map((r) => { return { key: r.id, text: r.title }; })}
                 onChanged={e => {
                   this.state.isDirty = true;
-                  this.state.tr.Customer = e;
+                  this.state.tr.CustomerId = e.key as number;
                   this.setState(this.state);
-                }} />
+                }}
+                selectedKey={this.state.tr.CustomerId}
+              />
 
             </td>
 

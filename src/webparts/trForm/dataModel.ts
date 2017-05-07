@@ -31,7 +31,7 @@ export class TR {
         this.Site = null;
 
         this.TRPriority = null;
-        this.Customer = null;
+        this.CustomerId = null;
         this.TRStatus = null;
         this.ApplicationTypeId = null;
         this.EndUseId = null;
@@ -58,7 +58,7 @@ export class TR {
     public EstManHours: number;//Edtimated hours
     public Site: string;
     public TRPriority: string;//TRPriority
-    public Customer: string;
+    public CustomerId:number;
     public TRStatus: string;
     public ApplicationTypeId: number;
     public EndUseId: number;
@@ -76,6 +76,14 @@ export class WorkType {
     public constructor(
         public id: string,
         public workType: string) { }
+
+}
+export class Customer {
+    public constructor(
+        public id: number,
+        public title: string,
+
+    ) { }
 
 }
 export class User {

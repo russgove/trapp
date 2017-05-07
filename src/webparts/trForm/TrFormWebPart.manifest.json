@@ -28,7 +28,8 @@
         "pigmentListName": "tblPigment",
         "propertyListName": "tblProperties",
         "testListName": "tblTest",
-        "propertyTestListName": "tblPropertyTest"
+        "propertyTestListName": "tblPropertyTest",
+        "partyListName":"tblParty"
       }
     }
   ]
