@@ -70,7 +70,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       this.ckeditor.replace("tronoxtrtextarea-title"); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
 
     });
-   
+
   }
   public tabChanged(newTabID, oldTabID) {
 
@@ -183,11 +183,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         case "tronoxtrtextarea-summary":
           this.state.tr.Summary = data;
           break;
+        case "tronoxtrtextarea-testparams":
+          this.state.tr.TestingParameters = data;
+          break;
         case "tronoxtrtextarea-formulae":
-          this.state.tr.FormulaeArea = data;
+          this.state.tr.Formulae = data;
           break;
         default:
-          alert("Text aea missing in save");
+          alert("Text area missing in save");
 
       }
     }
@@ -226,7 +229,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           instance.setData(tr.Summary);
           break;
         case "tronoxtrtextarea-formulae":
-          instance.setData(tr.FormulaeArea);
+          instance.setData(tr.Formulae);
           break;
         default:
 
@@ -269,42 +272,162 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     );
 
   }
-  public getTechSpecs() {
+  public getTests() {
+    var tests = _.map(this.props.tests, (test) => {
+      return {
+        title: test.title,
 
-    var x = _.map(this.props.techSpecs, (techSpec) => {
+        selected: ((this.state.tr.TestsId) ? this.state.tr.TestsId.indexOf(test.id) != -1 : null),
+        id: test.id
+      };
+    });
+    return _.orderBy(tests, ["selected", "title"], ["desc", "asc"]);
+  }
+
+  public getPigments() {
+    var techSpecs = _.map(this.props.pigments, (pigment) => {
+      return {
+        title: pigment.title,
+        type: pigment.type,
+        manufacturer: pigment.manufacturer,
+        selected: ((this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.indexOf(pigment.id) != -1 : null),
+        id: pigment.id
+      };
+    });
+    return _.orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
+  }
+
+  public getTechSpecs() {
+    var techSpecs = _.map(this.props.techSpecs, (techSpec) => {
       return {
         title: techSpec.title,
-        selected: ((this.state.tr.TechSpecId) ? this.state.tr.TechSpecId.indexOf(techSpec.id) != -1 : null),
+        selected: ((this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.indexOf(techSpec.id) != -1 : null),
         id: techSpec.id
       };
     });
-    return _.sortBy(x, "selected").reverse();
-
+    return _.orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
   }
+  public getStaffCC() {
+    var staffCC = _.map(this.props.techSpecs, (techSpec) => {
+      return {
+        title: techSpec.title,
+        selected: ((this.state.tr.StaffCCId) ? this.state.tr.StaffCCId.indexOf(techSpec.id) != -1 : null),
+        id: techSpec.id
+      };
+    });
+    return _.orderBy(staffCC, ["selected", "title"], ["desc", "asc"]);
+  }
+
   public toggleTechSpec(isSelected: boolean, id: number) {
 
     this.state.isDirty = true;
     if (isSelected) {
-      if (this.state.tr.TechSpecId) {
-        this.state.tr.TechSpecId.push(id);//addit
+      if (this.state.tr.TRAssignedToId) {
+        this.state.tr.TRAssignedToId.push(id);//addit
       }
       else {
-        this.state.tr.TechSpecId = [id];
+        this.state.tr.TRAssignedToId = [id];
       }
     }
     else {
-      this.state.tr.TechSpecId = _.filter(this.state.tr.TechSpecId, (x) => { return x != id; });//remove it
+      this.state.tr.TRAssignedToId = _.filter(this.state.tr.TRAssignedToId, (x) => { return x != id; });//remove it
     }
     this.setState(this.state);
   }
-  public renderToggle(item?: any, index?: number, column?: IColumn): any {
+  public renderTechSpecToggle(item?: any, index?: number, column?: IColumn): any {
 
     return (
       <Toggle
         checked={item.selected}
-        onText="On Team"
+        onText="Selected"
         offText=""
         onChanged={e => { this.toggleTechSpec(e, item.id); }}
+      />
+
+    );
+  }
+  public toggleTest(isSelected: boolean, id: number) {
+    debugger;
+    this.state.isDirty = true;
+    if (isSelected) {
+      if (this.state.tr.TestsId) {
+        this.state.tr.TestsId.push(id);//addit
+      }
+      else {
+        this.state.tr.TestsId = [id];
+      }
+    }
+    else {
+      this.state.tr.TestsId = _.filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
+    }
+    this.setState(this.state);
+  }
+  public renderTestToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={item.selected}
+        onText="Selected"
+        offText=""
+        onChanged={e => { this.toggleTest(e, item.id); }}
+      />
+
+    );
+  }
+
+  public togglePigment(isSelected: boolean, id: number) {
+    debugger;
+    this.state.isDirty = true;
+    if (isSelected) {
+      if (this.state.tr.PigmentsId) {
+        this.state.tr.PigmentsId.push(id);//addit
+      }
+      else {
+        this.state.tr.PigmentsId = [id];
+      }
+    }
+    else {
+      this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
+    }
+    this.setState(this.state);
+  }
+  public renderPigmentToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={item.selected}
+        onText="Selected"
+        offText=""
+        onChanged={e => { this.togglePigment(e, item.id); }}
+      />
+
+    );
+  }
+
+  public toggleStaffCC(isSelected: boolean, id: number) {
+    debugger;
+    this.state.isDirty = true;
+    if (isSelected) {
+      if (this.state.tr.StaffCCId) {
+        this.state.tr.StaffCCId.push(id);//addit
+      }
+      else {
+        this.state.tr.StaffCCId = [id];
+      }
+    }
+    else {
+      this.state.tr.StaffCCId = _.filter(this.state.tr.StaffCCId, (x) => { return x != id; });//remove it
+    }
+    this.setState(this.state);
+  }
+  public renderStaffCCToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={item.selected}
+        onText="Selected"
+        offText=""
+        onChanged={e => { this.toggleStaffCC(e, item.id); }}
       />
 
     );
@@ -702,16 +825,16 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               Test Params
              </tabs.Tab>
             <tabs.Tab>
-              Tech Spec({(this.state.tr.TechSpecId) ? this.state.tr.TechSpecId.length : 0})
+              Assigned To({(this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              staff cc
+              Staff cc({(this.state.tr.StaffCCId) ? this.state.tr.StaffCCId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              pigments
+              Pigments({(this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              Tests
+              Tests({(this.state.tr.TestsId) ? this.state.tr.TestsId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
               Formulae
@@ -748,23 +871,52 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               items={this.getTechSpecs()}
               setKey="id"
               columns={[
-                { key: "title", name: "Tecnical Specialis Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "selected", name: "On Team?", fieldName: "selected", minWidth: 200, onRender: this.renderToggle.bind(this) }
+                { key: "title", name: "Technical Specialist", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                { key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: this.renderTechSpecToggle.bind(this) }
               ]}
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>staff cc? just sen emails. or set notifications></h2>
+            <DetailsList
+              layoutMode={DetailsListLayoutMode.fixedColumns}
+              selectionMode={SelectionMode.none}
+              items={this.getStaffCC()}
+              setKey="id"
+              columns={[
+                { key: "title", name: "Staff", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                { key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 200, onRender: this.renderStaffCCToggle.bind(this) }
+              ]}
+            />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>pigments incolve</h2>
+            <DetailsList
+              layoutMode={DetailsListLayoutMode.fixedColumns}
+              selectionMode={SelectionMode.none}
+              items={this.getPigments()}
+              setKey="id"
+              columns={[
+                { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                { key: "type", name: "Pigment Type", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                { key: "manufacturer", name: "Manufacturer", fieldName: "manufacturer", minWidth: 20, maxWidth: 200 },
+                { key: "selected", name: "selected?", fieldName: "selected", minWidth: 200, onRender: this.renderPigmentToggle.bind(this) }
+              ]}
+            />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <h2>these are teh tests</h2>
+            <DetailsList
+              layoutMode={DetailsListLayoutMode.fixedColumns}
+              selectionMode={SelectionMode.none}
+              items={this.getTests()}
+              setKey="id"
+              columns={[
+                { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                { key: "selected", name: "selected?", fieldName: "selected", minWidth: 200, onRender: this.renderTestToggle.bind(this) }
+              ]}
+            />
           </tabs.TabPanel>
           <tabs.TabPanel>
             <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" style={{ display: "none" }}>
-              {this.state.tr.FormulaeArea}
+              {this.state.tr.Formulae}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>

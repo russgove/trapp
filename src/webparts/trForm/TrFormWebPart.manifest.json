@@ -30,6 +30,7 @@
         "testListName": "tblTest",
         "propertyTestListName": "tblPropertyTest",
         "partyListName":"tblParty"
+        
       }
     }
   ]

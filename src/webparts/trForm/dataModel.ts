@@ -39,9 +39,12 @@ export class TR {
         this.Description = null;
         this.Summary = null;
         this.TestingParameters = null;
-        this.FormulaeArea = null;
+        this.Formulae = null;
         this.WorkTypeId = null;
-        this.TechSpecId = null;
+        this.TRAssignedToId = null;
+        this.StaffCCId=null;
+        this.PigmentsId=null;
+        this.TestsId=null;
 
     }
     public Id: number;
@@ -65,17 +68,47 @@ export class TR {
     public RequestTitle: string;//TitleArea
     public Description: string;//DescriptionArea
     public Summary: string;//SummaryArea
-    public FormulaeArea: string;
+    public Formulae: string;
     public TestingParameters: string;//TestParamsArea
     public WorkTypeId: number;
-    public TechSpecId: Array<number>;
+    public TRAssignedToId: Array<number>;
+    public StaffCCId:Array<number>;
+    public PigmentsId:Array<number>;
+    public TestsId:Array<number>;
+    
 
+
+}
+export class Pigment {
+    public manufacturer:string;
+    public constructor(
+        public id: number,
+        public title: string,
+        public type: string,
+        
+        
+        ) { this. manufacturer=null}
 
 }
 export class WorkType {
     public constructor(
         public id: string,
         public workType: string) { }
+
+}
+export class Test {
+    public constructor(
+        public id: number,
+        public title: string) { }
+
+}
+export class PropertyTest {
+    public constructor(
+        public id: string,
+        public applicationTypeid:number,
+        public endUseIds:Array<number>,
+        public property:string,
+        public testId: number) { }
 
 }
 export class Customer {
@@ -90,8 +123,7 @@ export class User {
     public constructor(
         public id: number,
         public title: string,
-        public position: string,
-        public department: string,
+
     ) { }
 
 }

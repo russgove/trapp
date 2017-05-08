@@ -1,4 +1,4 @@
-import { Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
+import { Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
 import {
   IPersonaProps
 } from 'office-ui-fabric-react';
@@ -16,6 +16,9 @@ export interface ITrFormProps {
   subTRs: Array<TR>; // child trs (trs nested under the main tr)
   fetchChildTr: (id: number) => Promise<Array<TR>>; // methid to call to cget child TRs if a user swicthes to a new TR
   fetchTR: (id: number) => Promise<TR>; // methid to call to cget child TRs if a user swicthes to a new TR
-  customers: Array<Customer>
+  customers: Array<Customer>;
+  pigments: Array<Pigment>;
+  tests: Array<Test>;
+  propertyTests: Array<PropertyTest>;
 
 }

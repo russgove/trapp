@@ -8,7 +8,7 @@ import {
   IPropertyPaneConfiguration, PropertyPaneDropdown
 } from '@microsoft/sp-webpart-base';
 
-import { TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import { Test,PropertyTest,Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
@@ -58,14 +58,18 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.WorkTypeId = item.WorkTypeId;
     tr.Title = item.Title;
     tr.RequestTitle = item.RequestTitle;
-    tr.FormulaeArea = item.FormulaeArea;
+    tr.Formulae = item.Formulae;
     tr.Description = item.Description;
     tr.Summary = item.Summary;
+    tr.TestingParameters = item.TestingParameters;
     tr.ParentTRId = item.ParentTRId;
     if (item.ParentTR) {
       tr.ParentTR = item.ParentTR.Title;
     }
-    tr.TechSpecId = item.TechSpecId;
+    tr.TRAssignedToId = item.TRAssignedToId;
+    tr.StaffCCId = item.StaffCCId;
+        tr.PigmentsId = item.PigmentsId;
+        tr.TestsId = item.TestsId;
   }
   public fetchTR(id: number): Promise<TR> {
     let fields = "*,ParentTR/Title,Requestor/Title";
@@ -133,6 +137,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       save: this.save.bind(this),
       fetchChildTr: this.fetchChildTR.bind(this),
       fetchTR: this.fetchTR.bind(this),
+      pigments: [],
+      tests:[],
+      propertyTests:[]
     };
     let batch = pnp.sp.createBatch();
     this.context.pageContext.web.title
@@ -150,10 +157,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     //   });
 
     const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
-    pnp.sp.web.siteGroups.getByName(techspecGroupName).users.inBatch(batch).get()
+    pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch).get()
       .then((items) => {
         formProps.techSpecs = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"], item["Title"], item["Title"])
+          return new User(item["Id"], item["Title"])
         });
       })
       .catch((error) => {
@@ -162,10 +169,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
       });
     const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
-    pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.inBatch(batch).get()
+    pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch).get()
       .then((items) => {
         formProps.requestors = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"], item["Title"], item["Title"]);
+          return new User(item["Id"], item["Title"]);
         });
       })
       .catch((error) => {
@@ -261,26 +268,65 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
-      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.inBatch(batch2).get()// get the lookup info
+          let customerFields = "Id,Title";
+      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("PartyTypeCode eq 'CUST'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
           formProps.customers = _.map(items, (item) => {
             return new Customer(item["Id"], item["Title"]);
           });
         })
         .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Customers'");
+          console.log("ERROR, An error occured fetching 'Customers' from list "+this.properties.partyListName);
+          console.log(error.message);
+        });
+
+      let pigmentFields = "Id,Title,KMPigmentType,Manufacturer/Title";
+      let pigmentExpands = "Manufacturer";
+      pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
+        .then((items) => {
+          formProps.pigments = _.map(items, (item) => {
+            let p: Pigment = new Pigment(item["Id"], item["Title"], item["KMPigmentType"]);
+            if (item["Manufacturer"]){
+              p.manufacturer=item["Manufacturer"]["Title"];
+            }
+            return p;
+          });
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Pigments' from list "+this.properties.pigmentListName);
+          console.log(error.message);
+        });
+        let testFields = "Id,Title";
+      pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).top(5000).inBatch(batch2).get()// get the lookup info
+        .then((items) => {
+          formProps.tests = _.map(items, (item) => {
+            let t: Test = new Test(item["Id"], item["Title"]);
+        
+            return t;
+          });
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Pigments' from list "+this.properties.pigmentListName);
           console.log(error.message);
         });
       batch2.execute().then(() => {
         //  formComponent.props = formProps; this did not work
+        // this.delay(5000).then(() => {
         formComponent.props.customers = formProps.customers;
+        formComponent.props.pigments = formProps.pigments;
+        formComponent.props.tests = formProps.tests;
         formComponent.forceUpdate();
+        // });
+
+
       });
     }
     );
 
   }
-
+  protected delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
   protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
@@ -362,23 +408,42 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let copy = _.clone(tr) as any;
     delete copy.RequestorName;
     delete copy.ParentTR;
-    let technicalSpecialists = (copy.TechSpecId) ? copy.TechSpecId : [];
+
+    // reformat multivalue lookups for save
+    let technicalSpecialists = (copy.TRAssignedToId) ? copy.TRAssignedToId : [];
     delete copy.TechSpecId;
-    copy["TechSpecId"] = {};
-    copy["TechSpecId"]["results"] = technicalSpecialists;
+    copy["TRAssignedToId"] = {};
+    copy["TRAssignedToId"]["results"] = technicalSpecialists;
+
+
+let StaffCCId= (copy.StaffCCId) ? copy.StaffCCId : [];
+    delete copy.StaffCCId;
+    copy["StaffCCId"] = {};
+    copy["StaffCCId"]["results"] = StaffCCId;
+
+    let PigmentsId= (copy.PigmentsId) ? copy.PigmentsId : [];
+    delete copy.PigmentsId;
+    copy["PigmentsId"] = {};
+    copy["PigmentsId"]["results"] = PigmentsId;
+
+
+    let TestsId= (copy.TestsId) ? copy.TestsId : [];
+    delete copy.TestsId;
+    copy["TestsId"] = {};
+    copy["TestsId"]["results"] = TestsId;
 
 
 
 
     if (copy.Id !== null) {
-      return pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(tr.Id).update(copy).then((x) => {
+      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((x) => {
 
         this.navigateToSource();
       });
     }
     else {
       delete copy.Id;
-      return pnp.sp.web.lists.getByTitle("Technical Requests").items.add(copy).then((x) => {
+      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((x) => {
 
         this.navigateToSource();
 
