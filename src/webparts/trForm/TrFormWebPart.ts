@@ -257,11 +257,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
 
 
-    batch.execute().then((value) => {
+    batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
       this.reactElement = React.createElement(TrForm, formProps);
-      var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;
+      var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
-      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.inBatch(batch2).get()
+      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.inBatch(batch2).get()// get the lookup info
         .then((items) => {
           formProps.customers = _.map(items, (item) => {
             return new Customer(item["Id"], item["Title"]);
