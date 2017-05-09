@@ -79,6 +79,7 @@ export class TR {
 
 
 }
+
 export class Pigment {
     public manufacturer:string;
     public constructor(
@@ -103,12 +104,15 @@ export class Test {
 
 }
 export class PropertyTest {
+        public property:string;
     public constructor(
-        public id: string,
+        public id: number,
         public applicationTypeid:number,
         public endUseIds:Array<number>,
-        public property:string,
-        public testId: number) { }
+   
+        public testIds: Array<number>) {
+                 this.property="";
+         }
 
 }
 export class Customer {

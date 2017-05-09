@@ -309,6 +309,31 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
           console.log(error.message);
         });
+      let propertyTestFields = "*,Property/Title";
+      let propertyTestExpands = "Property";
+      pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
+        .then((items) => {
+          debugger;
+          formProps.propertyTests = _.map(items, (item) => {
+            let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>)
+            if (item["Property"]) {
+              pt.property = item["Property"]["Title"];
+            }
+            return pt;
+          });
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
+          console.log(error.message);
+        });
+
+
+
+
+
+
+
+
       batch2.execute().then(() => {
         //  formComponent.props = formProps; this did not work
         // this.delay(5000).then(() => {
