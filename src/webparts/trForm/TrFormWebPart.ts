@@ -340,6 +340,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formComponent.props.customers = formProps.customers;
         formComponent.props.pigments = formProps.pigments;
         formComponent.props.tests = formProps.tests;
+        formComponent.props.propertyTests=formProps.propertyTests;
         formComponent.forceUpdate();
         // });
 

@@ -42,9 +42,9 @@ export class TR {
         this.Formulae = null;
         this.WorkTypeId = null;
         this.TRAssignedToId = null;
-        this.StaffCCId=null;
-        this.PigmentsId=null;
-        this.TestsId=null;
+        this.StaffCCId = null;
+        this.PigmentsId = null;
+        this.TestsId = null;
 
     }
     public Id: number;
@@ -61,7 +61,7 @@ export class TR {
     public EstManHours: number;//Edtimated hours
     public Site: string;
     public TRPriority: string;//TRPriority
-    public CustomerId:number;
+    public CustomerId: number;
     public TRStatus: string;
     public ApplicationTypeId: number;
     public EndUseId: number;
@@ -72,23 +72,27 @@ export class TR {
     public TestingParameters: string;//TestParamsArea
     public WorkTypeId: number;
     public TRAssignedToId: Array<number>;
-    public StaffCCId:Array<number>;
-    public PigmentsId:Array<number>;
-    public TestsId:Array<number>;
-    
+    public StaffCCId: Array<number>;
+    public PigmentsId: Array<number>;
+    public TestsId: Array<number>;
+
 
 
 }
-
+export class DisplayPropertyTest{ // just used in the display to show tests grouped by property
+    public property:string;
+    public test:string;
+    public testid:number;
+}
 export class Pigment {
-    public manufacturer:string;
+    public manufacturer: string;
     public constructor(
         public id: number,
         public title: string,
         public type: string,
-        
-        
-        ) { this. manufacturer=null}
+
+
+    ) { this.manufacturer = null }
 
 }
 export class WorkType {
@@ -104,15 +108,14 @@ export class Test {
 
 }
 export class PropertyTest {
-        public property:string;
+    public property: string;
     public constructor(
         public id: number,
-        public applicationTypeid:number,
-        public endUseIds:Array<number>,
-   
+        public applicationTypeid: number,
+        public endUseIds: Array<number>,
         public testIds: Array<number>) {
-                 this.property="";
-         }
+        this.property = "";
+    }
 
 }
 export class Customer {

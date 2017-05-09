@@ -4,7 +4,7 @@ import * as React from 'react';
 import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-import { TR, modes, Pigment } from "../dataModel";
+import { TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
@@ -286,6 +286,9 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   public trContainsPigment(tr: TR, PigmentId: number): boolean {
     return (tr.PigmentsId.indexOf(PigmentId) != -1);
   }
+  public trContainsTest(tr: TR, TestId: number): boolean {
+    return (tr.TestsId.indexOf(TestId) != -1);
+  }
   /**
    * return Pigments on the tr
    */
@@ -304,11 +307,74 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     return _.orderBy(selectedPigments, ["title"], ["asc"]);
   }
 
-/**
- * return pigments Not on the Tr
- */
+
+  /**
+   * return tests available from the PropetyTest table and not on the tr
+   */
+  public getAvailableTests(): Array<DisplayPropertyTest> {
+    // select the propertyTest available based on the applicationType and EndUse of the tr
+    var temppropertyTest: Array<PropertyTest> = _.filter(this.props.propertyTests, (pt: PropertyTest) => {
+      return (pt.applicationTypeid === this.state.tr.ApplicationTypeId
+        && pt.endUseIds.indexOf(this.state.tr.EndUseId) != -1
+      )
+    });
+    // get all the the tests in those propertyTests and output them as DisplayPropertyTest
+    var tempDisplayTests: Array<DisplayPropertyTest> = [];
+    for (const pt of temppropertyTest) {
+      for (const testid of pt.testIds) {
+        const test: Test = _.find(this.props.tests, (t) => { return t.id === testid });
+        tempDisplayTests.push({
+          property: pt.property,
+          testid: testid,
+          test: test.title
+        });
+      }
+    }
+    // now remove those that are already on the tr
+    const displayTests = _.filter(tempDisplayTests, (dt) => { return !this.trContainsTest(this.state.tr, dt.testid); });
+    return _.orderBy(displayTests, ["type"], ["asc"]);
+
+
+  }
+  public getAvailableTestGroups(): Array<IGroup> {
+    var displayPropertyTests: Array<DisplayPropertyTest> = this.getAvailableTests(); // all the avalable tests with their Property
+    var properties = _.countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => { return dpt.property });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
+    var groups: Array<IGroup> = [];
+    for (const property in properties) {
+      groups.push({
+        name: property,
+        key: property,
+        startIndex: _.findIndex(displayPropertyTests, (dpt) => { return dpt.property === property; }),
+        count: properties[property],
+        isCollapsed: true
+      })
+    }
+    return groups;
+  }
+  /**
+   * return Tests on the tr
+   */
+  public getSelectedTests(): Array<Test> {
+    var tempTests = _.filter(this.props.tests, (test: Test) => {
+      return this.trContainsTest(this.state.tr, test.id);
+    });
+    var selectedTests = _.map(tempTests, (test) => {
+      return {
+        title: test.title,
+        id: test.id
+      };
+    });
+    return _.orderBy(selectedTests, ["title"], ["asc"]);
+  }
+
+
+
+
+  /**
+   * return pigments Not on the Tr
+   */
   public getAvailablePigments(): Array<Pigment> {
-        var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
+    var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
       return !this.trContainsPigment(this.state.tr, pigment.id);
     });
     var pigments = _.map(tempPigments, (pigment) => {
@@ -472,7 +538,61 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     );
   }
+/******** TEST Toggles */
+  public toggleAvailableTests(isSelected: boolean, id: number) {
+    debugger;
+    this.state.isDirty = true;
+    if (isSelected) {
+      if (this.state.tr.TestsId) {
+        this.state.tr.TestsId.push(id);//addit
+      }
+      else {
+        this.state.tr.TestsId = [id];
+      }
+    }
 
+    this.setState(this.state);
+  }
+  public renderAvailableTestsToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={false}
+        onText=""
+        offText=""
+        onChanged={e => { this.toggleAvailableTests(e, item.testid); }}
+      />
+    );
+  }
+
+
+  public toggleSelectedTests(isSelected: boolean, id: number) {
+    debugger;
+    this.state.isDirty = true;
+    if (!isSelected) { // should be only option
+      if (this.state.tr.TestsId) {
+        this.state.tr.TestsId = _.filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
+      }
+    }
+    this.setState(this.state);
+  }
+  public renderSelectedTestsToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={true}
+        onText=""
+        offText=""
+        onChanged={e => { this.toggleSelectedTests(e, item.id); }}
+      />
+
+    );
+  }
+
+
+  
+
+/*********************** */
 
   public toggleAvailablePigmentts(isSelected: boolean, id: number) {
     debugger;
@@ -1008,9 +1128,38 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
                   { key: "type", name: "Type", fieldName: "type", minWidth: 20, maxWidth: 100 },
                   { key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: this.renderSelectedPigmentsToggle.bind(this) }
-
                 ]}
+              />
+            </div>
+            <div style={{ clear: "both" }}></div>
+          </tabs.TabPanel>
+          <tabs.TabPanel>
+            <div style={{ float: "left" }}>
+              <Label> Available Tests</Label>
+              <DetailsList
+                layoutMode={DetailsListLayoutMode.fixedColumns}
+                selectionMode={SelectionMode.none}
+                groups={this.getAvailableTestGroups()}
+                items={this.getAvailableTests()}
+                setKey="id"
+                columns={[
+                  { key: "title", name: "test", fieldName: "test", minWidth: 20, maxWidth: 100 },
+                  { key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: this.renderAvailableTestsToggle.bind(this) }
+                ]}
+              />
 
+            </div>
+            <div style={{ float: "right" }}>
+              <Label> Selected Tests</Label>
+              <DetailsList
+                layoutMode={DetailsListLayoutMode.fixedColumns}
+                selectionMode={SelectionMode.none}
+                items={this.getSelectedTests()}
+                setKey="id"
+                columns={[
+                  { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                  { key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: this.renderSelectedTestsToggle.bind(this) }
+                ]}
               />
 
             </div>
@@ -1018,18 +1167,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
 
 
-          </tabs.TabPanel>
-          <tabs.TabPanel>
-            <DetailsList
-              layoutMode={DetailsListLayoutMode.fixedColumns}
-              selectionMode={SelectionMode.none}
-              items={this.getTests()}
-              setKey="id"
-              columns={[
-                { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: this.renderTestToggle.bind(this) }
-              ]}
-            />
           </tabs.TabPanel>
           <tabs.TabPanel>
             <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" style={{ display: "none" }}>
@@ -1044,17 +1181,13 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               setKey="id"
               selectionMode={SelectionMode.none}
               columns={[
-
                 { key: "Edit", onRender: this.rendeChildTRAsLink, name: "", fieldName: "Title", minWidth: 20, },
-
                 { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
-
                 { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
                 { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
                 { key: "TRDueDate", onRender: this.renderDate, name: "Due Date", fieldName: "TRDueDate", minWidth: 80 },
                 { key: "ActualStartDate", onRender: this.renderDate, name: "Actual Start Date", fieldName: "ActualStartDate", minWidth: 90 },
                 { key: "ActualCompetionDate", onRender: this.renderDate, name: "Actual Competion<br />Date", fieldName: "ActualCompetionDate", minWidth: 80 },
-
               ]}
             />
           </tabs.TabPanel>
