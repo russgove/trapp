@@ -453,36 +453,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     );
   }
 
-
-  public togglePigment(isSelected: boolean, id: number) {
-    debugger;
-    this.state.isDirty = true;
-    if (isSelected) {
-      if (this.state.tr.PigmentsId) {
-        this.state.tr.PigmentsId.push(id);//addit
-      }
-      else {
-        this.state.tr.PigmentsId = [id];
-      }
-    }
-    else {
-      this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
-    }
-    this.setState(this.state);
-  }
-  public renderPigmentToggle(item?: any, index?: number, column?: IColumn): any {
-
-    return (
-      <Toggle
-        checked={item.selected}
-        onText="Selected"
-        offText=""
-        onChanged={e => { this.togglePigment(e, item.id); }}
-      />
-
-    );
-  }
-
   public toggleStaffCC(isSelected: boolean, id: number) {
     debugger;
     this.state.isDirty = true;
@@ -511,7 +481,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     );
   }
-  /******** TEST Toggles */
+  /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number) {
     debugger;
     this.state.isDirty = true;
@@ -551,23 +521,24 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     );
   }
 
-
-
-
-  /*********************** */
-
-  public toggleAvailablePigmentts(isSelected: boolean, id: number) {
+  /******** Pigmemt Toggles , this is two lists, toggling adds from one , removes from the other*/
+  public addPigment(id: number) {
+    this.state.isDirty = true;
+    if (this.state.tr.PigmentsId) {
+      this.state.tr.PigmentsId.push(id);//addit
+    }
+    else {
+      this.state.tr.PigmentsId = [id];
+    }
+    this.setState(this.state);
+  }
+  public removePigment(id: number) {
     debugger;
     this.state.isDirty = true;
-    if (isSelected) {
-      if (this.state.tr.StaffCCId) {
-        this.state.tr.PigmentsId.push(id);//addit
-      }
-      else {
-        this.state.tr.PigmentsId = [id];
-      }
-    }
 
+    if (this.state.tr.PigmentsId) {
+      this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
+    }
     this.setState(this.state);
   }
   public renderAvailablePigmentsToggle(item?: any, index?: number, column?: IColumn): any {
@@ -577,36 +548,21 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         checked={false}
         onText=""
         offText=""
-        onChanged={e => { this.toggleAvailablePigmentts(e, item.id); }}
+        onChanged={e => { this.addPigment(item.id); }}
       />
     );
   }
 
-
-  public toggleSelectedPigments(isSelected: boolean, id: number) {
-    debugger;
-    this.state.isDirty = true;
-    if (!isSelected) { // should be only option
-      if (this.state.tr.PigmentsId) {
-        this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
-      }
-    }
-    this.setState(this.state);
-  }
   public renderSelectedPigmentsToggle(item?: any, index?: number, column?: IColumn): any {
-
     return (
       <Toggle
         checked={true}
         onText=""
         offText=""
-        onChanged={e => { this.toggleSelectedPigments(e, item.id); }}
+        onChanged={e => { this.removePigment(item.id); }}
       />
-
     );
   }
-
-
 
   public renderDate(item?: any, index?: number, column?: IColumn): any {
 
