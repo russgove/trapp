@@ -452,34 +452,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     );
   }
-  public toggleTest(isSelected: boolean, id: number) {
-    debugger;
-    this.state.isDirty = true;
-    if (isSelected) {
-      if (this.state.tr.TestsId) {
-        this.state.tr.TestsId.push(id);//addit
-      }
-      else {
-        this.state.tr.TestsId = [id];
-      }
-    }
-    else {
-      this.state.tr.TestsId = _.filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
-    }
-    this.setState(this.state);
-  }
-  public renderTestToggle(item?: any, index?: number, column?: IColumn): any {
 
-    return (
-      <Toggle
-        checked={item.selected}
-        onText="Selected"
-        offText=""
-        onChanged={e => { this.toggleTest(e, item.id); }}
-      />
-
-    );
-  }
 
   public togglePigment(isSelected: boolean, id: number) {
     debugger;
@@ -538,61 +511,50 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     );
   }
-/******** TEST Toggles */
-  public toggleAvailableTests(isSelected: boolean, id: number) {
+  /******** TEST Toggles */
+  public addTest(id: number) {
     debugger;
     this.state.isDirty = true;
-    if (isSelected) {
-      if (this.state.tr.TestsId) {
-        this.state.tr.TestsId.push(id);//addit
-      }
-      else {
-        this.state.tr.TestsId = [id];
-      }
+    if (this.state.tr.TestsId) {
+      this.state.tr.TestsId.push(id);//addit
     }
-
+    else {
+      this.state.tr.TestsId = [id];
+    }
+    this.setState(this.state);
+  }
+  public removeTest(id: number) {
+    this.state.isDirty = true;
+    if (this.state.tr.TestsId) {
+      this.state.tr.TestsId = _.filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
+    }
     this.setState(this.state);
   }
   public renderAvailableTestsToggle(item?: any, index?: number, column?: IColumn): any {
-
     return (
       <Toggle
         checked={false}
         onText=""
         offText=""
-        onChanged={e => { this.toggleAvailableTests(e, item.testid); }}
+        onChanged={e => { this.addTest(item.testid); }}
       />
     );
   }
-
-
-  public toggleSelectedTests(isSelected: boolean, id: number) {
-    debugger;
-    this.state.isDirty = true;
-    if (!isSelected) { // should be only option
-      if (this.state.tr.TestsId) {
-        this.state.tr.TestsId = _.filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
-      }
-    }
-    this.setState(this.state);
-  }
   public renderSelectedTestsToggle(item?: any, index?: number, column?: IColumn): any {
-
     return (
       <Toggle
         checked={true}
         onText=""
         offText=""
-        onChanged={e => { this.toggleSelectedTests(e, item.id); }}
+        onChanged={e => { this.removeTest(item.id); }}
       />
-
     );
   }
 
 
-  
 
-/*********************** */
+
+  /*********************** */
 
   public toggleAvailablePigmentts(isSelected: boolean, id: number) {
     debugger;
