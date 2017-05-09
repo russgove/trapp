@@ -28,7 +28,7 @@ import * as tabs from "react-tabs";
 import TRPicker from "./TRPicker";
 export interface inITrFormState {
   tr: TR;
-  childTRs: Array<TR>,
+  childTRs: Array<TR>;
   errorMessages: Array<md.Message>;
   isDirty: boolean;
   showTRSearch: boolean;
@@ -316,13 +316,13 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     var temppropertyTest: Array<PropertyTest> = _.filter(this.props.propertyTests, (pt: PropertyTest) => {
       return (pt.applicationTypeid === this.state.tr.ApplicationTypeId
         && pt.endUseIds.indexOf(this.state.tr.EndUseId) != -1
-      )
+      );
     });
     // get all the the tests in those propertyTests and output them as DisplayPropertyTest
     var tempDisplayTests: Array<DisplayPropertyTest> = [];
     for (const pt of temppropertyTest) {
       for (const testid of pt.testIds) {
-        const test: Test = _.find(this.props.tests, (t) => { return t.id === testid });
+        const test: Test = _.find(this.props.tests, (t) => { return t.id === testid; });
         tempDisplayTests.push({
           property: pt.property,
           testid: testid,
@@ -338,7 +338,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   }
   public getAvailableTestGroups(): Array<IGroup> {
     var displayPropertyTests: Array<DisplayPropertyTest> = this.getAvailableTests(); // all the avalable tests with their Property
-    var properties = _.countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => { return dpt.property });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
+    var properties = _.countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => { return dpt.property; });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
     var groups: Array<IGroup> = [];
     for (const property in properties) {
       groups.push({
@@ -347,7 +347,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         startIndex: _.findIndex(displayPropertyTests, (dpt) => { return dpt.property === property; }),
         count: properties[property],
         isCollapsed: true
-      })
+      });
     }
     return groups;
   }
@@ -390,7 +390,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
   public getAvailablePigmentGroups(): Array<IGroup> {
     var pigs: Array<Pigment> = this.getAvailablePigments();
     //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
-    var pigmentTypes = _.countBy(pigs, (p1: Pigment) => { return p1.type });
+    var pigmentTypes = _.countBy(pigs, (p1: Pigment) => { return p1.type; });
     var groups: Array<IGroup> = [];
     for (const pt in pigmentTypes) {
       groups.push({
@@ -399,7 +399,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
         startIndex: _.findIndex(pigs, (pig) => { return pig.type === pt; }),
         count: pigmentTypes[pt],
         isCollapsed: true
-      })
+      });
     }
     return groups;
   }
@@ -580,7 +580,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     if (childTr) {
       console.log("switching to tr " + trId);
       delete this.state.tr;
-      this.state.tr = childTr
+      this.state.tr = childTr;
       debugger;
       this.updateCKEditorText(this.state.tr);
       this.state.childTRs = [];
@@ -601,7 +601,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     return (
       <div>
         <div className='ms-Icon ms-Icon--directions'></div>
-        <a href="#" onClick={(e) => { debugger; this.selectChildTR(item.Id) }}>
+        <a href="#" onClick={(e) => { this.selectChildTR(item.Id); }}>
           {item[column.fieldName]}
         </a>
       </div>
@@ -646,7 +646,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       _.filter(this.props.applicationTypes, (at) => {
         // show if its valid for the selected Worktype, OR if its already on the tr
         return (at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1
-          || at.id === this.props.tr.ApplicationTypeId)
+          || at.id === this.props.tr.ApplicationTypeId);
 
       })
         .map((at) => {

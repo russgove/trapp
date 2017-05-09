@@ -92,7 +92,7 @@ export class Pigment {
         public type: string,
 
 
-    ) { this.manufacturer = null }
+    ) { this.manufacturer = null ;}
 
 }
 export class WorkType {

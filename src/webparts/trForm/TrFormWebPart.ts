@@ -14,10 +14,6 @@ import * as _ from 'lodash';
 import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
-import {
-  IPersonaProps, PersonaPresence
-} from 'office-ui-fabric-react';
-
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
   private tr: TR;
   private childTRs: Array<TR>;
@@ -100,12 +96,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (document.getElementById("MSOLayout_InDesignMode")) {
       console.log(
         document.getElementById("MSOLayout_InDesignMode")
-      )
+      );
       if (document.getElementById("MSOLayout_InDesignMode").innerText === "1") {
         return true;
       }
       else {
-        console.log('document.getElementById("MSOLayout_InDesignMode") is null')
+        console.log('document.getElementById("MSOLayout_InDesignMode") is null');
         return false;
       }
     }
@@ -142,7 +138,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       propertyTests: []
     };
     let batch = pnp.sp.createBatch();
-    this.context.pageContext.web.title
     // get the Technincal Request content type so we can use it later in searches
     // pnp.sp.web.contentTypes.inBatch(batch).get()
     //   .then((contentTypes) => {
@@ -160,7 +155,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch).get()
       .then((items) => {
         formProps.techSpecs = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"])
+          return new User(item["Id"], item["Title"]);
         });
       })
       .catch((error) => {
@@ -236,7 +231,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           })
           .catch((error) => {
-            console.log("ERROR, An error occured fetching the listitem  from list named " + this.properties.technicalRequestListName);;
+            console.log("ERROR, An error occured fetching the listitem  from list named " + this.properties.technicalRequestListName);
             console.log(error.message);
 
           });
@@ -315,7 +310,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         .then((items) => {
           debugger;
           formProps.propertyTests = _.map(items, (item) => {
-            let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>)
+            let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
             if (item["Property"]) {
               pt.property = item["Property"]["Title"];
             }
@@ -410,7 +405,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         tr.Site = temp.SiteOWSTEXT;
         tr.CER = temp.CEROWSTEXT;
         returnValue.push(tr);
-      };
+      }
 
 
       return _.sortBy(returnValue, "Title");

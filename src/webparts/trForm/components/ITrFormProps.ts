@@ -1,7 +1,5 @@
 import { Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
-import {
-  IPersonaProps
-} from 'office-ui-fabric-react';
+
 export interface ITrFormProps {
   mode: modes; // display , edit, new
   tr?: TR; // 
