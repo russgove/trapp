@@ -4,7 +4,7 @@ import * as React from 'react';
 import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-import { TR, modes } from "../dataModel";
+import { TR, modes, Pigment } from "../dataModel";
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
@@ -15,7 +15,7 @@ import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
-import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
+import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from 'office-ui-fabric-react/lib/DetailsList';
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
@@ -283,20 +283,60 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     });
     return _.orderBy(tests, ["selected", "title"], ["desc", "asc"]);
   }
-
-  public getPigments() {
-    var techSpecs = _.map(this.props.pigments, (pigment) => {
+  public trContainsPigment(tr: TR, PigmentId: number): boolean {
+    return (tr.PigmentsId.indexOf(PigmentId) != -1);
+  }
+  /**
+   * return Pigments on the tr
+   */
+  public getSelectedPigments(): Array<Pigment> {
+    var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
+      return this.trContainsPigment(this.state.tr, pigment.id);
+    });
+    var selectedPigments = _.map(tempPigments, (pigment) => {
       return {
         title: pigment.title,
-        type: pigment.type,
+        type: (pigment.type) ? pigment.type : "(none)",
         manufacturer: pigment.manufacturer,
-        selected: ((this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.indexOf(pigment.id) != -1 : null),
         id: pigment.id
       };
     });
-    return _.orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
+    return _.orderBy(selectedPigments, ["title"], ["asc"]);
   }
 
+/**
+ * return pigments Not on the Tr
+ */
+  public getAvailablePigments(): Array<Pigment> {
+        var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
+      return !this.trContainsPigment(this.state.tr, pigment.id);
+    });
+    var pigments = _.map(tempPigments, (pigment) => {
+      return {
+        title: pigment.title,
+        type: (pigment.type) ? pigment.type : "(none)",
+        manufacturer: pigment.manufacturer,
+        id: pigment.id
+      };
+    });
+    return _.orderBy(pigments, ["type"], ["asc"]);
+  }
+  public getAvailablePigmentGroups(): Array<IGroup> {
+    var pigs: Array<Pigment> = this.getAvailablePigments();
+    //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
+    var pigmentTypes = _.countBy(pigs, (p1: Pigment) => { return p1.type });
+    var groups: Array<IGroup> = [];
+    for (const pt in pigmentTypes) {
+      groups.push({
+        name: pt,
+        key: pt,
+        startIndex: _.findIndex(pigs, (pig) => { return pig.type === pt; }),
+        count: pigmentTypes[pt],
+        isCollapsed: true
+      })
+    }
+    return groups;
+  }
   public getTechSpecs() {
     var techSpecs = _.map(this.props.techSpecs, (techSpec) => {
       return {
@@ -432,6 +472,59 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     );
   }
+
+
+  public toggleAvailablePigmentts(isSelected: boolean, id: number) {
+    debugger;
+    this.state.isDirty = true;
+    if (isSelected) {
+      if (this.state.tr.StaffCCId) {
+        this.state.tr.PigmentsId.push(id);//addit
+      }
+      else {
+        this.state.tr.PigmentsId = [id];
+      }
+    }
+
+    this.setState(this.state);
+  }
+  public renderAvailablePigmentsToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={false}
+        onText=""
+        offText=""
+        onChanged={e => { this.toggleAvailablePigmentts(e, item.id); }}
+      />
+    );
+  }
+
+
+  public toggleSelectedPigments(isSelected: boolean, id: number) {
+    debugger;
+    this.state.isDirty = true;
+    if (!isSelected) { // should be only option
+      if (this.state.tr.PigmentsId) {
+        this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
+      }
+    }
+    this.setState(this.state);
+  }
+  public renderSelectedPigmentsToggle(item?: any, index?: number, column?: IColumn): any {
+
+    return (
+      <Toggle
+        checked={true}
+        onText=""
+        offText=""
+        onChanged={e => { this.toggleSelectedPigments(e, item.id); }}
+      />
+
+    );
+  }
+
+
 
   public renderDate(item?: any, index?: number, column?: IColumn): any {
 
@@ -884,23 +977,47 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               setKey="id"
               columns={[
                 { key: "title", name: "Staff", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 200, onRender: this.renderStaffCCToggle.bind(this) }
+                { key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 80, onRender: this.renderStaffCCToggle.bind(this) }
               ]}
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <DetailsList
-              layoutMode={DetailsListLayoutMode.fixedColumns}
-              selectionMode={SelectionMode.none}
-              items={this.getPigments()}
-              setKey="id"
-              columns={[
-                { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "type", name: "Pigment Type", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "manufacturer", name: "Manufacturer", fieldName: "manufacturer", minWidth: 20, maxWidth: 200 },
-                { key: "selected", name: "selected?", fieldName: "selected", minWidth: 200, onRender: this.renderPigmentToggle.bind(this) }
-              ]}
-            />
+            <div style={{ float: "left" }}>
+              <Label> Available Pigments</Label>
+              <DetailsList
+                layoutMode={DetailsListLayoutMode.fixedColumns}
+                selectionMode={SelectionMode.none}
+                groups={this.getAvailablePigmentGroups()}
+                items={this.getAvailablePigments()}
+                setKey="id"
+                columns={[
+                  { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
+                  { key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: this.renderAvailablePigmentsToggle.bind(this) }
+                ]}
+              />
+
+            </div>
+            <div style={{ float: "right" }}>
+              <Label> Selected Pigments</Label>
+              <DetailsList
+                layoutMode={DetailsListLayoutMode.fixedColumns}
+                selectionMode={SelectionMode.none}
+                items={this.getSelectedPigments()}
+                setKey="id"
+                columns={[
+                  { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
+                  { key: "type", name: "Type", fieldName: "type", minWidth: 20, maxWidth: 100 },
+                  { key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: this.renderSelectedPigmentsToggle.bind(this) }
+
+                ]}
+
+              />
+
+            </div>
+            <div style={{ clear: "both" }}></div>
+
+
+
           </tabs.TabPanel>
           <tabs.TabPanel>
             <DetailsList
@@ -909,8 +1026,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               items={this.getTests()}
               setKey="id"
               columns={[
-                { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "selected", name: "selected?", fieldName: "selected", minWidth: 200, onRender: this.renderTestToggle.bind(this) }
+                { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                { key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: this.renderTestToggle.bind(this) }
               ]}
             />
           </tabs.TabPanel>

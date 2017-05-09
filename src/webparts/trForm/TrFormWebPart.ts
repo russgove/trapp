@@ -8,7 +8,7 @@ import {
   IPropertyPaneConfiguration, PropertyPaneDropdown
 } from '@microsoft/sp-webpart-base';
 
-import { Test,PropertyTest,Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import { Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
@@ -68,8 +68,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     tr.TRAssignedToId = item.TRAssignedToId;
     tr.StaffCCId = item.StaffCCId;
-        tr.PigmentsId = item.PigmentsId;
-        tr.TestsId = item.TestsId;
+    tr.PigmentsId = item.PigmentsId;
+    tr.TestsId = item.TestsId;
   }
   public fetchTR(id: number): Promise<TR> {
     let fields = "*,ParentTR/Title,Requestor/Title";
@@ -138,8 +138,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       fetchChildTr: this.fetchChildTR.bind(this),
       fetchTR: this.fetchTR.bind(this),
       pigments: [],
-      tests:[],
-      propertyTests:[]
+      tests: [],
+      propertyTests: []
     };
     let batch = pnp.sp.createBatch();
     this.context.pageContext.web.title
@@ -268,7 +268,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
-          let customerFields = "Id,Title";
+      let customerFields = "Id,Title";
       pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("PartyTypeCode eq 'CUST'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
           formProps.customers = _.map(items, (item) => {
@@ -276,7 +276,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           });
         })
         .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Customers' from list "+this.properties.partyListName);
+          console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
           console.log(error.message);
         });
 
@@ -286,27 +286,27 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         .then((items) => {
           formProps.pigments = _.map(items, (item) => {
             let p: Pigment = new Pigment(item["Id"], item["Title"], item["KMPigmentType"]);
-            if (item["Manufacturer"]){
-              p.manufacturer=item["Manufacturer"]["Title"];
+            if (item["Manufacturer"]) {
+              p.manufacturer = item["Manufacturer"]["Title"];
             }
             return p;
           });
         })
         .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Pigments' from list "+this.properties.pigmentListName);
+          console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
           console.log(error.message);
         });
-        let testFields = "Id,Title";
+      let testFields = "Id,Title";
       pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
           formProps.tests = _.map(items, (item) => {
             let t: Test = new Test(item["Id"], item["Title"]);
-        
+
             return t;
           });
         })
         .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Pigments' from list "+this.properties.pigmentListName);
+          console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
           console.log(error.message);
         });
       batch2.execute().then(() => {
@@ -416,18 +416,18 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     copy["TRAssignedToId"]["results"] = technicalSpecialists;
 
 
-let StaffCCId= (copy.StaffCCId) ? copy.StaffCCId : [];
+    let StaffCCId = (copy.StaffCCId) ? copy.StaffCCId : [];
     delete copy.StaffCCId;
     copy["StaffCCId"] = {};
     copy["StaffCCId"]["results"] = StaffCCId;
 
-    let PigmentsId= (copy.PigmentsId) ? copy.PigmentsId : [];
+    let PigmentsId = (copy.PigmentsId) ? copy.PigmentsId : [];
     delete copy.PigmentsId;
     copy["PigmentsId"] = {};
     copy["PigmentsId"]["results"] = PigmentsId;
 
 
-    let TestsId= (copy.TestsId) ? copy.TestsId : [];
+    let TestsId = (copy.TestsId) ? copy.TestsId : [];
     delete copy.TestsId;
     copy["TestsId"] = {};
     copy["TestsId"]["results"] = TestsId;
