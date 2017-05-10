@@ -5,7 +5,7 @@ import { SearchQuery, SearchResults, SortDirection } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
-  IPropertyPaneConfiguration, PropertyPaneDropdown
+  IPropertyPaneConfiguration, PropertyPaneDropdown,PropertyPaneTextField
 } from '@microsoft/sp-webpart-base';
 
 import { Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
@@ -69,7 +69,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public fetchTR(id: number): Promise<TR> {
     let fields = "*,ParentTR/Title,Requestor/Title";
-    return pnp.sp.web.lists.getByTitle("Technical Requests").items.getById(id).expand("ParentTR,Requestor").select(fields).get()
+    return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand("ParentTR,Requestor").select(fields).get()
       .then((item) => {
         let tr = new TR();
         this.moveFieldsToTR(tr, item);
@@ -78,7 +78,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public fetchChildTR(id: number): Promise<Array<TR>> {
     let fields = "*,ParentTR/Title,Requestor/Title";
-    return pnp.sp.web.lists.getByTitle("Technical Requests").items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).get()
+    return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).get()
       .then((items) => {
         let childTrs = new Array<TR>();
 
@@ -257,6 +257,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log("ERROR, Id not specified with Display or Edit form");
       }
     }
+    else{
+      formProps.tr.Site=this.properties.defaultSite;
+    }
 
 
     batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
@@ -370,7 +373,17 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                     { text: "Edit", key: modes.EDIT },
                     { text: "Display", key: modes.DISPLAY },
                   ]
+                }),
+                PropertyPaneTextField('defaultSite', {
+                  label: "Default Site",
+                  description:" The value to place in the 'site' field on new TR's"
+                }),
+                PropertyPaneTextField('searchPath', {
+                  label: "Search Path",
+                  description:"The path passed to the search engine when searching for TR's"
+                  
                 })
+
               ]
             }
           ]
@@ -380,11 +393,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   public TRsearch(searchText: string): Promise<TR[]> {
 
-    let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
+    //let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
+      let queryText = "{0} Path:{1}*";
     queryText = queryText
       .replace("{0}", searchText)
-      .replace("{1}", this.context.pageContext.web.absoluteUrl)
-      .replace("{2}", this.trContentTypeID);
+      .replace("{1}", "https://tronoxglobal.sharepoint.com/sites/TR/MIG/Lists/tblPigment/DispForm.aspx*");
+      //.replace("{2}", this.trContentTypeID);
     let sq: SearchQuery = {
       Querytext: queryText,
       RowLimit: 50,

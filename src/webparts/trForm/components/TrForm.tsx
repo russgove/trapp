@@ -284,10 +284,18 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     return _.orderBy(tests, ["selected", "title"], ["desc", "asc"]);
   }
   public trContainsPigment(tr: TR, PigmentId: number): boolean {
-    return (tr.PigmentsId.indexOf(PigmentId) != -1);
+    if (tr.PigmentsId) {
+      return (tr.PigmentsId.indexOf(PigmentId) != -1);
+    }
+    else return false;
   }
   public trContainsTest(tr: TR, TestId: number): boolean {
+    if (tr.TestsId){
     return (tr.TestsId.indexOf(TestId) != -1);
+  }
+  else{
+    return false;
+  }
   }
   /**
    * return Pigments on the tr
@@ -600,10 +608,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     return (
       <div>
-        <div className='ms-Icon ms-Icon--directions'></div>
-        <a href="#" onClick={(e) => { this.selectChildTR(item.Id); }}>
-          {item[column.fieldName]}
-        </a>
+        <i onClick={(e) => { debugger; this.selectChildTR(item.Id); }}
+          className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
       </div>
     );
 

@@ -11,4 +11,6 @@ export interface ITrFormWebPartProps {
   partyListName:string; //Customers
  // propertyListName: string,  
   testListName: string;
+  searchPath:string; // path passed to the search engine when searchng for trs
+  defaultSite:string;// value to put into the site column on new trs
 }

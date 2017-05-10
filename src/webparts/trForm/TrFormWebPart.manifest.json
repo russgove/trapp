@@ -29,8 +29,9 @@
         "propertyListName": "tblProperties",
         "testListName": "tblTest",
         "propertyTestListName": "tblPropertyTest",
-        "partyListName":"tblParty"
-        
+        "partyListName":"tblParty",
+        "searchPath":"https://tronoxglobal.sharepoint.com/sites/TR/MIG/Lists/tblPigment/DispForm.aspx*",
+        "defaultSite":"OKC"
       }
     }
   ]
