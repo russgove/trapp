@@ -5,7 +5,7 @@ import { SearchQuery, SearchResults, SortDirection } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
-  IPropertyPaneConfiguration, PropertyPaneDropdown,PropertyPaneTextField
+  IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField
 } from '@microsoft/sp-webpart-base';
 
 import { Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
@@ -257,8 +257,29 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log("ERROR, Id not specified with Display or Edit form");
       }
     }
-    else{
-      formProps.tr.Site=this.properties.defaultSite;
+    else {
+      formProps.tr.Site = this.properties.defaultSite;
+      pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.select("Id,NextNumber").filter("CounterName eq 'RequestId'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
+        .then((items) => {
+          if (items.length !=1){
+              console.log("muiltiple next numbers found");
+          }
+          else{
+          let nextNumber: number = items[0]["NextNumber"]
+          nextNumber++;
+          formProps.tr.Title = this.properties.defaultSite + nextNumber;
+
+          pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.getById(items[0].Id)
+            .update({ "NextNumber": nextNumber }).then((results) => {
+              console.log("next number not increment to " + nextNumber);
+            }).catch((err) => {
+              alert("next number not incremented-- please try again");
+            })
+          }
+        }).catch((err)=>{
+          debugger;
+              console.log("next number not increment to");
+        })
     }
 
 
@@ -338,7 +359,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formComponent.props.customers = formProps.customers;
         formComponent.props.pigments = formProps.pigments;
         formComponent.props.tests = formProps.tests;
-        formComponent.props.propertyTests=formProps.propertyTests;
+        formComponent.props.propertyTests = formProps.propertyTests;
         formComponent.forceUpdate();
         // });
 
@@ -376,12 +397,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 }),
                 PropertyPaneTextField('defaultSite', {
                   label: "Default Site",
-                  description:" The value to place in the 'site' field on new TR's"
+                  description: " The value to place in the 'site' field on new TR's"
                 }),
                 PropertyPaneTextField('searchPath', {
                   label: "Search Path",
-                  description:"The path passed to the search engine when searching for TR's"
-                  
+                  description: "The path passed to the search engine when searching for TR's"
+
                 })
 
               ]
@@ -394,11 +415,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public TRsearch(searchText: string): Promise<TR[]> {
 
     //let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
-      let queryText = "{0} Path:{1}*";
+    let queryText = "{0} Path:{1}*";
     queryText = queryText
       .replace("{0}", searchText)
       .replace("{1}", "https://tronoxglobal.sharepoint.com/sites/TR/MIG/Lists/tblPigment/DispForm.aspx*");
-      //.replace("{2}", this.trContentTypeID);
+    //.replace("{2}", this.trContentTypeID);
     let sq: SearchQuery = {
       Querytext: queryText,
       RowLimit: 50,

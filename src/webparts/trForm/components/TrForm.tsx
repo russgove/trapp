@@ -272,6 +272,14 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     );
 
   }
+  
+  /**
+   * 
+   * 
+   * @returns 
+   * 
+   * @memberof TrForm
+   */
   public getTests() {
     var tests = _.map(this.props.tests, (test) => {
       return {

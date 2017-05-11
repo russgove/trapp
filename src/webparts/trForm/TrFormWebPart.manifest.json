@@ -26,10 +26,12 @@
         "workTypeListName": "tblRequestWorkType",
         "custonersListName": "tblParty",
         "pigmentListName": "tblPigment",
+        "nextNumbersListName":"tblCounter",
         "propertyListName": "tblProperties",
         "testListName": "tblTest",
         "propertyTestListName": "tblPropertyTest",
         "partyListName":"tblParty",
+        
         "searchPath":"https://tronoxglobal.sharepoint.com/sites/TR/MIG/Lists/tblPigment/DispForm.aspx*",
         "defaultSite":"OKC"
       }
