@@ -288,11 +288,18 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
       let customerFields = "Id,Title";
-      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("PartyTypeCode eq 'CUST'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
+      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("PartyTypeCode eq 'CUST' and Active eq -1 ").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
-          formProps.customers = _.map(items, (item) => {
+         let customers:Array<Customer> = _.map(items, (item) => {
             return new Customer(item["Id"], item["Title"]);
           });
+          // add the one from the tr if not present
+          if (formProps.customers.length > 0 &&
+          _.find(customers,(c)=>{return c.id===formProps.customers[0].id})==null){
+            debugger;
+            customers.push(formProps.customers[0]);
+          }
+          formProps.customers=customers;
         })
         .catch((error) => {
           console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
