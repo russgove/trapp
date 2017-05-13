@@ -20,17 +20,17 @@
       "officeFabricIconFontName": "Page",
       "properties": {
         "mode": "Display",
-        "technicalRequestListName": "tblRequest",
-        "applicationTYpeListName": "tblApplicationType",
-        "endUseListName": "tblEndUse",
-        "workTypeListName": "tblRequestWorkType",
-        "custonersListName": "tblParty",
-        "pigmentListName": "tblPigment",
-        "nextNumbersListName":"tblCounter",
-        "propertyListName": "tblProperties",
-        "testListName": "tblTest",
-        "propertyTestListName": "tblPropertyTest",
-        "partyListName":"tblParty",
+        "technicalRequestListName": "Technical Requests",
+        "applicationTYpeListName": "Application Types",
+        "endUseListName": "End Uses",
+        "workTypeListName": "Work Types",
+        
+        "pigmentListName": "Pigments",
+        "nextNumbersListName":"Next Numbers",
+        "propertyListName": "Properties",
+        "testListName": "Tests",
+        "propertyTestListName": "Test Propeterties",
+        "partyListName":"Customers",
         
         "searchPath":"https://tronoxglobal.sharepoint.com/sites/TR/MIG/Lists/tblPigment/DispForm.aspx*",
         "defaultSite":"OKC"
