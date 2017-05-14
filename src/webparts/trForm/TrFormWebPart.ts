@@ -152,18 +152,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     //   });
 
 
-    const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
-    pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch).get()
-      .then((items) => {
-        formProps.requestors = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"]);
-        });
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
-        console.log(error.message);
 
-      });
     pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
@@ -213,14 +202,18 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           .then((item) => {
             formProps.tr = new TR();
             this.moveFieldsToTR(formProps.tr, item);
-            if (item.Customer) {
+            if (item.Customer) {// single value lookup
               formProps.customers.push(new Customer(item.CustomerId, item.Customer.Title));
             }
-            if (item.TRAssignedTo) {
+            if (item.TRAssignedTo) {// multi value lookup
               for (let assignee of item.TRAssignedTo) {
                 formProps.techSpecs.push(new User(assignee["Id"], assignee["Title"]))
               }
             }
+            if (item.Requestor) {// single value lookup
+              formProps.requestors.push(new User(item.RequestorId, item.Requestor.Title));
+            }
+
             debugger;
 
 
@@ -257,7 +250,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.select("Id,NextNumber").filter("CounterName eq 'RequestId'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
         .then((items) => {
           if (items.length != 1) {
-            console.log("muiltiple next numbers found");
+            console.log("multiple next numbers found");
           }
           else {
             let nextNumber: number = items[0]["NextNumber"]
@@ -282,13 +275,33 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
-      const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
-      pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch2).get()
+
+
+      const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
+      pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch2).get()
         .then((items) => {
-          let techSpecs:Array<User> = _.map(items, (item) => {
+          let requestors: Array<User> = _.map(items, (item) => {
             return new User(item["Id"], item["Title"]);
           });
-          formProps.techSpecs=_.unionWith(techSpecs,formProps.techSpecs,(a,b)=>{return a.id===b.id});//_.union
+          formProps.requestors = _.unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id });//_.union
+
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
+          console.log(error.message);
+
+        });
+
+      const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
+      pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch2).get()
+
+
+
+        .then((items) => {
+          let techSpecs: Array<User> = _.map(items, (item) => {
+            return new User(item["Id"], item["Title"]);
+          });
+          formProps.techSpecs = _.unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id });//_.union
 
         })
         .catch((error) => {
@@ -376,8 +389,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formComponent.props.pigments = formProps.pigments;
         formComponent.props.tests = formProps.tests;
         formComponent.props.propertyTests = formProps.propertyTests;
-     formComponent.props.techSpecs = formProps.techSpecs;
+        formComponent.props.techSpecs = formProps.techSpecs;
+          formComponent.props.requestors = formProps.requestors;
         
+        
+
         formComponent.forceUpdate();
         // });
 
