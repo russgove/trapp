@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
-import { SearchQuery, SearchResults, SortDirection,EmailProperties } from "sp-pnp-js";
+import { SearchQuery, SearchResults, SortDirection, EmailProperties } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
@@ -151,18 +151,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     //   });
 
-    const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
-    pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch).get()
-      .then((items) => {
-        formProps.techSpecs = _.map(items, (item) => {
-          return new User(item["Id"], item["Title"]);
-        });
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
-        console.log(error.message);
 
-      });
     const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
     pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch).get()
       .then((items) => {
@@ -186,7 +175,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-      pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.inBatch(batch).get()
+    pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.workTypes = _.map(items, (item) => {
           return new WorkType(item["Id"], item["Title"]);
@@ -216,8 +205,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
-        let fields = "*,ParentTR/Title,Requestor/Title,Customer/Title";
-        let expands = "ParentTR,Requestor,Customer";
+        let fields = "*,ParentTR/Title,Requestor/Title,Customer/Title,TRAssignedTo/Title,TRAssignedTo/Id";
+        let expands = "ParentTR,Requestor,Customer,TRAssignedTo";
         // get the requested tr
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand(expands).select(fields).inBatch(batch).get()
 
@@ -227,6 +216,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             if (item.Customer) {
               formProps.customers.push(new Customer(item.CustomerId, item.Customer.Title));
             }
+            if (item.TRAssignedTo) {
+              for (let assignee of item.TRAssignedTo) {
+                formProps.techSpecs.push(new User(assignee["Id"], assignee["Title"]))
+              }
+            }
+            debugger;
 
 
           })
@@ -261,24 +256,24 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       formProps.tr.Site = this.properties.defaultSite;
       pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.select("Id,NextNumber").filter("CounterName eq 'RequestId'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
         .then((items) => {
-          if (items.length !=1){
-              console.log("muiltiple next numbers found");
+          if (items.length != 1) {
+            console.log("muiltiple next numbers found");
           }
-          else{
-          let nextNumber: number = items[0]["NextNumber"]
-          nextNumber++;
-          formProps.tr.Title = this.properties.defaultSite + nextNumber;
+          else {
+            let nextNumber: number = items[0]["NextNumber"]
+            nextNumber++;
+            formProps.tr.Title = this.properties.defaultSite + nextNumber;
 
-          pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.getById(items[0].Id)
-            .update({ "NextNumber": nextNumber }).then((results) => {
-              console.log("next number not increment to " + nextNumber);
-            }).catch((err) => {
-              alert("next number not incremented-- please try again");
-            })
+            pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.getById(items[0].Id)
+              .update({ "NextNumber": nextNumber }).then((results) => {
+                console.log("next number not increment to " + nextNumber);
+              }).catch((err) => {
+                alert("next number not incremented-- please try again");
+              })
           }
-        }).catch((err)=>{
+        }).catch((err) => {
           debugger;
-              console.log("next number not increment to");
+          console.log("next number not increment to");
         })
     }
 
@@ -287,19 +282,33 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
+      const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
+      pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch2).get()
+        .then((items) => {
+          let techSpecs:Array<User> = _.map(items, (item) => {
+            return new User(item["Id"], item["Title"]);
+          });
+          formProps.techSpecs=_.unionWith(techSpecs,formProps.techSpecs,(a,b)=>{return a.id===b.id});//_.union
+
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
+          console.log(error.message);
+
+        });
       let customerFields = "Id,Title";
       pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("PartyTypeCode eq 'CUST' and Active eq -1 ").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
-         let customers:Array<Customer> = _.map(items, (item) => {
+          let customers: Array<Customer> = _.map(items, (item) => {
             return new Customer(item["Id"], item["Title"]);
           });
           // add the one from the tr if not present
           if (formProps.customers.length > 0 &&
-          _.find(customers,(c)=>{return c.id===formProps.customers[0].id})==null){
-            debugger;
+            _.find(customers, (c) => { return c.id === formProps.customers[0].id }) == null) {
+
             customers.push(formProps.customers[0]);
           }
-          formProps.customers=customers;
+          formProps.customers = customers;
         })
         .catch((error) => {
           console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
@@ -339,7 +348,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       let propertyTestExpands = "Property";
       pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
-          debugger;
+
           formProps.propertyTests = _.map(items, (item) => {
             let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
             if (item["Property"]) {
@@ -367,6 +376,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formComponent.props.pigments = formProps.pigments;
         formComponent.props.tests = formProps.tests;
         formComponent.props.propertyTests = formProps.propertyTests;
+     formComponent.props.techSpecs = formProps.techSpecs;
+        
         formComponent.forceUpdate();
         // });
 
@@ -466,7 +477,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       window.location.href = source;
     }
   }
-  private save(tr: TR,orginalAssignees:Array<number>): Promise<any> {
+  private save(tr: TR, orginalAssignees: Array<number>): Promise<any> {
     // remove lookups
     let copy = _.clone(tr) as any;
     delete copy.RequestorName;
