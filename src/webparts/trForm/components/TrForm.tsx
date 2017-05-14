@@ -36,7 +36,7 @@ export interface inITrFormState {
 
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
   private ckeditor: any;
-
+private originalAssignees:Array<number>=[];
   private resultsPersonas: Array<IPersonaProps> = new Array<IPersonaProps>();
   constructor(props: ITrFormProps) {
     super(props);
@@ -44,10 +44,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       tr: props.tr,
       childTRs: props.subTRs,
       errorMessages: [],
-
       isDirty: false,
       showTRSearch: false
     };
+    this.originalAssignees=_.clone(props.tr.TRAssignedToId);// sasve original so we can email new assignees
     this.SaveButton = this.SaveButton.bind(this);
     this.ModeDisplay = this.ModeDisplay.bind(this);
     this.StatusDisplay = this.StatusDisplay.bind(this);
@@ -175,7 +175,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       let data = instance.getData();
       switch (instanceName) {
         case "tronoxtrtextarea-title":
-          this.state.tr.RequestTitle = data;
+          this.state.tr.ReqquestTitle = data;
           break;
         case "tronoxtrtextarea-description":
           this.state.tr.Description = data;
@@ -195,7 +195,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       }
     }
     if (this.isValid()) {
-      this.props.save(this.state.tr)
+      this.props.save(this.state.tr,this.originalAssignees)
         .then((result) => {
           this.state.isDirty = false;
           this.setState(this.state);
@@ -220,7 +220,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       let instance = this.ckeditor.instances[instanceName];
       switch (instanceName) {
         case "tronoxtrtextarea-title":
-          instance.setData(tr.RequestTitle);
+          instance.setData(tr.ReqquestTitle);
           break;
         case "tronoxtrtextarea-description":
           instance.setData(tr.Description);
@@ -597,6 +597,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       console.log("switching to tr " + trId);
       delete this.state.tr;
       this.state.tr = childTr;
+      this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
       debugger;
       this.updateCKEditorText(this.state.tr);
       this.state.childTRs = [];
@@ -635,6 +636,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       this.props.fetchTR(parentId).then((parentTR) => {
         debugger;
         this.state.tr = parentTR;
+        this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
         this.state.childTRs = [];
         this.setState(this.state);
         this.updateCKEditorText(this.state.tr);
@@ -737,22 +739,6 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
                 <Label style={{ "display": "inline" }}>
                   {this.state.tr.ParentTR}
                 </Label>
-
-                {/*<<<<<<< HEAD
-              <NormalPeoplePicker
-                defaultSelectedItems={this.state.tr.ParentTRId ? [{ id: this.state.tr.ParentTRId.toString(), primaryText: this.state.tr.ParentTR }] : []}
-                onResolveSuggestions={this.resolveSuggestionsTR.bind(this)}
-                pickerSuggestionsProps={suggestionProps}
-                getTextFromItem={this.getTextFromItem}
-                onRenderSuggestionsItem={this.renderTR}
-                onChange={e => {
-                  this.state.isDirty = true;
-                  this.state.tr.ParentTRId = (e.length > 0) ? parseInt(e[0].id) : null;
-                  this.setState(this.state);
-                }}
-              />
-              <i className="ms-Icon ms-Icon--View"></i>
-=======*/}
                 <i onClick={this.editParentTR}
                   className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
                 <i onClick={(e) => { debugger; this.state.showTRSearch = true; this.setState(this.state); }}
@@ -991,7 +977,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
           <tabs.TabPanel >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
-              {this.state.tr.RequestTitle}
+              {this.state.tr.ReqquestTitle}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>

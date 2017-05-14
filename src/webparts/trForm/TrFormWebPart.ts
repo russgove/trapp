@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
-import { SearchQuery, SearchResults, SortDirection } from "sp-pnp-js";
+import { SearchQuery, SearchResults, SortDirection,EmailProperties } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
@@ -53,7 +53,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.EndUseId = item.EndUseId;
     tr.WorkTypeId = item.WorkTypeId;
     tr.Title = item.Title;
-    tr.RequestTitle = item.RequestTitle;
+    tr.ReqquestTitle = item.ReqquestTitle;
     tr.Formulae = item.Formulae;
     tr.Description = item.Description;
     tr.Summary = item.Summary;
@@ -186,7 +186,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-    pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.inBatch(batch).get()
+      pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.workTypes = _.map(items, (item) => {
           return new WorkType(item["Id"], item["Title"]);
@@ -466,7 +466,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       window.location.href = source;
     }
   }
-  private save(tr: TR): Promise<any> {
+  private save(tr: TR,orginalAssignees:Array<number>): Promise<any> {
     // remove lookups
     let copy = _.clone(tr) as any;
     delete copy.RequestorName;
