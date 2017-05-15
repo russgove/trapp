@@ -6,6 +6,7 @@ export interface ITrFormWebPartProps {
   endUseListName: string;
   workTypeListName: string;
   nextNumbersListName:string;
+ setupListName:string;
  
   custonersListName: string;
   pigmentListName: string;

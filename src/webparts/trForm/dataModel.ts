@@ -79,6 +79,12 @@ export class TR {
 
 
 }
+export class SetupItem{ // just used in the display to show tests grouped by property
+    public Title:string;
+    public RichText:string;
+    public PlainText:string;
+    
+}
 export class DisplayPropertyTest{ // just used in the display to show tests grouped by property
     public property:string;
     public test:string;

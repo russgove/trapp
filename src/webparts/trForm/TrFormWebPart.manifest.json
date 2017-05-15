@@ -24,6 +24,7 @@
         "applicationTYpeListName": "Application Types",
         "endUseListName": "End Uses",
         "workTypeListName": "Work Types",
+        "setupListName": "Setup",
         
         "pigmentListName": "Pigments",
         "nextNumbersListName":"Next Numbers",

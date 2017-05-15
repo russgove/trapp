@@ -8,7 +8,7 @@ import {
   IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField
 } from '@microsoft/sp-webpart-base';
 
-import { Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import { SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
@@ -225,7 +225,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           });
         // get the Child trs
 
-        pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).inBatch(batch).get()
+        pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTRId eq " + id).expand(expands).select(fields).inBatch(batch).get()
 
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
@@ -390,9 +390,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formComponent.props.tests = formProps.tests;
         formComponent.props.propertyTests = formProps.propertyTests;
         formComponent.props.techSpecs = formProps.techSpecs;
-          formComponent.props.requestors = formProps.requestors;
-        
-        
+        formComponent.props.requestors = formProps.requestors;
+
+
 
         formComponent.forceUpdate();
         // });
@@ -522,23 +522,55 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     copy["TestsId"] = {};
     copy["TestsId"]["results"] = TestsId;
 
-
-
-
     if (copy.Id !== null) {
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((x) => {
-
+        this.emailNewAssignees(tr,orginalAssignees);
         this.navigateToSource();
       });
     }
     else {
       delete copy.Id;
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((x) => {
-
+        this.emailNewAssignees(tr,orginalAssignees);
         this.navigateToSource();
 
       });
     }
+
+  }
+  private emailNewAssignees(tr:TR,orginalAssignees: Array<number>): void {
+    let currentAssignees: Array<number>=tr.TRAssignedToId;
+    let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+
+      debugger;
+      let subject:string=	_.find(setupItems,(si:SetupItem)=>{return si.Title==="Assignee Email Subject"}).PlainText
+      .replace("~technicalRequestNumber",tr.Title);
+      let body:string=	_.find(setupItems,(si:SetupItem)=>{return si.Title==="Assignee Email Body"}).RichText
+      .replace("~technicalRequestNumber",tr.Title)
+      .replace("~~technicalRequestEditUrl",tr.Title);
+      
+      for (let assignee of currentAssignees) {
+        let emailProperties: EmailProperties = {
+          To: ["russell.gove@tronox.com"],
+          From: "TR Application",
+          Subject: subject,
+          Body: body
+
+        }
+        if (orginalAssignees.indexOf(assignee) === -1) {
+          // send email
+          pnp.sp.web.getUserById(assignee).get().then((user) => {
+            pnp.sp.utility.sendEmail(emailProperties);
+          }).catch((error) => {
+            console.log("Error Fetching user with id " + assignee);
+          })
+
+
+        }
+
+      }
+    });
+
 
   }
   private cancel(): void {
