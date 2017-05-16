@@ -444,7 +444,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 PropertyPaneCheckbox('enableEmail', {
                   text: "Enable sending emails to assignees and staff cc",
                 })
-             ]
+              ]
             }
           ]
         }
@@ -498,7 +498,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       window.location.href = source;
     }
   }
-  private save(tr: TR, orginalAssignees: Array<number>,originalStatus:string): Promise<TR> {
+  private save(tr: TR, orginalAssignees: Array<number>, originalStatus: string): Promise<TR> {
     // remove lookups
     let copy = _.clone(tr) as any;
     delete copy.RequestorName;
@@ -529,9 +529,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     if (copy.Id !== null) {
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
-        this.emailNewAssignees(tr, orginalAssignees);
-           this.emailStaffCC(tr, originalStatus);
-        this.navigateToSource();// should stop here when on a form page
+        this.emailNewAssignees(tr, orginalAssignees).then(() => {
+          this.emailStaffCC(tr, originalStatus).then(() => {
+            this.navigateToSource();// should stop here when on a form page
+          });
+
+
+        });
         let newTR = new TR();// thisis only ised when in the workbench
         this.moveFieldsToTR(newTR, item.data);
         return newTR;
@@ -542,25 +546,29 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
         let newTR = new TR();
         this.moveFieldsToTR(newTR, item.data);
-        this.emailNewAssignees(newTR, orginalAssignees);
-        this.emailStaffCC(newTR, originalStatus);
-        this.navigateToSource();// should stop here when on a form page
+        this.emailNewAssignees(newTR, orginalAssignees).then(() => {
+          this.emailStaffCC(newTR, originalStatus).then(() => {
+            this.navigateToSource();// should stop here when on a form page   
+          });
+
+        });
+
         return newTR; // thisis only ised when in the workbench
       });
     }
 
   }
-    private emailStaffCC(tr: TR, originalStatus: string): void {
+  private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
     if (!this.properties.enableEmail) {
       return;
     }
-    if (tr.TRStatus != "Completed"){
+    if (tr.TRStatus != "Completed") {
       return;
     }
-    if (originalStatus === "Completed"){
+    if (originalStatus === "Completed") {
       return;
     }
-
+    let promises: Array<Promise<any>> = [];
     let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
     let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
     let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
@@ -576,35 +584,38 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
       for (let staffCC of tr.StaffCCId) {
-          pnp.sp.web.getUserById(staffCC).get().then((user) => {
-            let emailProperties: EmailProperties = {
-              From: this.context.pageContext.user.email,
-              To: [user.Email],
-              Subject: subject,
-              Body: body
+        pnp.sp.web.getUserById(staffCC).get().then((user) => {
+          let emailProperties: EmailProperties = {
+            From: this.context.pageContext.user.email,
+            To: [user.Email],
+            Subject: subject,
+            Body: body
 
-            }
+          }
 
-            pnp.sp.utility.sendEmail(emailProperties)
-              .then((x) => {
-                debugger;
-              })
-              .catch((error) => {
-                debugger;
-                console.log(error);
-              });
-          }).catch((error) => {
-            console.log("Error Fetching user with id " + staffCC);
-          })
+          let promise = pnp.sp.utility.sendEmail(emailProperties)
+            .then((x) => {
+              debugger;
+            })
+            .catch((error) => {
+              debugger;
+              console.log(error);
+            });
+          promises.push(promise);
+        }).catch((error) => {
+          console.log("Error Fetching user with id " + staffCC);
+        })
       }
     });
 
+    return Promise.all(promises);
 
   }
-  private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): void {
+  private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): Promise<any> {
     if (!this.properties.enableEmail) {
       return;
     }
+    let promises: Array<Promise<any>> = [];
     let currentAssignees: Array<number> = tr.TRAssignedToId;
     let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
     let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
@@ -626,18 +637,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
         if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
           // send email
-
-
           pnp.sp.web.getUserById(assignee).get().then((user) => {
             let emailProperties: EmailProperties = {
               From: this.context.pageContext.user.email,
               To: [user.Email],
               Subject: subject,
               Body: body
-
             }
-
-            pnp.sp.utility.sendEmail(emailProperties)
+            let promise = pnp.sp.utility.sendEmail(emailProperties)
               .then((x) => {
                 debugger;
               })
@@ -645,16 +652,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 debugger;
                 console.log(error);
               });
+            promises.push(promise);
           }).catch((error) => {
             console.log("Error Fetching user with id " + assignee);
           })
-
-
         }
-
       }
     });
 
+    return Promise.all(promises);
 
   }
   private cancel(): void {
