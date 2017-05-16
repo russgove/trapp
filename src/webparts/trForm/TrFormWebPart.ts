@@ -568,82 +568,32 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (originalStatus === "Completed") {
       return;
     }
-    let promises: Array<Promise<any>> = [];
-    let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
-    let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-    let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
-      let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject" }).PlainText
-        .replace("~technicalRequestNumber", tr.Title)
-        .replace("~technicalRequestEditUrl", editFormUrl)
-        .replace("~technicalRequestDisplayUrl", displayFormUrl);
-      let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body" }).RichText
-        .replace("~technicalRequestNumber", tr.Title)
-        .replace("~technicalRequestEditUrl", editFormUrl)
-        .replace("~technicalRequestDisplayUrl", displayFormUrl);
+    return new Promise((resolve, reject) => {
+      let promises: Array<Promise<any>> = [];
+      let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
+      let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+      let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject" }).PlainText
+          .replace("~technicalRequestNumber", tr.Title)
+          .replace("~technicalRequestEditUrl", editFormUrl)
+          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body" }).RichText
+          .replace("~technicalRequestNumber", tr.Title)
+          .replace("~technicalRequestEditUrl", editFormUrl)
+          .replace("~technicalRequestDisplayUrl", displayFormUrl);
 
 
 
-      for (let staffCC of tr.StaffCCId) {
-        pnp.sp.web.getUserById(staffCC).get().then((user) => {
-          let emailProperties: EmailProperties = {
-            From: this.context.pageContext.user.email,
-            To: [user.Email],
-            Subject: subject,
-            Body: body
-
-          }
-
-          let promise = pnp.sp.utility.sendEmail(emailProperties)
-            .then((x) => {
-              debugger;
-            })
-            .catch((error) => {
-              debugger;
-              console.log(error);
-            });
-          promises.push(promise);
-        }).catch((error) => {
-          console.log("Error Fetching user with id " + staffCC);
-        })
-      }
-    });
-
-    return Promise.all(promises);
-
-  }
-  private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): Promise<any> {
-    if (!this.properties.enableEmail) {
-      return;
-    }
-    let promises: Array<Promise<any>> = [];
-    let currentAssignees: Array<number> = tr.TRAssignedToId;
-    let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
-    let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-    let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
-
-
-      let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject" }).PlainText
-        .replace("~technicalRequestNumber", tr.Title)
-        .replace("~technicalRequestEditUrl", editFormUrl)
-        .replace("~technicalRequestDisplayUrl", displayFormUrl);
-      let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body" }).RichText
-        .replace("~technicalRequestNumber", tr.Title)
-        .replace("~technicalRequestEditUrl", editFormUrl)
-        .replace("~technicalRequestDisplayUrl", displayFormUrl);
-
-
-
-      for (let assignee of currentAssignees) {
-
-        if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
-          // send email
-          pnp.sp.web.getUserById(assignee).get().then((user) => {
+        for (let staffCC of tr.StaffCCId) {
+          pnp.sp.web.getUserById(staffCC).get().then((user) => {
             let emailProperties: EmailProperties = {
               From: this.context.pageContext.user.email,
               To: [user.Email],
               Subject: subject,
               Body: body
+
             }
+
             let promise = pnp.sp.utility.sendEmail(emailProperties)
               .then((x) => {
                 debugger;
@@ -654,14 +604,63 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               });
             promises.push(promise);
           }).catch((error) => {
-            console.log("Error Fetching user with id " + assignee);
+            console.log("Error Fetching user with id " + staffCC);
           })
         }
-      }
+        Promise.all(promises).then(resolve);
+      });
+
+
     });
+  }
+  private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): Promise<any> {
+    if (!this.properties.enableEmail) {
+      return;
+    }
+    return new Promise((resolve, reject) => {
+      let promises: Array<Promise<any>> = [];
+      let currentAssignees: Array<number> = tr.TRAssignedToId;
+      let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
+      let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+      let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject" }).PlainText
+          .replace("~technicalRequestNumber", tr.Title)
+          .replace("~technicalRequestEditUrl", editFormUrl)
+          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body" }).RichText
+          .replace("~technicalRequestNumber", tr.Title)
+          .replace("~technicalRequestEditUrl", editFormUrl)
+          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        for (let assignee of currentAssignees) {
+          if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
+            // send email
+            pnp.sp.web.getUserById(assignee).get().then((user) => {
+              let emailProperties: EmailProperties = {
+                From: this.context.pageContext.user.email,
+                To: [user.Email],
+                Subject: subject,
+                Body: body
+              }
+              let promise = pnp.sp.utility.sendEmail(emailProperties)
+                .then((x) => {
+                  debugger;
+                })
+                .catch((error) => {
+                  debugger;
+                  console.log(error);
+                  reject(error);
+                });
+              promises.push(promise);
+            }).catch((error) => {
+              console.log("Error Fetching user with id " + assignee);
+            })
+          }
+        }
+        Promise.all(promises).then(resolve);
+      });
 
-    return Promise.all(promises);
 
+    });
   }
   private cancel(): void {
     this.navigateToSource();
