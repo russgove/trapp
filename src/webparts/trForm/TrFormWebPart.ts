@@ -559,32 +559,41 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
     let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
 
-      // split and join to replace all occurrences
+
       let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject" }).PlainText
-        .split('~technicalRequestNumber').join(tr.Title)
-        .split('~technicalRequestDisplayUrl').join(displayFormUrl)
-        .split('~technicalRequestEditUrl').join(editFormUrl);
+        .replace("~technicalRequestNumber", tr.Title)
+        .replace("~technicalRequestEditUrl", editFormUrl)
+        .replace("~technicalRequestDisplayUrl", displayFormUrl);
       let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body" }).RichText
-        .split('~technicalRequestNumber').join(tr.Title)
-        .split('~technicalRequestDisplayUrl').join(displayFormUrl)
-        .split('~technicalRequestEditUrl').join(editFormUrl);
+        .replace("~technicalRequestNumber", tr.Title)
+        .replace("~technicalRequestEditUrl", editFormUrl)
+        .replace("~technicalRequestDisplayUrl", displayFormUrl);
 
 
 
       for (let assignee of currentAssignees) {
-        let emailProperties: EmailProperties = {
-          To: ["russell.gove@tronox.com"],
-          From: "TR Application",
-          Subject: subject,
-          Body: body
 
-        }
         if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
           // send email
 
+
           pnp.sp.web.getUserById(assignee).get().then((user) => {
-            emailProperties.From = user.Email;
-            pnp.sp.utility.sendEmail(emailProperties);
+            let emailProperties: EmailProperties = {
+              From: this.context.pageContext.user.email,
+              To: [user.Email],
+              Subject: subject,
+              Body: body
+
+            }
+
+            pnp.sp.utility.sendEmail(emailProperties)
+              .then((x) => {
+                debugger;
+              })
+              .catch((error) => {
+                debugger;
+                console.log(error);
+              });
           }).catch((error) => {
             console.log("Error Fetching user with id " + assignee);
           })
