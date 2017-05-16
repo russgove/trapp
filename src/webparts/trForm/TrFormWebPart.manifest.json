@@ -32,9 +32,11 @@
         "testListName": "Tests",
         "propertyTestListName": "Test Propeterties",
         "partyListName":"Customers",
-        
-        "searchPath":"https://tronoxglobal.sharepoint.com/sites/TR/MIG/Lists/tblPigment/DispForm.aspx*",
-        "defaultSite":"OKC"
+        "enableEmail":true,
+        "searchPath":"https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx*",
+        "defaultSite":"OKC",
+        "editFormUrlFormat":"https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
+  "displayFormUrlFormat":"https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
       }
     }
   ]

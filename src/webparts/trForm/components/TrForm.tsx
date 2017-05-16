@@ -763,8 +763,8 @@ private originalAssignees:Array<number>=[];
                 label=""
                 options={[
                   { key: 'High', text: 'High' },
-                  { key: 'Medium', text: 'Medium' },
-                  { key: 'Low', text: 'Low' },
+                  { key: 'Normal', text: 'Normal' },
+                  { key: 'Routine', text: 'Routine' },
 
                 ]}
                 onChanged={e => {

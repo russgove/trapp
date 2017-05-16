@@ -5,7 +5,7 @@ import { SearchQuery, SearchResults, SortDirection, EmailProperties } from "sp-p
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
-  IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField
+  IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField, PropertyPaneCheckbox
 } from '@microsoft/sp-webpart-base';
 
 import { SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
@@ -213,10 +213,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             if (item.Requestor) {// single value lookup
               formProps.requestors.push(new User(item.RequestorId, item.Requestor.Title));
             }
-
-            debugger;
-
-
           })
           .catch((error) => {
             console.log("ERROR, An error occured fetching the listitem  from list named " + this.properties.technicalRequestListName);
@@ -437,7 +433,22 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   label: "Search Path",
                   description: "The path passed to the search engine when searching for TR's"
 
+                }),
+                PropertyPaneTextField('editFormUrlFormat', {
+                  label: "Edit Form Url format",
+                  description: "USed to format the link to the edit form sent in emails"
+
+                }),
+                PropertyPaneTextField('displayFormUrlFormat', {
+                  label: "Display Form Url format",
+                  description: "USed to format the link to the display form sent in emails"
+
+                }),
+                PropertyPaneCheckbox('enableEmail', {
+                  text: "Enable sending emails to assignees and staff cc",
+
                 })
+
 
               ]
             }
@@ -452,7 +463,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let queryText = "{0} Path:{1}*";
     queryText = queryText
       .replace("{0}", searchText)
-      .replace("{1}", "https://tronoxglobal.sharepoint.com/sites/TR/MIG/Lists/tblPigment/DispForm.aspx*");
+      .replace("{1}", this.properties.searchPath);
     //.replace("{2}", this.trContentTypeID);
     let sq: SearchQuery = {
       Querytext: queryText,
@@ -524,31 +535,42 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     if (copy.Id !== null) {
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((x) => {
-        this.emailNewAssignees(tr,orginalAssignees);
+        this.emailNewAssignees(tr, orginalAssignees);
         this.navigateToSource();
       });
     }
     else {
       delete copy.Id;
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((x) => {
-        this.emailNewAssignees(tr,orginalAssignees);
+        tr.Id = x.data.Id;
+        this.emailNewAssignees(tr, orginalAssignees);
         this.navigateToSource();
 
       });
     }
 
   }
-  private emailNewAssignees(tr:TR,orginalAssignees: Array<number>): void {
-    let currentAssignees: Array<number>=tr.TRAssignedToId;
+  private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): void {
+    if (!this.properties.enableEmail) {
+      return;
+    }
+    let currentAssignees: Array<number> = tr.TRAssignedToId;
+    let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
+    let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
     let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
 
-      debugger;
-      let subject:string=	_.find(setupItems,(si:SetupItem)=>{return si.Title==="Assignee Email Subject"}).PlainText
-      .replace("~technicalRequestNumber",tr.Title);
-      let body:string=	_.find(setupItems,(si:SetupItem)=>{return si.Title==="Assignee Email Body"}).RichText
-      .replace("~technicalRequestNumber",tr.Title)
-      .replace("~~technicalRequestEditUrl",tr.Title);
-      
+      // split and join to replace all occurrences
+      let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject" }).PlainText
+        .split('~technicalRequestNumber').join(tr.Title)
+        .split('~technicalRequestDisplayUrl').join(displayFormUrl)
+        .split('~technicalRequestEditUrl').join(editFormUrl);
+      let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body" }).RichText
+        .split('~technicalRequestNumber').join(tr.Title)
+        .split('~technicalRequestDisplayUrl').join(displayFormUrl)
+        .split('~technicalRequestEditUrl').join(editFormUrl);
+
+
+
       for (let assignee of currentAssignees) {
         let emailProperties: EmailProperties = {
           To: ["russell.gove@tronox.com"],
@@ -557,9 +579,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           Body: body
 
         }
-        if (orginalAssignees.indexOf(assignee) === -1) {
+        if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
           // send email
+
           pnp.sp.web.getUserById(assignee).get().then((user) => {
+            emailProperties.From = user.Email;
             pnp.sp.utility.sendEmail(emailProperties);
           }).catch((error) => {
             console.log("Error Fetching user with id " + assignee);
