@@ -236,10 +236,6 @@ private originalAssignees:Array<number>=[];
       }
     }
   }
-  public componentWillReceiveProps(nextProps) {
-    debugger;
-  }
-
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
     _.remove(messageList, {
       Id: messageId
@@ -470,8 +466,7 @@ private originalAssignees:Array<number>=[];
   }
 
   public toggleStaffCC(isSelected: boolean, id: number) {
-    debugger;
-    this.state.isDirty = true;
+      this.state.isDirty = true;
     if (isSelected) {
       if (this.state.tr.StaffCCId) {
         this.state.tr.StaffCCId.push(id);//addit
@@ -499,8 +494,7 @@ private originalAssignees:Array<number>=[];
   }
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number) {
-    debugger;
-    this.state.isDirty = true;
+     this.state.isDirty = true;
     if (this.state.tr.TestsId) {
       this.state.tr.TestsId.push(id);//addit
     }
@@ -549,7 +543,7 @@ private originalAssignees:Array<number>=[];
     this.setState(this.state);
   }
   public removePigment(id: number) {
-    debugger;
+   
     this.state.isDirty = true;
 
     if (this.state.tr.PigmentsId) {
@@ -592,13 +586,13 @@ private originalAssignees:Array<number>=[];
 
   public selectChildTR(trId: number): any {
     const childTr = _.find(this.state.childTRs, (tr) => { return tr.Id === trId; });
-    debugger;
+   
     if (childTr) {
       console.log("switching to tr " + trId);
       delete this.state.tr;
       this.state.tr = childTr;
       this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
-      debugger;
+   
       this.updateCKEditorText(this.state.tr);
       this.state.childTRs = [];
 
@@ -613,11 +607,11 @@ private originalAssignees:Array<number>=[];
     return false;
   }
   public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
-    debugger;
+  
 
     return (
       <div>
-        <i onClick={(e) => { debugger; this.selectChildTR(item.Id); }}
+        <i onClick={(e) => {  this.selectChildTR(item.Id); }}
           className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
       </div>
     );
@@ -630,11 +624,11 @@ private originalAssignees:Array<number>=[];
     this.cancelTrSearch();
   }
   public editParentTR() {
-    debugger;
+ 
     if (this.state.tr.ParentTRId) {
       const parentId = this.state.tr.ParentTRId;
       this.props.fetchTR(parentId).then((parentTR) => {
-        debugger;
+   
         this.state.tr = parentTR;
         this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
         this.state.childTRs = [];
@@ -657,7 +651,7 @@ private originalAssignees:Array<number>=[];
         text: wt.workType
       };
     });
-    debugger;
+  
     let applicationtypeDropDoownoptions =
       _.filter(this.props.applicationTypes, (at) => {
         // show if its valid for the selected Worktype, OR if its already on the tr
@@ -741,7 +735,7 @@ private originalAssignees:Array<number>=[];
                 </Label>
                 <i onClick={this.editParentTR}
                   className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
-                <i onClick={(e) => { debugger; this.state.showTRSearch = true; this.setState(this.state); }}
+                <i onClick={(e) => { this.state.showTRSearch = true; this.setState(this.state); }}
                   className="ms-Icon ms-Icon--Search" aria-hidden="true"></i>
 
               </div>
