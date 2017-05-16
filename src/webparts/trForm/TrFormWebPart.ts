@@ -432,25 +432,19 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 PropertyPaneTextField('searchPath', {
                   label: "Search Path",
                   description: "The path passed to the search engine when searching for TR's"
-
                 }),
                 PropertyPaneTextField('editFormUrlFormat', {
                   label: "Edit Form Url format",
                   description: "USed to format the link to the edit form sent in emails"
-
                 }),
                 PropertyPaneTextField('displayFormUrlFormat', {
                   label: "Display Form Url format",
                   description: "USed to format the link to the display form sent in emails"
-
                 }),
                 PropertyPaneCheckbox('enableEmail', {
                   text: "Enable sending emails to assignees and staff cc",
-
                 })
-
-
-              ]
+             ]
             }
           ]
         }
@@ -504,7 +498,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       window.location.href = source;
     }
   }
-  private save(tr: TR, orginalAssignees: Array<number>): Promise<any> {
+  private save(tr: TR, orginalAssignees: Array<number>,originalStatus:string): Promise<TR> {
     // remove lookups
     let copy = _.clone(tr) as any;
     delete copy.RequestorName;
@@ -534,20 +528,77 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     copy["TestsId"]["results"] = TestsId;
 
     if (copy.Id !== null) {
-      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((x) => {
+      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
         this.emailNewAssignees(tr, orginalAssignees);
-        this.navigateToSource();
+           this.emailStaffCC(tr, originalStatus);
+        this.navigateToSource();// should stop here when on a form page
+        let newTR = new TR();// thisis only ised when in the workbench
+        this.moveFieldsToTR(newTR, item.data);
+        return newTR;
       });
     }
     else {
       delete copy.Id;
-      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((x) => {
-        tr.Id = x.data.Id;
-        this.emailNewAssignees(tr, orginalAssignees);
-        this.navigateToSource();
-
+      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
+        let newTR = new TR();
+        this.moveFieldsToTR(newTR, item.data);
+        this.emailNewAssignees(newTR, orginalAssignees);
+        this.emailStaffCC(newTR, originalStatus);
+        this.navigateToSource();// should stop here when on a form page
+        return newTR; // thisis only ised when in the workbench
       });
     }
+
+  }
+    private emailStaffCC(tr: TR, originalStatus: string): void {
+    if (!this.properties.enableEmail) {
+      return;
+    }
+    if (tr.TRStatus != "Completed"){
+      return;
+    }
+    if (originalStatus === "Completed"){
+      return;
+    }
+
+    let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
+    let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+    let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+      let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject" }).PlainText
+        .replace("~technicalRequestNumber", tr.Title)
+        .replace("~technicalRequestEditUrl", editFormUrl)
+        .replace("~technicalRequestDisplayUrl", displayFormUrl);
+      let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body" }).RichText
+        .replace("~technicalRequestNumber", tr.Title)
+        .replace("~technicalRequestEditUrl", editFormUrl)
+        .replace("~technicalRequestDisplayUrl", displayFormUrl);
+
+
+
+      for (let staffCC of tr.StaffCCId) {
+          pnp.sp.web.getUserById(staffCC).get().then((user) => {
+            let emailProperties: EmailProperties = {
+              From: this.context.pageContext.user.email,
+              To: [user.Email],
+              Subject: subject,
+              Body: body
+
+            }
+
+            pnp.sp.utility.sendEmail(emailProperties)
+              .then((x) => {
+                debugger;
+              })
+              .catch((error) => {
+                debugger;
+                console.log(error);
+              });
+          }).catch((error) => {
+            console.log("Error Fetching user with id " + staffCC);
+          })
+      }
+    });
+
 
   }
   private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): void {

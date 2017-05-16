@@ -37,6 +37,7 @@ export interface inITrFormState {
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
   private ckeditor: any;
 private originalAssignees:Array<number>=[];
+private originalStatus:string="";
   private resultsPersonas: Array<IPersonaProps> = new Array<IPersonaProps>();
   constructor(props: ITrFormProps) {
     super(props);
@@ -48,6 +49,7 @@ private originalAssignees:Array<number>=[];
       showTRSearch: false
     };
     this.originalAssignees=_.clone(props.tr.TRAssignedToId);// sasve original so we can email new assignees
+    this.originalStatus=props.tr.TRStatus;// sasve original so we can email if it gets closed
     this.SaveButton = this.SaveButton.bind(this);
     this.ModeDisplay = this.ModeDisplay.bind(this);
     this.StatusDisplay = this.StatusDisplay.bind(this);
@@ -195,15 +197,16 @@ private originalAssignees:Array<number>=[];
       }
     }
     if (this.isValid()) {
-      this.props.save(this.state.tr,this.originalAssignees)
-        .then((result) => {
+      this.props.save(this.state.tr,this.originalAssignees,this.originalStatus)
+        .then((result:TR) => {
+          this.state.tr.Id=result.Id;
           this.state.isDirty = false;
           this.setState(this.state);
         })
         .catch((response) => {
           this.state.errorMessages.push(new md.Message(response.data.responseBody['odata.error'].message.value));
           this.setState(this.state);
-        });
+        }); 
     } else {
       this.setState(this.state); // show errors
     }
@@ -592,7 +595,7 @@ private originalAssignees:Array<number>=[];
       delete this.state.tr;
       this.state.tr = childTr;
       this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
-   
+   this.originalStatus=this.state.tr.TRStatus;
       this.updateCKEditorText(this.state.tr);
       this.state.childTRs = [];
 
@@ -631,6 +634,7 @@ private originalAssignees:Array<number>=[];
    
         this.state.tr = parentTR;
         this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
+        this.originalStatus=this.state.tr.TRStatus;
         this.state.childTRs = [];
         this.setState(this.state);
         this.updateCKEditorText(this.state.tr);
