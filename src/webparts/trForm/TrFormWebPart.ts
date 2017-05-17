@@ -53,7 +53,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.EndUseId = item.EndUseId;
     tr.WorkTypeId = item.WorkTypeId;
     tr.Title = item.Title;
-    tr.ReqquestTitle = item.ReqquestTitle;
+    tr.RequestTitle = item.ReqquestTitle;
     tr.Formulae = item.Formulae;
     tr.Description = item.Description;
     tr.Summary = item.Summary;
@@ -482,6 +482,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
   private navigateToSource() {
+    debugger;
     let queryParameters = new UrlQueryParameterCollection(window.location.href);
     let encodedSource = queryParameters.getValue("Source");
     if (encodedSource) {
@@ -490,7 +491,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       window.location.href = source;
     }
   }
-  private save(tr: TR, orginalAssignees: Array<number>, originalStatus: string): Promise<TR> {
+  private save(tr: TR, orginalAssignees: Array<number>, originalStatus: string): Promise<any> {
     // remove lookups
     let copy = _.clone(tr) as any;
     delete copy.RequestorName;
@@ -521,19 +522,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     if (copy.Id !== null) {
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
-        return this.emailNewAssignees(tr, orginalAssignees).then(() => {
-          return this.emailStaffCC(tr, originalStatus).then(() => {
-            this.navigateToSource();// should stop here when on a form page
-            let newTR = new TR();// thisis only ised when in the workbench
-            this.moveFieldsToTR(newTR, item.data);
-            return newTR;
-          });
-
-
-        });
-
-      }).catch((error) => {
-        return error;
+        let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
+        var staffccPromise = this.emailStaffCC(tr, originalStatus);
+        Promise.all([newAssigneesPromise, staffccPromise]).then((a) => {
+          let x = newAssigneesPromise;
+          let y = staffccPromise;
+          this.navigateToSource();// should stop here when on a form page  
+          return tr;
+        })
       });
     }
     else {
@@ -541,34 +537,30 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
         let newTR = new TR();
         this.moveFieldsToTR(newTR, item.data);
-        return this.emailNewAssignees(newTR, orginalAssignees).then(() => {
-          return this.emailStaffCC(newTR, originalStatus).then(() => {
-            this.navigateToSource();// should stop here when on a form page  
-            return newTR;
-          });
-        });
-      }).catch((error) => {
-        return error;
+        var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
+        var staffccPromise = this.emailStaffCC(newTR, originalStatus);
+        Promise.all([newAssigneesPromise, staffccPromise]).then(() => {
+          this.navigateToSource();// should stop here when on a form page  
+          return newTR;
+        })
+
       });
+
     }
 
   }
   private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      if (!this.properties.enableEmail) {
+      debugger;
+      if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
+        debugger;
         resolve(null);
+        return;
       }
-      if (tr.TRStatus != "Completed") {
-        resolve(null);
-      }
-      if (originalStatus === "Completed") {
-        resolve(null);
-      }
-
       let promises: Array<Promise<any>> = [];
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-     return pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+      var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
@@ -577,33 +569,34 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
-
-
-
-        for (let staffCC of tr.StaffCCId) {
+       for (let staffCC of tr.StaffCCId) {
           let promise = pnp.sp.web.getUserById(staffCC).get().then((user) => {
             let emailProperties: EmailProperties = {
               From: this.context.pageContext.user.email,
               To: [user.Email],
               Subject: subject,
               Body: body
-
             };
-
-            pnp.sp.utility.sendEmail(emailProperties)
+            debugger;
+            return pnp.sp.utility.sendEmail(emailProperties)
               .then((x) => {
-                debugger;
+                console.log("email sent to " + emailProperties.To);
               })
               .catch((error) => {
                 debugger;
                 console.log(error);
               });
-            promises.push(promise);
+
           }).catch((error) => {
             console.log("Error Fetching user with id " + staffCC);
           });
+          promises.push(promise);
+          debugger;
         }
-   return     Promise.all(promises).then(resolve);
+        Promise.all(promises).then((x) => {
+          debugger;
+          resolve();
+        });
       });
 
 
@@ -611,14 +604,17 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): Promise<any> {
     return new Promise((resolve, reject) => {
+
       if (!this.properties.enableEmail) {
+
         resolve(null);
+        return;
       }
       let promises: Array<Promise<any>> = [];
       let currentAssignees: Array<number> = tr.TRAssignedToId;
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-     return pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+      var x = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
@@ -637,24 +633,26 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 Subject: subject,
                 Body: body
               };
-              pnp.sp.utility.sendEmail(emailProperties)
+             return pnp.sp.utility.sendEmail(emailProperties)
                 .then((x) => {
-                  debugger;
+                  console.log("Assignee email sent to "+emailProperties.To);
                 })
                 .catch((error) => {
-                  debugger;
                   console.log(error);
                   reject(error);
                 });
-              promises.push(promise);
+             
             }).catch((error) => {
               console.log("Error Fetching user with id " + assignee);
             });
+             promises.push(promise);
           }
         }
-      return  Promise.all(promises).then(resolve);
+        Promise.all(promises).then((x) => {
+          resolve();
+        });
       }).catch((error) => {
-        debugger;
+
         console.log(error);
       });
 

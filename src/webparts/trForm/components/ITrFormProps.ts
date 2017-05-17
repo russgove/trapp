@@ -6,7 +6,7 @@ export interface ITrFormProps {
   workTypes: Array<WorkType>; // lookup column values
   applicationTypes: Array<ApplicationType>;// lookup column values
   endUses: Array<EndUse>;// lookup column values
-  save: (tr:TR,originalAssignees:Array<number>,originalStatus:string) => Promise<TR>; //make this return promise // method to call to save tr
+  save: (tr:TR,originalAssignees:Array<number>,originalStatus:string) => Promise<any>; //make this return promise // method to call to save tr
   cancel: () => any; // method to call to save tr
   TRsearch: (searchText: string) => Promise<TR[]>; // method tyo call to searcgh gpr parenttr
   requestors: Array<User>; //lookup values for valid requestors on current site

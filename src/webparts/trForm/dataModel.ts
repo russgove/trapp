@@ -35,7 +35,7 @@ export class TR {
         this.TRStatus = null;
         this.ApplicationTypeId = null;
         this.EndUseId = null;
-        this.ReqquestTitle = null;
+        this.RequestTitle = null;
         this.Description = null;
         this.Summary = null;
         this.TestingParameters = null;
@@ -65,7 +65,7 @@ export class TR {
     public TRStatus: string;
     public ApplicationTypeId: number;
     public EndUseId: number;
-    public ReqquestTitle: string;//TitleArea
+    public RequestTitle: string;//TitleArea
     public Description: string;//DescriptionArea
     public Summary: string;//SummaryArea
     public Formulae: string;

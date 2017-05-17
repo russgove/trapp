@@ -177,7 +177,7 @@ private originalStatus:string="";
       let data = instance.getData();
       switch (instanceName) {
         case "tronoxtrtextarea-title":
-          this.state.tr.ReqquestTitle = data;
+          this.state.tr.RequestTitle = data;
           break;
         case "tronoxtrtextarea-description":
           this.state.tr.Description = data;
@@ -213,17 +213,15 @@ private originalStatus:string="";
     return false; // stop postback
   }
   public cancel() {
-
     this.props.cancel();
     return false; // stop postback
-
   }
   public updateCKEditorText(tr: TR) { // updates the text in all the existingck editors after we loaded a new TR (parent or child)
     for (let instanceName in this.ckeditor.instances) {
       let instance = this.ckeditor.instances[instanceName];
       switch (instanceName) {
         case "tronoxtrtextarea-title":
-          instance.setData(tr.ReqquestTitle);
+          instance.setData(tr.RequestTitle);
           break;
         case "tronoxtrtextarea-description":
           instance.setData(tr.Description);
@@ -975,7 +973,7 @@ private originalStatus:string="";
           <tabs.TabPanel >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
-              {this.state.tr.ReqquestTitle}
+              {this.state.tr.RequestTitle}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
