@@ -8,7 +8,7 @@ import { TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
-import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
+import { Button, ButtonType} from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
@@ -248,13 +248,17 @@ private originalStatus:string="";
     if (this.props.mode === modes.DISPLAY) {
       return <div />;
     } else return (
-      <span style={{ margin: 20 }}>
+    <Button buttonType={ButtonType.primary}  onClick={this.save} icon="ms-Icon--Save">
+           <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
+      Save
+      </Button>
+      /*<span style={{ margin: 20 }}>
 
         <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
           <i className="ms-Icon ms-Icon--Save"></i>Save
         </a>
 
-      </span>
+      </span>*/
     );
   }
   public ModeDisplay(): JSX.Element {
@@ -1109,10 +1113,10 @@ private originalStatus:string="";
 
         <this.SaveButton />
         <span style={{ margin: 20 }}>
-          <Link href="#" onClick={this.cancel} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
+          <Button href="#" onClick={this.cancel} icon="ms-Icon--Cancel">
             <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
             Cancel
-        </Link>
+        </Button>
         </span>
         <TRPicker
           isOpen={this.state.showTRSearch}

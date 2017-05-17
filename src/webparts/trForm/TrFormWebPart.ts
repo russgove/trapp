@@ -7,7 +7,10 @@ import {
   BaseClientSideWebPart,
   IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField, PropertyPaneCheckbox
 } from '@microsoft/sp-webpart-base';
-
+import {
+  Environment,
+  EnvironmentType
+} from '@microsoft/sp-core-library';
 import { SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
@@ -270,6 +273,19 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
+      if (Environment.type === EnvironmentType.ClassicSharePoint) {
+const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
+if (buttons && buttons.length) {
+for (let i: number = 0; i < buttons.length; i++) {
+if (buttons[i]) {
+/* tslint:disable */
+// Disable the button onclick postback
+buttons[i].onclick = function() { return false; };
+/* tslint:enable */
+}
+}
+}
+}
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
 
 
