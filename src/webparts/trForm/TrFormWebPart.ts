@@ -207,7 +207,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
             if (item.TRAssignedTo) {// multi value lookup
               for (let assignee of item.TRAssignedTo) {
-                formProps.techSpecs.push(new User(assignee["Id"], assignee["Title"]))
+                formProps.techSpecs.push(new User(assignee["Id"], assignee["Title"]));
               }
             }
             if (item.Requestor) {// single value lookup
@@ -249,7 +249,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             console.log("multiple next numbers found");
           }
           else {
-            let nextNumber: number = items[0]["NextNumber"]
+            let nextNumber: number = items[0]["NextNumber"];
             nextNumber++;
             formProps.tr.Title = this.properties.defaultSite + nextNumber;
 
@@ -258,12 +258,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 console.log("next number not increment to " + nextNumber);
               }).catch((err) => {
                 alert("next number not incremented-- please try again");
-              })
+              });
           }
         }).catch((err) => {
           debugger;
           console.log("next number not increment to");
-        })
+        });
     }
 
 
@@ -279,7 +279,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           let requestors: Array<User> = _.map(items, (item) => {
             return new User(item["Id"], item["Title"]);
           });
-          formProps.requestors = _.unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id });//_.union
+          formProps.requestors = _.unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//_.union
 
         })
         .catch((error) => {
@@ -297,7 +297,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           let techSpecs: Array<User> = _.map(items, (item) => {
             return new User(item["Id"], item["Title"]);
           });
-          formProps.techSpecs = _.unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id });//_.union
+          formProps.techSpecs = _.unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//_.union
 
         })
         .catch((error) => {
@@ -313,7 +313,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           });
           // add the one from the tr if not present
           if (formProps.customers.length > 0 &&
-            _.find(customers, (c) => { return c.id === formProps.customers[0].id }) == null) {
+            _.find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
 
             customers.push(formProps.customers[0]);
           }
@@ -370,14 +370,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
           console.log(error.message);
         });
-
-
-
-
-
-
-
-
       batch2.execute().then(() => {
         //  formComponent.props = formProps; this did not work
         // this.delay(5000).then(() => {
@@ -529,16 +521,19 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     if (copy.Id !== null) {
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
-        this.emailNewAssignees(tr, orginalAssignees).then(() => {
-          this.emailStaffCC(tr, originalStatus).then(() => {
+        return this.emailNewAssignees(tr, orginalAssignees).then(() => {
+          return this.emailStaffCC(tr, originalStatus).then(() => {
             this.navigateToSource();// should stop here when on a form page
+            let newTR = new TR();// thisis only ised when in the workbench
+            this.moveFieldsToTR(newTR, item.data);
+            return newTR;
           });
 
 
         });
-        let newTR = new TR();// thisis only ised when in the workbench
-        this.moveFieldsToTR(newTR, item.data);
-        return newTR;
+
+      }).catch((error) => {
+        return error;
       });
     }
     else {
@@ -546,38 +541,39 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
         let newTR = new TR();
         this.moveFieldsToTR(newTR, item.data);
-        this.emailNewAssignees(newTR, orginalAssignees).then(() => {
-          this.emailStaffCC(newTR, originalStatus).then(() => {
-            this.navigateToSource();// should stop here when on a form page   
+        return this.emailNewAssignees(newTR, orginalAssignees).then(() => {
+          return this.emailStaffCC(newTR, originalStatus).then(() => {
+            this.navigateToSource();// should stop here when on a form page  
+            return newTR;
           });
-
         });
-
-        return newTR; // thisis only ised when in the workbench
+      }).catch((error) => {
+        return error;
       });
     }
 
   }
   private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
-    if (!this.properties.enableEmail) {
-      return;
-    }
-    if (tr.TRStatus != "Completed") {
-      return;
-    }
-    if (originalStatus === "Completed") {
-      return;
-    }
     return new Promise((resolve, reject) => {
+      if (!this.properties.enableEmail) {
+        resolve(null);
+      }
+      if (tr.TRStatus != "Completed") {
+        resolve(null);
+      }
+      if (originalStatus === "Completed") {
+        resolve(null);
+      }
+
       let promises: Array<Promise<any>> = [];
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-      let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
-        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject" }).PlainText
+     return pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
-        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body" }).RichText
+        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body"; }).RichText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
@@ -585,16 +581,16 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
         for (let staffCC of tr.StaffCCId) {
-          pnp.sp.web.getUserById(staffCC).get().then((user) => {
+          let promise = pnp.sp.web.getUserById(staffCC).get().then((user) => {
             let emailProperties: EmailProperties = {
               From: this.context.pageContext.user.email,
               To: [user.Email],
               Subject: subject,
               Body: body
 
-            }
+            };
 
-            let promise = pnp.sp.utility.sendEmail(emailProperties)
+            pnp.sp.utility.sendEmail(emailProperties)
               .then((x) => {
                 debugger;
               })
@@ -605,43 +601,43 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             promises.push(promise);
           }).catch((error) => {
             console.log("Error Fetching user with id " + staffCC);
-          })
+          });
         }
-        Promise.all(promises).then(resolve);
+   return     Promise.all(promises).then(resolve);
       });
 
 
     });
   }
   private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): Promise<any> {
-    if (!this.properties.enableEmail) {
-      return;
-    }
     return new Promise((resolve, reject) => {
+      if (!this.properties.enableEmail) {
+        resolve(null);
+      }
       let promises: Array<Promise<any>> = [];
       let currentAssignees: Array<number> = tr.TRAssignedToId;
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-      let setup = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
-        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject" }).PlainText
+     return pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
-        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body" }).RichText
+        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body"; }).RichText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
         for (let assignee of currentAssignees) {
           if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
             // send email
-            pnp.sp.web.getUserById(assignee).get().then((user) => {
+            let promise = pnp.sp.web.getUserById(assignee).get().then((user) => {
               let emailProperties: EmailProperties = {
                 From: this.context.pageContext.user.email,
                 To: [user.Email],
                 Subject: subject,
                 Body: body
-              }
-              let promise = pnp.sp.utility.sendEmail(emailProperties)
+              };
+              pnp.sp.utility.sendEmail(emailProperties)
                 .then((x) => {
                   debugger;
                 })
@@ -653,10 +649,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               promises.push(promise);
             }).catch((error) => {
               console.log("Error Fetching user with id " + assignee);
-            })
+            });
           }
         }
-        Promise.all(promises).then(resolve);
+      return  Promise.all(promises).then(resolve);
+      }).catch((error) => {
+        debugger;
+        console.log(error);
       });
 
 
