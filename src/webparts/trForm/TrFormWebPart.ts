@@ -274,18 +274,18 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       if (Environment.type === EnvironmentType.ClassicSharePoint) {
-const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
-if (buttons && buttons.length) {
-for (let i: number = 0; i < buttons.length; i++) {
-if (buttons[i]) {
-/* tslint:disable */
-// Disable the button onclick postback
-buttons[i].onclick = function() { return false; };
-/* tslint:enable */
-}
-}
-}
-}
+        const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
+        if (buttons && buttons.length) {
+          for (let i: number = 0; i < buttons.length; i++) {
+            if (buttons[i]) {
+              /* tslint:disable */
+              // Disable the button onclick postback
+              buttons[i].onclick = function () { return false; };
+              /* tslint:enable */
+            }
+          }
+        }
+      }
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
 
 
@@ -503,8 +503,12 @@ buttons[i].onclick = function() { return false; };
     let encodedSource = queryParameters.getValue("Source");
     if (encodedSource) {
       let source = decodeURIComponent(encodedSource);
-      console.log("source uis " + source);
+      console.log("Navigating to source source uis " + source);
       window.location.href = source;
+    }
+    else {
+      console.log("no  source staying on page");
+
     }
   }
   private save(tr: TR, orginalAssignees: Array<number>, originalStatus: string): Promise<any> {
@@ -519,36 +523,47 @@ buttons[i].onclick = function() { return false; };
     copy["TRAssignedToId"] = {};
     copy["TRAssignedToId"]["results"] = technicalSpecialists;
 
-
+    console.log("reformatetd techSpecs for save");
     let StaffCCId = (copy.StaffCCId) ? copy.StaffCCId : [];
     delete copy.StaffCCId;
     copy["StaffCCId"] = {};
     copy["StaffCCId"]["results"] = StaffCCId;
-
+    console.log("reformatetd staffcc for save");
+    let TestsId = (copy.TestsId) ? copy.TestsId : [];
+    delete copy.TestsId;
+    copy["TestsId"] = {};
+    copy["TestsId"]["results"] = TestsId;
+    console.log("reformatetd tests for save");
     let PigmentsId = (copy.PigmentsId) ? copy.PigmentsId : [];
     delete copy.PigmentsId;
     copy["PigmentsId"] = {};
     copy["PigmentsId"]["results"] = PigmentsId;
 
+    console.log("reformatetd pigments for save");
 
-    let TestsId = (copy.TestsId) ? copy.TestsId : [];
-    delete copy.TestsId;
-    copy["TestsId"] = {};
-    copy["TestsId"]["results"] = TestsId;
 
     if (copy.Id !== null) {
+      console.log("id is mot null will update");
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
+        console.log("Item sucessfully added, emailing asignnes");
         let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
+        console.log("emailling staff cc");
         var staffccPromise = this.emailStaffCC(tr, originalStatus);
+        console.log("awaiting promises from emails");
         Promise.all([newAssigneesPromise, staffccPromise]).then((a) => {
+          console.log("emails sent continuing");
           let x = newAssigneesPromise;
           let y = staffccPromise;
           this.navigateToSource();// should stop here when on a form page  
           return tr;
         })
+          .catch((err) => {
+            console.log("error sending emails " + err);
+          });
       });
     }
     else {
+      console.log("id is  null will add");
       delete copy.Id;
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
         let newTR = new TR();
@@ -570,13 +585,17 @@ buttons[i].onclick = function() { return false; };
       debugger;
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
         debugger;
+        console.log("staffcc emails wil lnot be processed");
         resolve(null);
         return;
       }
       let promises: Array<Promise<any>> = [];
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+      console.log("fetching email text in emailStaffCC");
+
       var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        console.log("fetched email text in emailStaffCC, extracting text");
         let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
@@ -585,8 +604,11 @@ buttons[i].onclick = function() { return false; };
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
-       for (let staffCC of tr.StaffCCId) {
+        console.log("extracted text in emailStaffCC, looping users");
+        for (let staffCC of tr.StaffCCId) {
+          console.log("in emailStaffCC, fetching user " + staffCC);
           let promise = pnp.sp.web.getUserById(staffCC).get().then((user) => {
+            console.log("in emailStaffCC, fetched user " + staffCC);
             let emailProperties: EmailProperties = {
               From: this.context.pageContext.user.email,
               To: [user.Email],
@@ -594,6 +616,7 @@ buttons[i].onclick = function() { return false; };
               Body: body
             };
             debugger;
+            console.log("in emailStaffCC, emailing user " + user.Email);
             return pnp.sp.utility.sendEmail(emailProperties)
               .then((x) => {
                 console.log("email sent to " + emailProperties.To);
@@ -626,11 +649,18 @@ buttons[i].onclick = function() { return false; };
         resolve(null);
         return;
       }
+       if (tr.TRAssignedToId=== null || tr.TRAssignedToId.length===0) {
+
+        resolve(null);
+        return;
+      }
       let promises: Array<Promise<any>> = [];
       let currentAssignees: Array<number> = tr.TRAssignedToId;
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+      console.log("fetching email text in emailNewAssignees");
       var x = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        console.log("fetched email text in emailNewAssignees, extracting it now");
         let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
@@ -639,29 +669,38 @@ buttons[i].onclick = function() { return false; };
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        console.log("extracted email text in emailNewAssignees,looping assignees");
+        console.log("cuurnt assignees are:"+currentAssignees);
+        
         for (let assignee of currentAssignees) {
           if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
             // send email
+            console.log("fetchin assignee #" + assignee);
             let promise = pnp.sp.web.getUserById(assignee).get().then((user) => {
+              console.log("fetche assignee #" + assignee);
               let emailProperties: EmailProperties = {
                 From: this.context.pageContext.user.email,
                 To: [user.Email],
                 Subject: subject,
                 Body: body
               };
-             return pnp.sp.utility.sendEmail(emailProperties)
+              console.log("dending email to assignee assignee #" + assignee + "  " + user.Email);
+              return pnp.sp.utility.sendEmail(emailProperties)
                 .then((x) => {
-                  console.log("Assignee email sent to "+emailProperties.To);
+                  console.log("Assignee email sent to " + emailProperties.To);
                 })
                 .catch((error) => {
                   console.log(error);
                   reject(error);
                 });
-             
+
             }).catch((error) => {
               console.log("Error Fetching user with id " + assignee);
             });
-             promises.push(promise);
+            promises.push(promise);
+          }
+          else {
+            console.log("asignee is not new");
           }
         }
         Promise.all(promises).then((x) => {
