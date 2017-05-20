@@ -79,6 +79,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         return tr;
       });
   }
+  public fetchDocumentWopiFrameURL(id: number, mode: number): Promise<string> {
+    let fields = "*,ParentTR/Title,Requestor/Title";
+    return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(id).getWopiFrameUrl(mode).then((item) => {
+      return item;
+    });
+  }
   public fetchChildTR(id: number): Promise<Array<TR>> {
     let fields = "*,ParentTR/Title,Requestor/Title";
     return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).get()
@@ -122,20 +128,22 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
 
     let formProps: ITrFormProps = {
+      save: this.save.bind(this),
+      fetchChildTr: this.fetchChildTR.bind(this),
+      fetchTR: this.fetchTR.bind(this),
+      fetchDocumentWopiFrameURL: this.fetchDocumentWopiFrameURL.bind(this),
+      cancel: this.cancel.bind(this),
+      TRsearch: this.TRsearch.bind(this),
+
       customers: [],
       subTRs: [],
       techSpecs: [],
       requestors: [],
-      cancel: this.cancel.bind(this),
       mode: this.properties.mode,
-      TRsearch: this.TRsearch.bind(this),
       workTypes: [],
       applicationTypes: [],
       endUses: [],
       tr: new TR(),
-      save: this.save.bind(this),
-      fetchChildTr: this.fetchChildTR.bind(this),
-      fetchTR: this.fetchTR.bind(this),
       pigments: [],
       tests: [],
       propertyTests: [],
@@ -249,7 +257,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             debugger;
             for (const item of items) {
-              let trDoc: TRDocument = new TRDocument(item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion); formProps.documents.push(trDoc);
+              let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion); formProps.documents.push(trDoc);
               formProps.documents.push(trDoc);
             }
 

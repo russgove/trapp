@@ -15,6 +15,7 @@ export class peopleSearchResults {
 }
 export class TRDocument {
     public constructor(
+        public id:number,
         public title: string,
         public serverRalativeUrl: string,
         public length: number,

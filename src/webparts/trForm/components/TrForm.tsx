@@ -1113,6 +1113,17 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
+         <DetailsList
+              layoutMode={DetailsListLayoutMode.fixedColumns}
+              items={this.props.documents}
+            
+              setKey="id"
+              selectionMode={SelectionMode.none}
+              columns={[
+                {  key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
+               
+              ]}
+            />
           </tabs.TabPanel>
         </tabs.Tabs>
 
