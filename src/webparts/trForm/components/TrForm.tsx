@@ -8,7 +8,7 @@ import { TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
-import { Button, ButtonType} from 'office-ui-fabric-react/lib/Button';
+import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
@@ -36,8 +36,8 @@ export interface inITrFormState {
 
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
   private ckeditor: any;
-private originalAssignees:Array<number>=[];
-private originalStatus:string="";
+  private originalAssignees: Array<number> = [];
+  private originalStatus: string = "";
   private resultsPersonas: Array<IPersonaProps> = new Array<IPersonaProps>();
   constructor(props: ITrFormProps) {
     super(props);
@@ -48,8 +48,8 @@ private originalStatus:string="";
       isDirty: false,
       showTRSearch: false
     };
-    this.originalAssignees=_.clone(props.tr.TRAssignedToId);// sasve original so we can email new assignees
-    this.originalStatus=props.tr.TRStatus;// sasve original so we can email if it gets closed
+    this.originalAssignees = _.clone(props.tr.TRAssignedToId);// sasve original so we can email new assignees
+    this.originalStatus = props.tr.TRStatus;// sasve original so we can email if it gets closed
     this.SaveButton = this.SaveButton.bind(this);
     this.ModeDisplay = this.ModeDisplay.bind(this);
     this.StatusDisplay = this.StatusDisplay.bind(this);
@@ -197,16 +197,16 @@ private originalStatus:string="";
       }
     }
     if (this.isValid()) {
-      this.props.save(this.state.tr,this.originalAssignees,this.originalStatus)
-        .then((result:TR) => {
-          this.state.tr.Id=result.Id;
+      this.props.save(this.state.tr, this.originalAssignees, this.originalStatus)
+        .then((result: TR) => {
+          this.state.tr.Id = result.Id;
           this.state.isDirty = false;
           this.setState(this.state);
         })
         .catch((response) => {
           this.state.errorMessages.push(new md.Message(response.data.responseBody['odata.error'].message.value));
           this.setState(this.state);
-        }); 
+        });
     } else {
       this.setState(this.state); // show errors
     }
@@ -248,9 +248,9 @@ private originalStatus:string="";
     if (this.props.mode === modes.DISPLAY) {
       return <div />;
     } else return (
-    <Button buttonType={ButtonType.primary}  onClick={this.save} icon="ms-Icon--Save">
-           <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
-      Save
+      <Button buttonType={ButtonType.primary} onClick={this.save} icon="ms-Icon--Save">
+        <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
+        Save
       </Button>
       /*<span style={{ margin: 20 }}>
 
@@ -273,7 +273,7 @@ private originalStatus:string="";
     );
 
   }
-  
+
   /**
    * 
    * 
@@ -299,12 +299,12 @@ private originalStatus:string="";
     else return false;
   }
   public trContainsTest(tr: TR, TestId: number): boolean {
-    if (tr.TestsId){
-    return (tr.TestsId.indexOf(TestId) != -1);
-  }
-  else{
-    return false;
-  }
+    if (tr.TestsId) {
+      return (tr.TestsId.indexOf(TestId) != -1);
+    }
+    else {
+      return false;
+    }
   }
   /**
    * return Pigments on the tr
@@ -471,7 +471,7 @@ private originalStatus:string="";
   }
 
   public toggleStaffCC(isSelected: boolean, id: number) {
-      this.state.isDirty = true;
+    this.state.isDirty = true;
     if (isSelected) {
       if (this.state.tr.StaffCCId) {
         this.state.tr.StaffCCId.push(id);//addit
@@ -499,7 +499,7 @@ private originalStatus:string="";
   }
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number) {
-     this.state.isDirty = true;
+    this.state.isDirty = true;
     if (this.state.tr.TestsId) {
       this.state.tr.TestsId.push(id);//addit
     }
@@ -548,7 +548,7 @@ private originalStatus:string="";
     this.setState(this.state);
   }
   public removePigment(id: number) {
-   
+
     this.state.isDirty = true;
 
     if (this.state.tr.PigmentsId) {
@@ -591,13 +591,13 @@ private originalStatus:string="";
 
   public selectChildTR(trId: number): any {
     const childTr = _.find(this.state.childTRs, (tr) => { return tr.Id === trId; });
-   
+
     if (childTr) {
       console.log("switching to tr " + trId);
       delete this.state.tr;
       this.state.tr = childTr;
-      this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
-   this.originalStatus=this.state.tr.TRStatus;
+      this.originalAssignees = _.clone(this.state.tr.TRAssignedToId);
+      this.originalStatus = this.state.tr.TRStatus;
       this.updateCKEditorText(this.state.tr);
       this.state.childTRs = [];
 
@@ -612,11 +612,11 @@ private originalStatus:string="";
     return false;
   }
   public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
-  
+
 
     return (
       <div>
-        <i onClick={(e) => {  this.selectChildTR(item.Id); }}
+        <i onClick={(e) => { this.selectChildTR(item.Id); }}
           className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
       </div>
     );
@@ -629,14 +629,14 @@ private originalStatus:string="";
     this.cancelTrSearch();
   }
   public editParentTR() {
- 
+
     if (this.state.tr.ParentTRId) {
       const parentId = this.state.tr.ParentTRId;
       this.props.fetchTR(parentId).then((parentTR) => {
-   
+
         this.state.tr = parentTR;
-        this.originalAssignees=_.clone(this.state.tr.TRAssignedToId);
-        this.originalStatus=this.state.tr.TRStatus;
+        this.originalAssignees = _.clone(this.state.tr.TRAssignedToId);
+        this.originalStatus = this.state.tr.TRStatus;
         this.state.childTRs = [];
         this.setState(this.state);
         this.updateCKEditorText(this.state.tr);
@@ -657,7 +657,7 @@ private originalStatus:string="";
         text: wt.workType
       };
     });
-  
+
     let applicationtypeDropDoownoptions =
       _.filter(this.props.applicationTypes, (at) => {
         // show if its valid for the selected Worktype, OR if its already on the tr
@@ -973,6 +973,9 @@ private originalStatus:string="";
             <tabs.Tab>
               Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})
              </tabs.Tab>
+            <tabs.Tab>
+              Documents
+             </tabs.Tab>
           </tabs.TabList>
           <tabs.TabPanel >
 
@@ -1108,6 +1111,8 @@ private originalStatus:string="";
                 { key: "ActualCompetionDate", onRender: this.renderDate, name: "Actual Competion<br />Date", fieldName: "ActualCompetionDate", minWidth: 80 },
               ]}
             />
+          </tabs.TabPanel>
+          <tabs.TabPanel>
           </tabs.TabPanel>
         </tabs.Tabs>
 

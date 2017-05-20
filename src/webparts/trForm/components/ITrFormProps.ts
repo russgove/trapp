@@ -1,4 +1,4 @@
-import { Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
+import {TRDocument, Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
 
 export interface ITrFormProps {
   mode: modes; // display , edit, new
@@ -18,5 +18,6 @@ export interface ITrFormProps {
   pigments: Array<Pigment>;
   tests: Array<Test>;
   propertyTests: Array<PropertyTest>;
+  documents:Array<TRDocument>;
 
 }

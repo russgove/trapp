@@ -11,7 +11,7 @@ import {
   Environment,
   EnvironmentType
 } from '@microsoft/sp-core-library';
-import { SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import { TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
@@ -138,7 +138,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       fetchTR: this.fetchTR.bind(this),
       pigments: [],
       tests: [],
-      propertyTests: []
+      propertyTests: [],
+      documents: [],
     };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
@@ -223,7 +224,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Child trs
-
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTRId eq " + id).expand(expands).select(fields).inBatch(batch).get()
 
           .then((items) => {
@@ -239,6 +239,28 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             console.log(error.message);
 
           });
+        // get the Documents
+        let docfields = "Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
+        let docexpands = "File";
+
+        pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.filter("TR eq " + id).expand(docexpands).select(docfields).inBatch(batch).get()
+
+          .then((items) => {
+            // this may resilve befor we get the mainn tr, so jyst stash them away for now.
+            debugger;
+            for (const item of items) {
+              let trDoc: TRDocument = new TRDocument(item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion); formProps.documents.push(trDoc);
+              formProps.documents.push(trDoc);
+            }
+
+
+          })
+          .catch((error) => {
+            console.log("ERROR, An error occured fetching child trs  from list named " + this.properties.technicalRequestListName);
+            console.log(error.message);
+
+          });
+
       }
       else {
         console.log("ERROR, Id not specified with Display or Edit form");
@@ -649,7 +671,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         resolve(null);
         return;
       }
-       if (tr.TRAssignedToId=== null || tr.TRAssignedToId.length===0) {
+      if (tr.TRAssignedToId === null || tr.TRAssignedToId.length === 0) {
 
         resolve(null);
         return;
@@ -670,8 +692,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
         console.log("extracted email text in emailNewAssignees,looping assignees");
-        console.log("cuurnt assignees are:"+currentAssignees);
-        
+        console.log("cuurnt assignees are:" + currentAssignees);
+
         for (let assignee of currentAssignees) {
           if (orginalAssignees === null || orginalAssignees.indexOf(assignee) === -1) {
             // send email

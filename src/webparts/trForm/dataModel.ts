@@ -13,6 +13,16 @@ export class peopleSearchResults {
         public OfficeNumber: string
     ) { }
 }
+export class TRDocument {
+    public constructor(
+        public title: string,
+        public serverRalativeUrl: string,
+        public length: number,
+        public fileName: string,
+        public majorVersion: number,
+        public monorVersion: number,
+    ) { }
+}
 export class TR {
 
     public constructor() {
@@ -79,16 +89,16 @@ export class TR {
 
 
 }
-export class SetupItem{ // just used in the display to show tests grouped by property
-    public Title:string;
-    public RichText:string;
-    public PlainText:string;
-    
+export class SetupItem { // just used in the display to show tests grouped by property
+    public Title: string;
+    public RichText: string;
+    public PlainText: string;
+
 }
-export class DisplayPropertyTest{ // just used in the display to show tests grouped by property
-    public property:string;
-    public test:string;
-    public testid:number;
+export class DisplayPropertyTest { // just used in the display to show tests grouped by property
+    public property: string;
+    public test: string;
+    public testid: number;
 }
 export class Pigment {
     public manufacturer: string;
@@ -98,7 +108,7 @@ export class Pigment {
         public type: string,
 
 
-    ) { this.manufacturer = null ;}
+    ) { this.manufacturer = null; }
 
 }
 export class WorkType {

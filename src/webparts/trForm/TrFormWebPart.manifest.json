@@ -31,6 +31,7 @@
         "testListName": "Tests",
         "propertyTestListName": "Test Propeterties",
         "partyListName": "Customers",
+        "trDocumentsListName": "TR Documents",
         "enableEmail": true,
         "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
