@@ -56,6 +56,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.save = this.save.bind(this);
     this.cancel = this.cancel.bind(this);
     this.rendeChildTRAsLink = this.rendeChildTRAsLink.bind(this);
+    this.rendeDocumentAsLink = this.rendeDocumentAsLink.bind(this);
     this.selectChildTR = this.selectChildTR.bind(this);
     this.cancelTrSearch = this.cancelTrSearch.bind(this);
     this.parentTRSelected = this.parentTRSelected.bind(this);
@@ -611,16 +612,31 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     return false;
   }
-  public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
+  public editDocument(docId: number): void {
+    debugger;
+    this.props.fetchDocumentWopiFrameURL(docId, 1).then(url => {
+      debugger;
+    });
 
-
+  }
+  public rendeDocumentAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     return (
       <div>
-        <i onClick={(e) => { this.selectChildTR(item.Id); }}
+        <i onClick={(e) => {debugger; this.editDocument(item.id); }}
           className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
       </div>
     );
-
+  }
+  public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
+    return (
+      <div>
+        <i onClick={(e) => {
+          debugger;
+          this.selectChildTR(item.Id);
+        }}
+          className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
+      </div>
+    );
   }
   public parentTRSelected(id: number, title: string) {
     this.state.tr.ParentTR = title;
@@ -1113,15 +1129,17 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-         <DetailsList
+            <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
               items={this.props.documents}
-            
+
               setKey="id"
               selectionMode={SelectionMode.none}
               columns={[
-                {  key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
-               
+                { key: "Edit", onRender: this.rendeDocumentAsLink, name: "", fieldName: "Title", minWidth: 20, },
+
+                { key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
+
               ]}
             />
           </tabs.TabPanel>

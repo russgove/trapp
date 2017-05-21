@@ -248,11 +248,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Documents
-        let docfields = "Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
+        let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
         let docexpands = "File";
 
         pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.filter("TR eq " + id).expand(docexpands).select(docfields).inBatch(batch).get()
-
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             debugger;
