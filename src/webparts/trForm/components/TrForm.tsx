@@ -4,7 +4,7 @@ import * as React from 'react';
 import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-import { TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
+import {TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
@@ -32,6 +32,7 @@ export interface inITrFormState {
   errorMessages: Array<md.Message>;
   isDirty: boolean;
   showTRSearch: boolean;
+ 
 }
 
 export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
@@ -46,7 +47,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
       childTRs: props.subTRs,
       errorMessages: [],
       isDirty: false,
-      showTRSearch: false
+      showTRSearch: false,
+      
     };
     this.originalAssignees = _.clone(props.tr.TRAssignedToId);// sasve original so we can email new assignees
     this.originalStatus = props.tr.TRStatus;// sasve original so we can email if it gets closed
@@ -612,17 +614,28 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
     return false;
   }
-  public editDocument(docId: number): void {
+  public editDocument(document: TRDocument): void {
     debugger;
-    this.props.fetchDocumentWopiFrameURL(docId, 1).then(url => {
+//     window.open(
+//   document.serverRalativeUrl,
+//   '_blank' 
+// );
+    this.props.fetchDocumentWopiFrameURL(document.id, 1).then(url => {
       debugger;
+  //    this.state.wopiFrameUrl=url;
+    //  this.setState(this.state);
+     // window.location.href=url;
+     window.open(
+    url,
+    '_blank' 
+  );
     });
 
   }
   public rendeDocumentAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     return (
       <div>
-        <i onClick={(e) => {debugger; this.editDocument(item.id); }}
+        <i onClick={(e) => {debugger; this.editDocument(item); }}
           className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
       </div>
     );
@@ -1129,7 +1142,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <DetailsList
+           
+                  <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
               items={this.props.documents}
 
@@ -1137,11 +1151,10 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
               selectionMode={SelectionMode.none}
               columns={[
                 { key: "Edit", onRender: this.rendeDocumentAsLink, name: "", fieldName: "Title", minWidth: 20, },
-
                 { key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
 
               ]}
-            />
+            /> 
           </tabs.TabPanel>
         </tabs.Tabs>
 

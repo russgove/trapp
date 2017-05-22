@@ -250,20 +250,20 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         // get the Documents
         let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
         let docexpands = "File";
-
+debugger;
         pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.filter("TR eq " + id).expand(docexpands).select(docfields).inBatch(batch).get()
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             debugger;
             for (const item of items) {
-              let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion); formProps.documents.push(trDoc);
+              let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion); 
               formProps.documents.push(trDoc);
             }
 
 
           })
           .catch((error) => {
-            console.log("ERROR, An error occured fetching child trs  from list named " + this.properties.technicalRequestListName);
+            console.log("ERROR, An error occured fetching Documents  from list named " + this.properties.trDocumentsListName);
             console.log(error.message);
 
           });
