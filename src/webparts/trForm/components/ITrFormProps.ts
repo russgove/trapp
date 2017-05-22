@@ -9,7 +9,7 @@ export interface ITrFormProps {
   TRsearch: (searchText: string) => Promise<TR[]>; // method tyo call to searcgh gpr parenttr
   fetchChildTr: (id: number) => Promise<Array<TR>>; // methid to call to cget child TRs if a user swicthes to a new TR
   fetchTR: (id: number) => Promise<TR>; // methid to call to cget child TRs if a user swicthes to a new TR
-
+uploadFile:(file:any,trId:number)=>any;
   //data
   mode: modes; // display , edit, new
   tr?: TR; // 

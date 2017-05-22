@@ -63,6 +63,7 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.cancelTrSearch = this.cancelTrSearch.bind(this);
     this.parentTRSelected = this.parentTRSelected.bind(this);
     this.editParentTR = this.editParentTR.bind(this);
+ this.uploadFile = this.uploadFile.bind(this);
 
   }
 
@@ -656,6 +657,12 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
     this.state.tr.ParentTRId = id;
     this.state.isDirty = true;
     this.cancelTrSearch();
+  } 
+   public uploadFile(e:any) {
+     debugger;
+     let target:any=e.target as any;
+     let file = e.target["files"][0];
+     this.props.uploadFile(file,this.state.tr.Id);
   }
   public editParentTR() {
 
@@ -1155,6 +1162,8 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
 
               ]}
             /> 
+            <input type='file' id='uploadfile' onChange={e=>{debugger;this.uploadFile(e)}}/>
+           
           </tabs.TabPanel>
         </tabs.Tabs>
 

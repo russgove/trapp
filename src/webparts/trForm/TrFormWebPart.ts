@@ -134,7 +134,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       fetchDocumentWopiFrameURL: this.fetchDocumentWopiFrameURL.bind(this),
       cancel: this.cancel.bind(this),
       TRsearch: this.TRsearch.bind(this),
-
+      uploadFile: this.uploadFile.bind(this),
       customers: [],
       subTRs: [],
       techSpecs: [],
@@ -250,13 +250,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         // get the Documents
         let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
         let docexpands = "File";
-debugger;
+        debugger;
         pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.filter("TR eq " + id).expand(docexpands).select(docfields).inBatch(batch).get()
           .then((items) => {
             // this may resilve befor we get the mainn tr, so jyst stash them away for now.
             debugger;
             for (const item of items) {
-              let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion); 
+              let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
               formProps.documents.push(trDoc);
             }
 
@@ -746,6 +746,34 @@ debugger;
   private cancel(): void {
     this.navigateToSource();
 
+  }
+  private uploadFile(file, trId) {
+
+    if (file.size <= 10485760) {
+
+      // small upload
+      pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
+      .then((x) => {
+        console.log("done")
+      }).catch  ((error) => {
+        console.log(error);
+      })
+    } else {
+
+      // large upload
+      pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
+      .addChunked(file.name, file, data => {
+        console.log({ data: data, message: "progress" });
+      }, true)
+      .then((_) => {
+        debugger;
+        console.log("done!")
+      })
+       .catch((error) => {
+        debugger;
+        console.log(error)
+      });
+    }
   }
 }
 
