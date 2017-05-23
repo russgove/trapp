@@ -4,7 +4,7 @@ import * as React from 'react';
 import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
 import { escape } from '@microsoft/sp-lodash-subset';
-import {TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
+import { TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
@@ -26,7 +26,7 @@ import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs";
 import TRPicker from "./TRPicker";
-import {ITRFormState} from "./ITRFormState";
+import { ITRFormState } from "./ITRFormState";
 
 
 export default class TrForm extends React.Component<ITrFormProps, ITRFormState> {
@@ -50,7 +50,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.cancelTrSearch = this.cancelTrSearch.bind(this);
     this.parentTRSelected = this.parentTRSelected.bind(this);
     this.editParentTR = this.editParentTR.bind(this);
- this.uploadFile = this.uploadFile.bind(this);
+    this.uploadFile = this.uploadFile.bind(this);
 
   }
 
@@ -602,28 +602,31 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
     return false;
   }
-  public editDocument(document: TRDocument): void {
+  public editDocument(trdocument: TRDocument): void {
     debugger;
-//     window.open(
-//   document.serverRalativeUrl,
-//   '_blank' 
-// );
-    this.props.fetchDocumentWopiFrameURL(document.id, 1).then(url => {
+    //     window.open(
+    //   document.serverRalativeUrl,
+    //   '_blank' 
+    // );
+    this.props.fetchDocumentWopiFrameURL(trdocument.id, 1).then(url => {
       debugger;
-  //    this.state.wopiFrameUrl=url;
-    //  this.setState(this.state);
-     // window.location.href=url;
-     window.open(
-    url,
-    '_blank' 
-  );
+      if (!url || url === "") {
+        window.open(trdocument.serverRalativeUrl, '_blank');
+      }
+      else {
+        window.open(url, '_blank');
+      }
+      //    this.state.wopiFrameUrl=url;
+      //  this.setState(this.state);
+      // window.location.href=url;
+
     });
 
   }
   public rendeDocumentAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
     return (
       <div>
-        <i onClick={(e) => {debugger; this.editDocument(item); }}
+        <i onClick={(e) => { debugger; this.editDocument(item); }}
           className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
       </div>
     );
@@ -644,16 +647,20 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.state.tr.ParentTRId = id;
     this.state.isDirty = true;
     this.cancelTrSearch();
-  } 
-   public uploadFile(e:any) {
-     debugger;
-     let target:any=e.target as any;
-     let file = e.target["files"][0];
-     this.props.uploadFile(file,this.state.tr.Id).then((response)=>{
-debugger;
-     }).catch((error)=>{
-debugger;
-     });
+  }
+  public uploadFile(e: any) {
+    debugger;
+    let target: any = e.target as any;
+    let file = e.target["files"][0];
+    this.props.uploadFile(file, this.state.tr.Id).then((response) => {
+      this.props.getDocuments(this.state.tr.Id).then((dox) => {
+        this.state.documents = dox;
+        this.setState(this.state);
+      });
+      debugger;
+    }).catch((error) => {
+      debugger;
+    });
   }
   public editParentTR() {
 
@@ -1140,8 +1147,8 @@ debugger;
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-           
-                  <DetailsList
+
+            <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
               items={this.state.documents}
 
@@ -1152,9 +1159,9 @@ debugger;
                 { key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
 
               ]}
-            /> 
-            <input type='file' id='uploadfile' onChange={e=>{debugger;this.uploadFile(e)}}/>
-           
+            />
+            <input type='file' id='uploadfile' onChange={e => { debugger; this.uploadFile(e) }} />
+
           </tabs.TabPanel>
         </tabs.Tabs>
 

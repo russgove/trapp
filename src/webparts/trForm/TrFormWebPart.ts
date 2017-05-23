@@ -125,15 +125,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
     let docexpands = "File";
     debugger;
-    // return pnp.sp.web.lists
-    //   .getByTitle(this.properties.trDocumentsListName)
-    //   .items.filter("TR eq " + id)
-    //   .expand(docexpands)
-    //   .select(docfields)
-    //   .inBatch(batch)
-    //   .get()
-    //   .then((items) => {
-    let command= pnp.sp.web.lists
+    let command = pnp.sp.web.lists
       .getByTitle(this.properties.trDocumentsListName)
       .items.filter("TR eq " + id)
       .expand(docexpands)
@@ -141,17 +133,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (batch) {
       command.inBatch(batch);
     }
-    return command
-      .get()
-      .then((items) => {
-        let docs: Array<TRDocument> = [];
-        debugger;
-        for (const item of items) {
-          let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
-          docs.push(trDoc);
-        }
-        return docs;
-      });
+    return command.get().then((items) => {
+      let docs: Array<TRDocument> = [];
+      debugger;
+      for (const item of items) {
+        let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
+        docs.push(trDoc);
+      }
+      return docs;
+    });
 
 
 
@@ -171,6 +161,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       cancel: this.cancel.bind(this),
       TRsearch: this.TRsearch.bind(this),
       uploadFile: this.uploadFile.bind(this),
+      getDocuments: this.getDocuments.bind(this),
+
       customers: [],
       initialState: null,
       techSpecs: [],
@@ -783,10 +775,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       // small upload
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
         .then((results) => {
-
-          return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
+          //return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
+            return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem().then((item) => {
             debugger;
-            return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(item.Id).update({ "TRId": trId, Title: file.name })
+            const itemID=parseInt(item["Id"])
+            return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(itemID).update({ "TRId": trId, Title: file.name })
               .then((response) => {
                 debugger;
                 return;

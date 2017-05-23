@@ -10,6 +10,7 @@ export interface ITrFormProps {
   fetchChildTr: (id: number) => Promise<Array<TR>>; // methid to call to cget child TRs if a user swicthes to a new TR
   fetchTR: (id: number) => Promise<TR>; // methid to call to cget child TRs if a user swicthes to a new TR
   uploadFile: (file: any, trId: number) => Promise<any>;
+  getDocuments:(trId:number)=>Promise<Array<TRDocument>>;
   //data
   initialState:ITRFormState;
   mode: modes; // display , edit, new
