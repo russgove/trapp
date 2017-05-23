@@ -300,7 +300,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
     batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
-      this.reactElement = React.createElement(TrForm, formProps);
+      this.reactElement = React.createElement(TrForm, formProps,);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       if (Environment.type === EnvironmentType.ClassicSharePoint) {
         const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
@@ -745,34 +745,43 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   private cancel(): void {
     this.navigateToSource();
-
   }
-  private uploadFile(file, trId) {
-
+  private uploadFile(file, trId):Promise<any> {
     if (file.size <= 10485760) {
-
       // small upload
-      pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
-      .then((x) => {
-        console.log("done")
-      }).catch  ((error) => {
-        console.log(error);
-      })
+     return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
+        .then((results) => {
+     
+        return  pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string,Modified:Date }>("Id", "Title","Modified").then((item) => {
+            debugger;
+           return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(item.Id).update({ "TRId": trId ,Title:file.name})
+              .then((response) => {
+                debugger;
+                return;
+              }).catch((error) => {
+                debugger;
+              });
+          }).catch((error) => {
+            console.log(error);
+          });
+       
+        }).catch((error) => {
+          console.log(error);
+        })
     } else {
-
       // large upload
-      pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
-      .addChunked(file.name, file, data => {
-        console.log({ data: data, message: "progress" });
-      }, true)
-      .then((_) => {
-        debugger;
-        console.log("done!")
-      })
-       .catch((error) => {
-        debugger;
-        console.log(error)
-      });
+      return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
+        .addChunked(file.name, file, data => {
+          console.log({ data: data, message: "progress" });
+        }, true)
+        .then((results) => {
+          debugger;
+          console.log("done!")
+        })
+        .catch((error) => {
+          debugger;
+          console.log(error)
+        });
     }
   }
 }

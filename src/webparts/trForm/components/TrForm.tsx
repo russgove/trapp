@@ -662,7 +662,11 @@ export default class TrForm extends React.Component<ITrFormProps, inITrFormState
      debugger;
      let target:any=e.target as any;
      let file = e.target["files"][0];
-     this.props.uploadFile(file,this.state.tr.Id);
+     this.props.uploadFile(file,this.state.tr.Id).then((response)=>{
+debugger;
+     }).catch((error)=>{
+debugger;
+     });
   }
   public editParentTR() {
 
