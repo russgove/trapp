@@ -26,32 +26,19 @@ import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs";
 import TRPicker from "./TRPicker";
-export interface inITrFormState {
-  tr: TR;
-  childTRs: Array<TR>;
-  errorMessages: Array<md.Message>;
-  isDirty: boolean;
-  showTRSearch: boolean;
- 
-}
+import {ITRFormState} from "./ITRFormState";
 
-export default class TrForm extends React.Component<ITrFormProps, inITrFormState> {
+
+export default class TrForm extends React.Component<ITrFormProps, ITRFormState> {
   private ckeditor: any;
   private originalAssignees: Array<number> = [];
   private originalStatus: string = "";
   private resultsPersonas: Array<IPersonaProps> = new Array<IPersonaProps>();
   constructor(props: ITrFormProps) {
     super(props);
-    this.state = {
-      tr: props.tr,
-      childTRs: props.subTRs,
-      errorMessages: [],
-      isDirty: false,
-      showTRSearch: false,
-      
-    };
-    this.originalAssignees = _.clone(props.tr.TRAssignedToId);// sasve original so we can email new assignees
-    this.originalStatus = props.tr.TRStatus;// sasve original so we can email if it gets closed
+    this.state = props.initialState;
+    this.originalAssignees = _.clone(this.state.tr.TRAssignedToId);// sasve original so we can email new assignees
+    this.originalStatus = this.state.tr.TRStatus;// sasve original so we can email if it gets closed
     this.SaveButton = this.SaveButton.bind(this);
     this.ModeDisplay = this.ModeDisplay.bind(this);
     this.StatusDisplay = this.StatusDisplay.bind(this);
@@ -701,8 +688,8 @@ debugger;
     let applicationtypeDropDoownoptions =
       _.filter(this.props.applicationTypes, (at) => {
         // show if its valid for the selected Worktype, OR if its already on the tr
-        return (at.workTypeIds.indexOf(this.props.tr.WorkTypeId) !== -1
-          || at.id === this.props.tr.ApplicationTypeId);
+        return (at.workTypeIds.indexOf(this.state.tr.WorkTypeId) !== -1
+          || at.id === this.state.tr.ApplicationTypeId);
 
       })
         .map((at) => {
@@ -714,8 +701,8 @@ debugger;
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
         // show if its valid for the selected ApplicationType, OR if its already on the tr
-        return (eu.applicationTypeId === this.props.tr.ApplicationTypeId
-          || eu.id === this.props.tr.EndUseId);
+        return (eu.applicationTypeId === this.state.tr.ApplicationTypeId
+          || eu.id === this.state.tr.EndUseId);
       })
         .map((eu) => {
           return {

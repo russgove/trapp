@@ -16,6 +16,7 @@ import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
+import { ITRFormState } from './components/ITRFormState';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
   private tr: TR;
@@ -136,18 +137,25 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       TRsearch: this.TRsearch.bind(this),
       uploadFile: this.uploadFile.bind(this),
       customers: [],
-      subTRs: [],
+      initialState:null,
       techSpecs: [],
       requestors: [],
       mode: this.properties.mode,
       workTypes: [],
       applicationTypes: [],
       endUses: [],
-      tr: new TR(),
+
       pigments: [],
       tests: [],
       propertyTests: [],
       documents: [],
+    };
+    let formState: ITRFormState = {
+      tr: new TR(),
+      childTRs: [],
+      errorMessages: [],
+      isDirty: false,
+      showTRSearch: false
     };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
@@ -212,8 +220,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand(expands).select(fields).inBatch(batch).get()
 
           .then((item) => {
-            formProps.tr = new TR();
-            this.moveFieldsToTR(formProps.tr, item);
+            formState.tr = new TR();
+            this.moveFieldsToTR(formState.tr, item);
             if (item.Customer) {// single value lookup
               formProps.customers.push(new Customer(item.CustomerId, item.Customer.Title));
             }
@@ -239,7 +247,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             for (const item of items) {
               let childtr: TR = new TR();
               this.moveFieldsToTR(childtr, item);
-              formProps.subTRs.push(childtr);
+              formState.childTRs.push(childtr);
             }
           })
           .catch((error) => {
@@ -274,7 +282,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       }
     }
     else {
-      formProps.tr.Site = this.properties.defaultSite;
+      formState.tr.Site = this.properties.defaultSite;
       pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.select("Id,NextNumber").filter("CounterName eq 'RequestId'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
         .then((items) => {
           if (items.length != 1) {
@@ -283,7 +291,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           else {
             let nextNumber: number = items[0]["NextNumber"];
             nextNumber++;
-            formProps.tr.Title = this.properties.defaultSite + nextNumber;
+            formState.tr.Title = this.properties.defaultSite + nextNumber;
 
             pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.getById(items[0].Id)
               .update({ "NextNumber": nextNumber }).then((results) => {
@@ -300,7 +308,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
     batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
-      this.reactElement = React.createElement(TrForm, formProps,);
+      formProps.initialState=formState;
+      this.reactElement = React.createElement(TrForm, formProps );
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       if (Environment.type === EnvironmentType.ClassicSharePoint) {
         const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
@@ -746,15 +755,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   private cancel(): void {
     this.navigateToSource();
   }
-  private uploadFile(file, trId):Promise<any> {
+  private uploadFile(file, trId): Promise<any> {
     if (file.size <= 10485760) {
       // small upload
-     return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
+      return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
         .then((results) => {
-     
-        return  pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string,Modified:Date }>("Id", "Title","Modified").then((item) => {
+
+          return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
             debugger;
-           return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(item.Id).update({ "TRId": trId ,Title:file.name})
+            return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(item.Id).update({ "TRId": trId, Title: file.name })
               .then((response) => {
                 debugger;
                 return;
@@ -764,7 +773,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           }).catch((error) => {
             console.log(error);
           });
-       
+
         }).catch((error) => {
           console.log(error);
         })

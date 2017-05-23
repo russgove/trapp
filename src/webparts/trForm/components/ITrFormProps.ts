@@ -1,5 +1,5 @@
 import { TRDocument, Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
-
+import {ITRFormState} from "./ITRFormState";
 export interface ITrFormProps {
 
   //callbacks
@@ -9,16 +9,15 @@ export interface ITrFormProps {
   TRsearch: (searchText: string) => Promise<TR[]>; // method tyo call to searcgh gpr parenttr
   fetchChildTr: (id: number) => Promise<Array<TR>>; // methid to call to cget child TRs if a user swicthes to a new TR
   fetchTR: (id: number) => Promise<TR>; // methid to call to cget child TRs if a user swicthes to a new TR
-uploadFile:(file:any,trId:number)=>Promise<any>;
+  uploadFile: (file: any, trId: number) => Promise<any>;
   //data
+  initialState:ITRFormState;
   mode: modes; // display , edit, new
-  tr?: TR; // 
   workTypes: Array<WorkType>; // lookup column values
   applicationTypes: Array<ApplicationType>;// lookup column values
   endUses: Array<EndUse>;// lookup column values
   requestors: Array<User>; //lookup values for valid requestors on current site
   techSpecs: Array<User>; //lookup values for valid technical specialists on current site
-  subTRs: Array<TR>; // child trs (trs nested under the main tr)
   customers: Array<Customer>;
   pigments: Array<Pigment>;
   tests: Array<Test>;
