@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
-import { SearchQuery, SearchResults, SortDirection, EmailProperties } from "sp-pnp-js";
+import { SearchQuery, SearchResults, SortDirection, EmailProperties ,Items} from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
@@ -125,7 +125,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
     let docexpands = "File";
     debugger;
-    let command = pnp.sp.web.lists
+    let command:Items = pnp.sp.web.lists
       .getByTitle(this.properties.trDocumentsListName)
       .items.filter("TR eq " + id)
       .expand(docexpands)
