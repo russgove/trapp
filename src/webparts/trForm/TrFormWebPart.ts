@@ -148,14 +148,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pigments: [],
       tests: [],
       propertyTests: [],
-      documents: [],
+     
     };
     let formState: ITRFormState = {
       tr: new TR(),
       childTRs: [],
       errorMessages: [],
       isDirty: false,
-      showTRSearch: false
+      showTRSearch: false,
+       documents: [],
     };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
@@ -265,7 +266,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             debugger;
             for (const item of items) {
               let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
-              formProps.documents.push(trDoc);
+              formState.documents.push(trDoc);
             }
 
 

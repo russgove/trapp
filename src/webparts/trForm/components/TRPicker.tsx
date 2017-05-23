@@ -79,7 +79,6 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
                         setKey="id"
                         columns={[
                             { key: "Select", onRender: this.renderSelect, name: "", fieldName: "Title", minWidth: 20, },
-
                             { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
                             { key: "CER", name: "CER", fieldName: "CER", minWidth: 90 },
                             { key: "Customer", name: "Customer", fieldName: "Customer", minWidth: 80 },

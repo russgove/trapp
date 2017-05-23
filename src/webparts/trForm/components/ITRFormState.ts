@@ -6,5 +6,6 @@ export  interface ITRFormState {
   errorMessages: Array<md.Message>;
   isDirty: boolean;
   showTRSearch: boolean;
+    documents: Array<TRDocument>;
  
 }

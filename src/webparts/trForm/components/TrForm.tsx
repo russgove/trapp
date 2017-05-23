@@ -1143,7 +1143,7 @@ debugger;
            
                   <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
-              items={this.props.documents}
+              items={this.state.documents}
 
               setKey="id"
               selectionMode={SelectionMode.none}
