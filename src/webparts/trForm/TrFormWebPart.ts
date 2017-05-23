@@ -121,6 +121,41 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
 
   }
+  public getDocuments(id: number, batch?: any): Promise<Array<TRDocument>> {
+    let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
+    let docexpands = "File";
+    debugger;
+    // return pnp.sp.web.lists
+    //   .getByTitle(this.properties.trDocumentsListName)
+    //   .items.filter("TR eq " + id)
+    //   .expand(docexpands)
+    //   .select(docfields)
+    //   .inBatch(batch)
+    //   .get()
+    //   .then((items) => {
+    let command= pnp.sp.web.lists
+      .getByTitle(this.properties.trDocumentsListName)
+      .items.filter("TR eq " + id)
+      .expand(docexpands)
+      .select(docfields);
+    if (batch) {
+      command.inBatch(batch);
+    }
+    return command
+      .get()
+      .then((items) => {
+        let docs: Array<TRDocument> = [];
+        debugger;
+        for (const item of items) {
+          let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
+          docs.push(trDoc);
+        }
+        return docs;
+      });
+
+
+
+  }
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
@@ -137,7 +172,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       TRsearch: this.TRsearch.bind(this),
       uploadFile: this.uploadFile.bind(this),
       customers: [],
-      initialState:null,
+      initialState: null,
       techSpecs: [],
       requestors: [],
       mode: this.properties.mode,
@@ -148,7 +183,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pigments: [],
       tests: [],
       propertyTests: [],
-     
+
     };
     let formState: ITRFormState = {
       tr: new TR(),
@@ -156,7 +191,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       errorMessages: [],
       isDirty: false,
       showTRSearch: false,
-       documents: [],
+      documents: [],
     };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
@@ -257,26 +292,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Documents
-        let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
-        let docexpands = "File";
         debugger;
-        pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.filter("TR eq " + id).expand(docexpands).select(docfields).inBatch(batch).get()
-          .then((items) => {
-            // this may resilve befor we get the mainn tr, so jyst stash them away for now.
-            debugger;
-            for (const item of items) {
-              let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
-              formState.documents.push(trDoc);
-            }
-
-
-          })
-          .catch((error) => {
-            console.log("ERROR, An error occured fetching Documents  from list named " + this.properties.trDocumentsListName);
-            console.log(error.message);
-
-          });
-
+        this.getDocuments(id, batch).then((docs) => {
+          formState.documents = docs;
+        }).catch((error) => {
+          console.log("ERROR, An error occured fetching Documents  from list named " + this.properties.trDocumentsListName);
+          console.log(error.message);
+        });
       }
       else {
         console.log("ERROR, Id not specified with Display or Edit form");
@@ -309,8 +331,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
     batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
-      formProps.initialState=formState;
-      this.reactElement = React.createElement(TrForm, formProps );
+      formProps.initialState = formState;
+      this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       if (Environment.type === EnvironmentType.ClassicSharePoint) {
         const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
