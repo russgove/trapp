@@ -683,6 +683,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
   }
+  public renderDocumentRow(defaultRender, props) {
+    return (
+      <div onMouseEnter={() => console.log('hovering over: ' + props.item.title)}>{defaultRender(props)}</div>);
+  }
   public render(): React.ReactElement<ITrFormProps> {
 
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
@@ -719,7 +723,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         });
     console.log("# of app types is " + applicationtypeDropDoownoptions.length);
     return (
-      <div>
+      <div >
 
         <MessageDisplay messages={this.state.errorMessages}
           hideMessage={this.removeMessage.bind(this)} />
@@ -1151,7 +1155,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
               items={this.state.documents}
-              onRenderRow={(props, defaultRender) => <div onMouseEnter={() => console.log('hovering over: ' + props.item.title)}>{defaultRender(props)}</div>}
+              onRenderRow={(props, defaultRender) => this.renderDocumentRow(props, defaultRender)}
               setKey="id"
               selectionMode={SelectionMode.none}
               columns={[
@@ -1178,7 +1182,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           cancel={this.cancelTrSearch}
           select={this.parentTRSelected}
         />
-      </div>
+      </div >
     );
   }
 }
