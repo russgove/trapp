@@ -1151,7 +1151,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
               items={this.state.documents}
-
+              onRenderRow={(props, defaultRender) => <div onMouseEnter={() => console.log('hovering over: ' + props.item.title)}>{defaultRender(props)}</div>}
               setKey="id"
               selectionMode={SelectionMode.none}
               columns={[
