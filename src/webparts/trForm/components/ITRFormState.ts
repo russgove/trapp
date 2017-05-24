@@ -7,5 +7,9 @@ export  interface ITRFormState {
   isDirty: boolean;
   showTRSearch: boolean;
     documents: Array<TRDocument>;
+    documentCalloutVisible:boolean;
+    documentCalloutTarget:HTMLElement
+     documentCalloutIframeUrl:string
+ 
  
 }

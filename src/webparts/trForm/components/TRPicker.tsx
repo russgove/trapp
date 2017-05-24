@@ -47,7 +47,7 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
     }
 
     public renderSelect(item?: any, index?: number, column?: IColumn): JSX.Element {
-        debugger;
+        
         return (<i
             onClick={(e) => { debugger; this.props.select(item.Id,item.Title); return false; }}
             className="ms-Icon ms-Icon--CheckMark" aria-hidden="true"></i>);
@@ -60,7 +60,7 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
         return moment(item[column.fieldName]).format("MMM Do YYYY");
     }
     public doSearch(newValue: any): void {
-        debugger;
+ 
         this.props.callSearch(newValue).then((results) => {
             this.state.searchRusults = results;
             this.setState(this.state);

@@ -1,5 +1,5 @@
 ///// Add tab for testinParameters text block
-
+import { DocumentIframe } from "./DocumentIframe";
 import * as React from 'react';
 import styles from './TrForm.module.scss';
 import { ITrFormProps } from './ITrFormProps';
@@ -604,10 +604,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public editDocument(trdocument: TRDocument): void {
     debugger;
-    //     window.open(
-    //   document.serverRalativeUrl,
-    //   '_blank' 
-    // );
+//mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 1).then(url => {
       debugger;
       if (!url || url === "") {
@@ -683,9 +680,35 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
   }
-  public renderDocumentRow(defaultRender, props) {
+  public documentRowMouseEnter(trdocument: TRDocument, e: any) {
+//mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
+    this.props.fetchDocumentWopiFrameURL(trdocument.id, 3).then(url => {
+      if (!url || url === "") {
+        url = trdocument.serverRalativeUrl;
+      }
+      this.state.documentCalloutIframeUrl=url;
+      this.state.documentCalloutTarget = e.target;
+      this.state.documentCalloutVisible = true;
+      this.setState(this.state);
+
+    });
+  }
+  public documentRowMouseOut(item: TRDocument, e: any) {
+
+    this.state.documentCalloutTarget = null;
+    this.state.documentCalloutVisible = false;
+    this.setState(this.state);
+    console.log("mouse exit for " + item.title);
+  }
+  public renderDocumentRow(props,defaultRender): JSX.Element {
+
     return (
-      <div onMouseEnter={() => console.log('hovering over: ' + props.item.title)}>{defaultRender(props)}</div>);
+      <div
+        onMouseEnter={(event) => this.documentRowMouseEnter(props.item, event)}
+        onMouseOut={(evemt) => this.documentRowMouseOut(props.item, event)}
+      >
+        {defaultRender(props)}
+      </div>);
   }
   public render(): React.ReactElement<ITrFormProps> {
 
@@ -1151,20 +1174,26 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
+            <div style={{ float: "left" }}> 
+              <DetailsList
+                layoutMode={DetailsListLayoutMode.fixedColumns}
+                items={this.state.documents}
+                onRenderRow={(props, defaultRender) => this.renderDocumentRow(props, defaultRender)}
+                setKey="id"
+                selectionMode={SelectionMode.none}
+                columns={[
+                  { key: "Edit", onRender: this.rendeDocumentAsLink, name: "", fieldName: "Title", minWidth: 20, },
+                  { key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
 
-            <DetailsList
-              layoutMode={DetailsListLayoutMode.fixedColumns}
-              items={this.state.documents}
-              onRenderRow={(props, defaultRender) => this.renderDocumentRow(props, defaultRender)}
-              setKey="id"
-              selectionMode={SelectionMode.none}
-              columns={[
-                { key: "Edit", onRender: this.rendeDocumentAsLink, name: "", fieldName: "Title", minWidth: 20, },
-                { key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
+                ]}
+              />
+              <input type='file' id='uploadfile' onChange={e => { debugger; this.uploadFile(e) }} />
+            </div>
+            <div style={{ float: "right" }}>
+            <DocumentIframe src={this.state.documentCalloutIframeUrl} />
+            </div>
+            <div style={{ clear: "both" }}></div>
 
-              ]}
-            />
-            <input type='file' id='uploadfile' onChange={e => { debugger; this.uploadFile(e) }} />
 
           </tabs.TabPanel>
         </tabs.Tabs>

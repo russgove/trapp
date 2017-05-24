@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
-import { SearchQuery, SearchResults, SortDirection, EmailProperties ,Items} from "sp-pnp-js";
+import { SearchQuery, SearchResults, SortDirection, EmailProperties, Items } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
@@ -31,7 +31,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     return super.onInit().then(_ => {
 
       pnp.setup({
-        spfxContext: this.context
+        spfxContext: this.context,
       });
       //  this.loadData();
     });
@@ -124,8 +124,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public getDocuments(id: number, batch?: any): Promise<Array<TRDocument>> {
     let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
     let docexpands = "File";
-    debugger;
-    let command:Items = pnp.sp.web.lists
+   
+    let command: Items = pnp.sp.web.lists
       .getByTitle(this.properties.trDocumentsListName)
       .items.filter("TR eq " + id)
       .expand(docexpands)
@@ -135,7 +135,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     return command.get().then((items) => {
       let docs: Array<TRDocument> = [];
-      debugger;
+    
       for (const item of items) {
         let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
         docs.push(trDoc);
@@ -183,7 +183,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       errorMessages: [],
       isDirty: false,
       showTRSearch: false,
+      documentCalloutVisible:false,
       documents: [],
+      documentCalloutTarget:null,
+      documentCalloutIframeUrl:null,
     };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
@@ -284,7 +287,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Documents
-        debugger;
+        
         this.getDocuments(id, batch).then((docs) => {
           formState.documents = docs;
         }).catch((error) => {
@@ -316,7 +319,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               });
           }
         }).catch((err) => {
-          debugger;
+         
           console.log("next number not increment to");
         });
     }
@@ -551,8 +554,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
   private navigateToSource() {
-    debugger;
-    let queryParameters = new UrlQueryParameterCollection(window.location.href);
+       let queryParameters = new UrlQueryParameterCollection(window.location.href);
     let encodedSource = queryParameters.getValue("Source");
     if (encodedSource) {
       let source = decodeURIComponent(encodedSource);
@@ -635,9 +637,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      debugger;
+
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
-        debugger;
+    
         console.log("staffcc emails wil lnot be processed");
         resolve(null);
         return;
@@ -668,25 +670,23 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               Subject: subject,
               Body: body
             };
-            debugger;
-            console.log("in emailStaffCC, emailing user " + user.Email);
+                      console.log("in emailStaffCC, emailing user " + user.Email);
             return pnp.sp.utility.sendEmail(emailProperties)
               .then((x) => {
                 console.log("email sent to " + emailProperties.To);
               })
               .catch((error) => {
-                debugger;
-                console.log(error);
+               console.log(error);
               });
 
           }).catch((error) => {
             console.log("Error Fetching user with id " + staffCC);
           });
           promises.push(promise);
-          debugger;
+         
         }
         Promise.all(promises).then((x) => {
-          debugger;
+   
           resolve();
         });
       });
@@ -776,15 +776,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
         .then((results) => {
           //return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
-            return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem().then((item) => {
-            debugger;
-            const itemID=parseInt(item["Id"])
+          return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem().then((item) => {
+  
+            const itemID = parseInt(item["Id"])
             return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(itemID).update({ "TRId": trId, Title: file.name })
               .then((response) => {
-                debugger;
+           
                 return;
               }).catch((error) => {
-                debugger;
+          
               });
           }).catch((error) => {
             console.log(error);
@@ -800,11 +800,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log({ data: data, message: "progress" });
         }, true)
         .then((results) => {
-          debugger;
-          console.log("done!")
+           console.log("done!")
         })
         .catch((error) => {
-          debugger;
+   
           console.log(error)
         });
     }
