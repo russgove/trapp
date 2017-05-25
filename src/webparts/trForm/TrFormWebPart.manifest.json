@@ -12,10 +12,43 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Request Forms"
+        "default": "Technical Requests--US Edit Form"
       },
       "description": {
-        "default": "App used in new, edit and Display forms for Technical Requests"
+        "default": "Edit Form for Technical Requests in the US Site"
+      },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "mode": "Edit",
+        "technicalRequestListName": "Technical Requests",
+        "applicationTYpeListName": "Application Types",
+        "endUseListName": "End Uses",
+        "workTypeListName": "Work Types",
+        "setupListName": "Setup",
+        "pigmentListName": "Pigments",
+        "nextNumbersListName": "Next Numbers",
+        "propertyListName": "Properties",
+        "testListName": "Tests",
+        "propertyTestListName": "Test Propeterties",
+        "partyListName": "Customers",
+        "trDocumentsListName": "TR Documents",
+        "enableEmail": true,
+        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx*",
+        "defaultSite": "OKC",
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+      }
+    },
+    {
+      "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
+      "group": {
+        "default": "Technical Requests"
+      },
+      "title": {
+        "default": "Technical Requests--US Display Form"
+      },
+      "description": {
+        "default": "Display Form for Technical Requests in the US Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
@@ -37,6 +70,138 @@
         "defaultSite": "OKC",
         "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
         "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+      }
+    },
+    {
+      "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
+      "group": {
+        "default": "Technical Requests"
+      },
+      "title": {
+        "default": "Technical Requests--US New Form"
+      },
+      "description": {
+        "default": "New Form for Technical Requests in the US Site"
+      },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "mode": "New",
+        "technicalRequestListName": "Technical Requests",
+        "applicationTYpeListName": "Application Types",
+        "endUseListName": "End Uses",
+        "workTypeListName": "Work Types",
+        "setupListName": "Setup",
+        "pigmentListName": "Pigments",
+        "nextNumbersListName": "Next Numbers",
+        "propertyListName": "Properties",
+        "testListName": "Tests",
+        "propertyTestListName": "Test Propeterties",
+        "partyListName": "Customers",
+        "trDocumentsListName": "TR Documents",
+        "enableEmail": true,
+        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx*",
+        "defaultSite": "OKC",
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+      }
+    },
+    {
+      "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
+      "group": {
+        "default": "Technical Requests"
+      },
+      "title": {
+        "default": "Technical Requests--AU Display Form"
+      },
+      "description": {
+        "default": "Display Form for Technical Requests in the AU Site"
+      },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "mode": "Display",
+        "technicalRequestListName": "Technical Requests",
+        "applicationTYpeListName": "Application Types",
+        "endUseListName": "End Uses",
+        "workTypeListName": "Work Types",
+        "setupListName": "Setup",
+        "pigmentListName": "Pigments",
+        "nextNumbersListName": "Next Numbers",
+        "propertyListName": "Properties",
+        "testListName": "Tests",
+        "propertyTestListName": "Test Propeterties",
+        "partyListName": "Customers",
+        "trDocumentsListName": "TR Documents",
+        "enableEmail": true,
+        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx*",
+        "defaultSite": "AP",
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+      }
+    },
+    {
+      "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
+      "group": {
+        "default": "Technical Requests"
+      },
+      "title": {
+        "default": "Technical Requests--AU Edit Form"
+      },
+      "description": {
+        "default": "Edit Form for Technical Requests in the AU Site"
+      },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "mode": "Edit",
+        "technicalRequestListName": "Technical Requests",
+        "applicationTYpeListName": "Application Types",
+        "endUseListName": "End Uses",
+        "workTypeListName": "Work Types",
+        "setupListName": "Setup",
+        "pigmentListName": "Pigments",
+        "nextNumbersListName": "Next Numbers",
+        "propertyListName": "Properties",
+        "testListName": "Tests",
+        "propertyTestListName": "Test Propeterties",
+        "partyListName": "Customers",
+        "trDocumentsListName": "TR Documents",
+        "enableEmail": true,
+        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx*",
+        "defaultSite": "AP",
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+      }
+    },
+      {
+      "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
+      "group": {
+        "default": "Technical Requests"
+      },
+      "title": {
+        "default": "Technical Requests--AU New Form"
+      },
+      "description": {
+        "default": "New Form for Technical Requests in the AU Site"
+      },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "mode": "New",
+        "technicalRequestListName": "Technical Requests",
+        "applicationTYpeListName": "Application Types",
+        "endUseListName": "End Uses",
+        "workTypeListName": "Work Types",
+        "setupListName": "Setup",
+        "pigmentListName": "Pigments",
+        "nextNumbersListName": "Next Numbers",
+        "propertyListName": "Properties",
+        "testListName": "Tests",
+        "propertyTestListName": "Test Propeterties",
+        "partyListName": "Customers",
+        "trDocumentsListName": "TR Documents",
+        "enableEmail": true,
+        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx*",
+        "defaultSite": "AP",
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
       }
     }
   ]
