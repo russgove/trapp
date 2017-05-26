@@ -111,10 +111,10 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--AU Display Form"
+        "default": "Technical Requests--AP Display Form"
       },
       "description": {
-        "default": "Display Form for Technical Requests in the AU Site"
+        "default": "Display Form for Technical Requests in the AP Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
@@ -132,10 +132,10 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx"
       }
     },
     {
@@ -147,7 +147,7 @@
         "default": "Technical Requests--AU Edit Form"
       },
       "description": {
-        "default": "Edit Form for Technical Requests in the AU Site"
+        "default": "Edit Form for Technical Requests in the AP Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
@@ -167,8 +167,8 @@
         "enableEmail": true,
         "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx"
       }
     },
       {
@@ -177,7 +177,7 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--AU New Form"
+        "default": "Technical Requests--AP New Form"
       },
       "description": {
         "default": "New Form for Technical Requests in the AU Site"
@@ -198,10 +198,10 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx",
+        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx"
       }
     }
   ]

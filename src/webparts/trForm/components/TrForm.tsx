@@ -329,13 +329,22 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     // get all the the tests in those propertyTests and output them as DisplayPropertyTest
     var tempDisplayTests: Array<DisplayPropertyTest> = [];
     for (const pt of temppropertyTest) {
+      console.log(`checking PropertyTest ${pt.id} with property ${pt.property} which has ${pt.testIds.length} tests`);
       for (const testid of pt.testIds) {
+        console.log(`Looking for  testid ${testid}`);
         const test: Test = _.find(this.props.tests, (t) => { return t.id === testid; });
-        tempDisplayTests.push({
-          property: pt.property,
-          testid: testid,
-          test: test.title
-        });
+        if (test) {
+          console.log(`adding test ${test.title}`);
+          tempDisplayTests.push({
+            property: pt.property,
+            testid: testid,
+            test: test.title
+          });
+        }
+        else {
+          console.log(` test ${testid} NOT FOUND`);
+        }
+
       }
     }
     // now remove those that are already on the tr
@@ -604,7 +613,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public editDocument(trdocument: TRDocument): void {
     debugger;
-//mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
+    //mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 1).then(url => {
       debugger;
       if (!url || url === "") {
@@ -681,12 +690,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
   }
   public documentRowMouseEnter(trdocument: TRDocument, e: any) {
-//mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
+    //mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 3).then(url => {
       if (!url || url === "") {
         url = trdocument.serverRalativeUrl;
       }
-      this.state.documentCalloutIframeUrl=url;
+      this.state.documentCalloutIframeUrl = url;
       this.state.documentCalloutTarget = e.target;
       this.state.documentCalloutVisible = true;
       this.setState(this.state);
@@ -700,7 +709,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.setState(this.state);
     console.log("mouse exit for " + item.title);
   }
-  public renderDocumentRow(props,defaultRender): JSX.Element {
+  public renderDocumentRow(props, defaultRender): JSX.Element {
 
     return (
       <div
@@ -1174,7 +1183,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <div style={{ float: "left" }}> 
+            <div style={{ float: "left" }}>
               <DetailsList
                 layoutMode={DetailsListLayoutMode.fixedColumns}
                 items={this.state.documents}
@@ -1190,7 +1199,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <input type='file' id='uploadfile' onChange={e => { debugger; this.uploadFile(e) }} />
             </div>
             <div style={{ float: "right" }}>
-            <DocumentIframe src={this.state.documentCalloutIframeUrl} />
+              <DocumentIframe src={this.state.documentCalloutIframeUrl} />
             </div>
             <div style={{ clear: "both" }}></div>
 
