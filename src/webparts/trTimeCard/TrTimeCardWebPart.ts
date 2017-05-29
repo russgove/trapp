@@ -21,9 +21,12 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     debugger;
     var defaultWeekEndDate: Date = new Date(moment().utc().endOf('isoWeek').startOf('day'));
     let props: ITrTimeCardProps = {
-      activeTRs: [], initialState: {
+      activeTRs: [],
+      userName: this.context.pageContext.user.displayName,
+      initialState: {
         weekEndingDate: defaultWeekEndDate,
-        timeSpents: []
+        timeSpents: [],
+
       }
     }
     let batch = pnp.sp.createBatch();
@@ -35,6 +38,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       .inBatch(batch)
       .get()
       .then((items) => {
+        debugger;
         props.activeTRs = _.map(items, (item) => {
           return {
             id: item["Id"],
@@ -57,6 +61,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       .inBatch(batch)
       .get()
       .then((items) => {
+        debugger;
         props.initialState.timeSpents = _.map(items, (item) => {
           return {
             Id: item["Id"],
@@ -73,6 +78,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       });
     batch.execute()
       .then((data) => {
+        debugger;
         this.reactElement = React.createElement(TrTimeCard, props);
         var formComponent: TrTimeCard = ReactDom.render(this.reactElement, this.domElement) as TrTimeCard;//render the component
       })
