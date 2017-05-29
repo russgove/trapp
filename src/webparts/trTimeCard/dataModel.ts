@@ -3,6 +3,7 @@ export class TimeSpent {
     public TR: number;
     public WeekEndingDate: Date;
     public HoursSpent: number;
+    public Id:number;
 
 }
 export class TechnicalRequest{
