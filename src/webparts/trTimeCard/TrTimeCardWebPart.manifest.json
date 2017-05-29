@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../node_modules/@microsoft/sp-module-interfaces/lib/manifestSchemas/jsonSchemas/clientSideComponentManifestSchema.json",
+
+  "id": "9d061ba8-16dc-4333-a969-f5b44a20dea3",
+  "alias": "TrTimeCardWebPart",
+  "componentType": "WebPart",
+  "version": "0.0.1",
+  "manifestVersion": 2,
+
+  "preconfiguredEntries": [{
+    "groupId": "9d061ba8-16dc-4333-a969-f5b44a20dea3",
+    "group": { "default": "Under Development" },
+    "title": { "default": "trTimeCard" },
+    "description": { "default": "Enter Time spent on Technical Requests" },
+    "officeFabricIconFontName": "Page",
+    "properties": {
+      "description": "trTimeCard"
+    }
+  }]
+}
