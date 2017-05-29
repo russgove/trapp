@@ -30,6 +30,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.expand("TRAssignedTo")
       .select("Title,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail")
       .filter("TRAssignedTo/EMail eq '" + this.context.pageContext.user.email + "'")
+      .inBatch(batch)
       .get()
       .then((items) => {
         props.activeTRs = _.map(items, (item) => {
@@ -41,20 +42,24 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
 
           }
         });
-        this.reactElement = React.createElement(TrTimeCard, props);
-        var formComponent: TrTimeCard = ReactDom.render(this.reactElement, this.domElement) as TrTimeCard;//render the component
+       
 
       }).catch((error) => {
         console.log("ERROR, An error occured fetching TRS");
         debugger;
         console.log(error.message);
       });
-    // })
-    // .catch((error) => {
-    //   console.log("ERROR, An error occured fetching currentuser");
-    //   console.log(error.message);
+  batch.execute()
+  .then((data)=>{
+ this.reactElement = React.createElement(TrTimeCard, props);
+        var formComponent: TrTimeCard = ReactDom.render(this.reactElement, this.domElement) as TrTimeCard;//render the component
+  })
+  .catch((error)=>{
+     console.log("ERROR, An error occured executing the batch");
+        debugger;
+        console.log(error.message);
 
-    // });
+  })
 
 
   }
