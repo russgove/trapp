@@ -49,7 +49,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           setKey="id"
           columns={[
             { key: "Id", name: "Id", fieldName: "Id", minWidth: 20, maxWidth: 200 },
-            { key: "TR", name: "TR", fieldName: "TR", minWidth: 20, maxWidth: 200 },
+            { key: "TR", name: "TR", fieldName: "TR.title", minWidth: 20, maxWidth: 200 },
             { key: "HoursSpent", name: "HoursSpent", fieldName: "HoursSpent", minWidth: 200 }
           ]}
         />

@@ -1,6 +1,6 @@
 export class TimeSpent {
     public TechnicalSpecialist: number;
-    public TR: number;
+    public TR: TechnicalRequest;
     public WeekEndingDate: Date;
     public HoursSpent: number;
     public Id:number;

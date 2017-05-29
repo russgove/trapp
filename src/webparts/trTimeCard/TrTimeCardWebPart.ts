@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
+import { TechnicalRequest } from "./dataModel";
 import { Version } from '@microsoft/sp-core-library';
 import pnp from "sp-pnp-js";
 import {
@@ -54,8 +55,8 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       });
     let tsFilter = `(TechmicalSpecialist/EMail eq '${this.context.pageContext.user.email}') and (WeekEndingDate eq datetime'${defaultWeekEndDate.toISOString()}')`;
 
-    pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.expand("TechmicalSpecialist")
-      .select("Id,WeekEndingDate,TRId,HoursSpent,TechmicalSpecialist/Id,TechmicalSpecialist/EMail")
+    pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.expand("TechmicalSpecialist,TR")
+      .select("Id,WeekEndingDate,TRId,HoursSpent,TechmicalSpecialist/Id,TechmicalSpecialist/EMail,TR/Title,TR/Id")
       .filter(tsFilter)
       // .orderBy('RequiredDate')
       .inBatch(batch)
@@ -63,10 +64,16 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       .then((items) => {
         debugger;
         props.initialState.timeSpents = _.map(items, (item) => {
+          let tr: TechnicalRequest = {
+            id: item["TRId"],
+            title: item["TR"]["Title"],
+            status: item["TR"]["Status"],
+            requiredDate: item["TR"]["RequiredDate"],
+          }
           return {
             Id: item["Id"],
             TechnicalSpecialist: item["TechnicalSpecialist"],
-            TR: item["TR"],
+            TR: tr,
             WeekEndingDate: item["WeekEndingDate"],
             HoursSpent: item["HoursSpent"]
           }
