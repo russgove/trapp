@@ -1,3 +1,5 @@
 export interface ITrTimeCardWebPartProps {
-  description: string;
+
+  technicalRequestListName: string;
+  timeSpentListName: string;
 }

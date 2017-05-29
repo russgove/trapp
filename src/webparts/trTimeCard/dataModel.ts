@@ -1,0 +1,14 @@
+export class TimeSpent {
+    public TechnicalSpecialist: number;
+    public TR: number;
+    public WeekEndingDate: Date;
+    public HoursSpent: number;
+
+}
+export class TechnicalRequest{
+    public id:number;
+    public title:string;
+    public status:string;
+    public requiredDate:Date;
+    
+}

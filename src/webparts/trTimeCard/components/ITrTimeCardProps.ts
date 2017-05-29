@@ -1,3 +1,6 @@
+import {TechnicalRequest} from '../dataModel';
+import {ITrTimeCardState} from './ITrTimeCardState';
 export interface ITrTimeCardProps {
-  description: string;
+   activeTRs:Array<TechnicalRequest>, // list of trs a person is working on
+   initialState:ITrTimeCardState
 }

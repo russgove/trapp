@@ -14,7 +14,8 @@
     "description": { "default": "Enter Time spent on Technical Requests" },
     "officeFabricIconFontName": "Page",
     "properties": {
-      "description": "trTimeCard"
+      "technicalRequestListName": "Technical Requests",
+      "timeSpentListName": "Time Spent"
     }
   }]
 }
