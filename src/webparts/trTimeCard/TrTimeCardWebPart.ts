@@ -19,7 +19,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
   private reactElement: React.ReactElement<ITrTimeCardProps>;
   public render(): void {
     debugger;
-    var defaultWeekEndDate: Date = new Date(moment().endOf('isoWeek').startOf('day'));
+    var defaultWeekEndDate: Date = new Date(moment().utc().endOf('isoWeek').startOf('day'));
     let props: ITrTimeCardProps = {
       activeTRs: [], initialState: {
         weekEndingDate: defaultWeekEndDate,
