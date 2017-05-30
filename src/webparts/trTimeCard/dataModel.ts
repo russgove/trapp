@@ -1,15 +1,22 @@
 export class TimeSpent {
-    public TechnicalSpecialist: number;
-    public TR: TechnicalRequest;
-    public WeekEndingDate: Date;
-    public HoursSpent: number;
-    public Id:number;
+    public technicalSpecialist: number;
+    public weekEndingDate: Date;
+    public hoursSpent: number;
+    public tsId: number;
+
+    public trId: number;
+    public trTitle: string;
+    public trStatus: string;
+    public trPriority: string;
+    public trRequiredDate: Date;
 
 }
-export class TechnicalRequest{
-    public id:number;
-    public title:string;
-    public status:string;
-    public requiredDate:Date;
+export class TechnicalRequest {
+    public trId: number;
+    public title: string;
+    public status: string;
+    public requiredDate: Date;
+    public priority: string;
     
+
 }

@@ -25,34 +25,78 @@ import * as _ from "lodash";
 import { TimeSpent } from "../dataModel";
 export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTimeCardState> {
   constructor(props: ITrTimeCardProps) {
-    debugger;
+
     super(props);
     this.state = props.initialState;
     this.setState(this.state);
     this.getDisplayTRs = this.getDisplayTRs.bind(this);
+    this.updateHoursSpent = this.updateHoursSpent.bind(this);
+    this.renderHoursSpent = this.renderHoursSpent.bind(this);
+    this.save = this.save.bind(this);
   }
   public getDisplayTRs(): Array<TimeSpent> {
     return this.state.timeSpents;
   }
 
+  public updateHoursSpent(trId: number, newValue: number) {
+    debugger;
+    let timeSpent = _.find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
+    if (timeSpent) {
+      timeSpent.hoursSpent = newValue;
+    } else {
+      console.log(`Cannot find timespent record with a TR id of ${trId}`);
+    }
+
+  }
+
+  public renderHoursSpent(item?: any, index?: number, column?: IColumn) {
+
+    return (<TextField
+      value={item.hoursSpent}
+      onChanged={(newValue) => { debugger; this.updateHoursSpent(item.trId, newValue) }}
+    />);
+  }
+  public save() {
+    this.props.save(this.state.timeSpents)
+      .then((response) => {
+        debugger
+        ;
+      })
+      .catch((error) => {
+        debugger;
+      })
+    return false; // stop postback
+  }
   public render(): React.ReactElement<ITrTimeCardProps> {
     debugger;
+
+
+
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
         <Label>(if you do not see a TR you are working on displayed here, please ask you adminstrator to assign it to you, or to reopen it) </Label>
-        
+
         <DetailsList
           layoutMode={DetailsListLayoutMode.fixedColumns}
           selectionMode={SelectionMode.none}
           items={this.state.timeSpents}
           setKey="Id"
           columns={[
-            { key: "Id", name: "Id", fieldName: "Id", minWidth: 20, maxWidth: 200 },
-            { key: "TR", name: "TR", fieldName: "TR.title", minWidth: 20, maxWidth: 200 },
-            { key: "HoursSpent", name: "HoursSpent", fieldName: "HoursSpent", minWidth: 200 }
+            { key: "trId", name: "trId", fieldName: "trId", minWidth: 20, maxWidth: 20 },
+            { key: "tsId", name: "tsId", fieldName: "tsId", minWidth: 20, maxWidth: 20 },
+            { key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 100 },
+            { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 100 },
+            { key: "Required", name: "Required", fieldName: "trRequired", minWidth: 20, maxWidth: 100 },
+            { key: "hoursSpent", name: "hoursSpent", fieldName: "hoursSpent", minWidth: 100, onRender: this.renderHoursSpent }
           ]}
         />
+        <span style={{ margin: 20 }}>
+          <Button href="#" onClick={this.save} icon="ms-Icon--Save">
+            <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
+            Save
+        </Button>
+        </span>
       </div>
 
     );

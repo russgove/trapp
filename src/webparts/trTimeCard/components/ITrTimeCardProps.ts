@@ -1,7 +1,10 @@
-import {TechnicalRequest} from '../dataModel';
+import {TimeSpent} from '../dataModel';
 import {ITrTimeCardState} from './ITrTimeCardState';
 export interface ITrTimeCardProps {
-   activeTRs:Array<TechnicalRequest>, // list of trs a person is working on
+   
    initialState:ITrTimeCardState,
-    userName:string
+    userName:string,
+    userId:number, // id if user in the siteUsers list (a number)
+    save:(ts:Array<TimeSpent>)=>Promise<void>,
+
 }
