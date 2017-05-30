@@ -97,7 +97,9 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
   public getTR(trId: number, batch?: any): Promise<TechnicalRequest> {
 
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
-    let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.expand("TRAssignedTo")
+    let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items
+    .getById(trId)
+    .expand("TRAssignedTo")
       .select("Title,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail");
 
     if (batch) {
@@ -190,7 +192,11 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
               timeSpent.trTitle = tr.title;
               timeSpent.trRequiredDate = tr.requiredDate;
             })
-            .catch((error) => { });
+            .catch((error) => {
+                console.log("ERROR, An error occured fetching the TRs for the TS");
+
+        console.log(error.message);
+             });
 
         }
         // add any trs user has not reported time for yet
