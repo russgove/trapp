@@ -45,8 +45,8 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
         <DetailsList
           layoutMode={DetailsListLayoutMode.fixedColumns}
           selectionMode={SelectionMode.none}
-          items={this.getDisplayTRs()}
-          setKey="id"
+          items={this.state.timeSpents}
+          setKey="Id"
           columns={[
             { key: "Id", name: "Id", fieldName: "Id", minWidth: 20, maxWidth: 200 },
             { key: "TR", name: "TR", fieldName: "TR.title", minWidth: 20, maxWidth: 200 },
