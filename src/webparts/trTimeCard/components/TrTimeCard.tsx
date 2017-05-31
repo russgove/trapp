@@ -119,7 +119,8 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
             { key: "tsId", name: "tsId", fieldName: "tsId", minWidth: 20, maxWidth: 20 },
             { key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 100 },
             { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 100 },
-            { key: "Required", name: "Required", fieldName: "trRequired", minWidth: 20, maxWidth: 100 },
+            { key: "Required", name: "Required", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 100,
+              onRender: (item) => <div>{ moment(item.trRequiredDate).toLocaleString() }</div>},
             { key: "hoursSpent", name: "hoursSpent", fieldName: "hoursSpent", minWidth: 100, onRender: this.renderHoursSpent }
           ]}
         />
