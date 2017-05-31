@@ -6,7 +6,7 @@ import { escape } from '@microsoft/sp-lodash-subset';
 
 
 import {
-  NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
+
 } from 'office-ui-fabric-react/lib/Pickers';
 import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
@@ -95,6 +95,13 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
+        <DatePicker
+          value={moment(this.state.weekEndingDate).toDate()}
+          onSelectDate={e => {
+            this.state.weekEndingDate = moment(e).utc().endOf('isoWeek').startOf('day').toDate();
+            this.setState(this.state);
+
+          }} />
         <Label>(if you do not see a TR you are working on displayed here, please ask you adminstrator to assign it to you, or to reopen it) </Label>
         <Label>{this.state.message}</Label>
         <DetailsList
