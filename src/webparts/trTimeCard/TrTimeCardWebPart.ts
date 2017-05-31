@@ -27,19 +27,18 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       });
     });
   }
-  public AddTimeSpent(batch, timeSpent: TimeSpent) {
-    pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.inBatch(batch).add({
+  public AddTimeSpent(batch, timeSpent: TimeSpent): Promise<number> {
+    return pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.inBatch(batch).add({
       TRId: timeSpent.trId,
       TechmicalSpecialistId: timeSpent.technicalSpecialist,
       WeekEndingDate: timeSpent.weekEndingDate,
       HoursSpent: timeSpent.hoursSpent
     }).then((response) => {
-
+      debugger;
+      return response.data.Id;
+      // CAPTURE ID TO RETURN
     })
-      .catch((error) => {
-        console.log("ERROR, An error occured adding timespent");
-        console.log(JSON.stringify(error));
-      });
+
   }
   public UpdateTimeSpent(batch, timeSpent: TimeSpent) {
     pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.getById(timeSpent.tsId).inBatch(batch).update({
@@ -55,19 +54,23 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         console.log(JSON.stringify(error));
       });
   }
-  public save(timeSpents: Array<TimeSpent>): Promise<any> {
+  public save(timeSpents: Array<TimeSpent>): Promise<Array<TimeSpent>> {
 
     let batch = pnp.sp.createBatch();
     for (const timeSpent of timeSpents) {
       if (timeSpent.tsId === null) {
-        this.AddTimeSpent(batch, timeSpent);
+        this.AddTimeSpent(batch, timeSpent).then((id)=>{
+          timeSpent.tsId=id;
+        });
       }
       else {
         this.UpdateTimeSpent(batch, timeSpent);
       }
 
     }
-    return batch.execute();
+    return batch.execute().then((x)=>{
+      return timeSpents;
+    });
   }
   public getAssignedTrs(batch?: any): Promise<Array<TechnicalRequest>> {
 
@@ -150,10 +153,12 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     let props: ITrTimeCardProps = {
       userName: this.context.pageContext.user.displayName,
       userId: null,
+     
       save: this.save.bind(this),
       initialState: {
         weekEndingDate: defaultWeekEndDate,
         timeSpents: [],
+         message:"",
       }
     }
     // mainBatch is used to fetch TimeSpents and users TRs
@@ -180,14 +185,14 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     });
     mainBatch.execute()
       .then((data) => {
-        debugger;
+
         // trBatc is used to fetch TRS associated with the timeSPents, needs to execute after we get all  the timespents
         let trBatch = pnp.sp.createBatch();
         // 
         for (let timeSpent of props.initialState.timeSpents) {
-          this.getTR(timeSpent.trId,trBatch)
+          this.getTR(timeSpent.trId, trBatch)
             .then((tr) => {
-              debugger;
+
               timeSpent.trPriority = tr.priority;
               timeSpent.trStatus = tr.status;
               timeSpent.trTitle = tr.title;
@@ -202,7 +207,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         }
         // add any trs user has not reported time for yet
         trBatch.execute().then((x) => {
-          debugger;
+
           for (const tr of activeTRs) {
             // add a row for any active projects not on list
             const itemIndex = _.findIndex(props.initialState.timeSpents, (item) => { return item.trId === tr.trId });

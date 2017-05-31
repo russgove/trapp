@@ -32,51 +32,71 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
     this.getDisplayTRs = this.getDisplayTRs.bind(this);
     this.updateHoursSpent = this.updateHoursSpent.bind(this);
     this.renderHoursSpent = this.renderHoursSpent.bind(this);
+    this._getErrorMessage = this._getErrorMessage.bind(this);
+    this._getErrorMessagePromise = this._getErrorMessagePromise.bind(this);
+
     this.save = this.save.bind(this);
   }
+  private _getErrorMessage(value: string): string {
+    var test = Number(value);
+    return isNaN(test)
+      ? ` ${value} is invalid.`
+      : "";
+  }
+
+
+  private _getErrorMessagePromise(value: string): Promise<string> {
+    return new Promise((resolve) => {
+      // resolve the promise after 3 second. 
+      setTimeout(() => resolve(this._getErrorMessage(value)), 5000);
+    });
+  }
+
   public getDisplayTRs(): Array<TimeSpent> {
     return this.state.timeSpents;
   }
 
-  public updateHoursSpent(trId: number, newValue: number) {
+  public updateHoursSpent(trId: number, newValue: any) {
 
     let timeSpent = _.find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
+    this.state.message = "";
     if (timeSpent) {
       timeSpent.hoursSpent = newValue;
     } else {
       console.log(`Cannot find timespent record with a TR id of ${trId}`);
     }
-
+    this.setState(this.state);
   }
 
   public renderHoursSpent(item?: any, index?: number, column?: IColumn) {
-
+    const hoursSpent: number = item.hoursSpent;
     return (<TextField
       value={item.hoursSpent}
-      onChanged={(newValue) => { debugger; this.updateHoursSpent(item.trId, newValue) }}
+      onGetErrorMessage={this._getErrorMessage}
+      validateOnFocusIn
+      validateOnFocusOut
+
+      onChanged={(newValue) => { this.updateHoursSpent(item.trId, newValue) }}
     />);
   }
   public save() {
     this.props.save(this.state.timeSpents)
-      .then((response) => {
-     
-        ;
+      .then((timespents) => {
+        this.state.timeSpents = timespents;
+        this.state.message = "Saved"
+        this.setState(this.state);
       })
       .catch((error) => {
-     
+        this.state.message = error;
       })
     return false; // stop postback
   }
   public render(): React.ReactElement<ITrTimeCardProps> {
-    debugger;
-
-
-
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
         <Label>(if you do not see a TR you are working on displayed here, please ask you adminstrator to assign it to you, or to reopen it) </Label>
-
+        <Label>{this.state.message}</Label>
         <DetailsList
           layoutMode={DetailsListLayoutMode.fixedColumns}
           selectionMode={SelectionMode.none}
