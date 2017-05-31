@@ -6,5 +6,6 @@ export interface ITrTimeCardProps {
     userName:string,
     userId:number, // id if user in the siteUsers list (a number)
     save:(ts:Array<TimeSpent>)=>Promise<Array<TimeSpent>>,
+        getTimeSpent:(weekEndingDate:Date)=>Promise<Array<TimeSpent>>,
 
 }

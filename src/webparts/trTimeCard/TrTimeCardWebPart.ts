@@ -59,16 +59,18 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     let batch = pnp.sp.createBatch();
     for (const timeSpent of timeSpents) {
       if (timeSpent.tsId === null) {
-        this.AddTimeSpent(batch, timeSpent).then((id)=>{
-          timeSpent.tsId=id;
-        });
+        if (timeSpent.hoursSpent !== 0) {
+          this.AddTimeSpent(batch, timeSpent).then((id) => {
+            timeSpent.tsId = id;
+          });
+        }
       }
       else {
         this.UpdateTimeSpent(batch, timeSpent);
       }
 
     }
-    return batch.execute().then((x)=>{
+    return batch.execute().then((x) => {
       return timeSpents;
     });
   }
@@ -147,18 +149,83 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       });
 
   }
+  public getTimeSpent(date: Date): Promise<Array<TimeSpent>> {
+    // mainBatch is used to fetch TimeSpents and users TRs
+    let mainBatch = pnp.sp.createBatch();
+    let activeTRs: Array<TechnicalRequest> = [];
+    let timeSpents: Array<TimeSpent> = [];
+    let userId: number;
+    pnp.sp.web.currentUser.inBatch(mainBatch).get()
+      .then((user) => {
+        userId = user.Id;
+      })
+    // get the Active TRS Assigned to the user. These need to be shown in the timesheet
+    this.getAssignedTrs(mainBatch).then((items) => {
+      activeTRs = items;
+    })
+    // get the Existing TimeSpents for the user in the selected weeek
+    this.getExistingTimeSpent(date, mainBatch).then(items => {
+      timeSpents = items;
+    });
+    return mainBatch.execute()
+      .then((data) => {
+        // trBatch is used to fetch TRS associated with the timeSPents, needs to execute after we get all  the timespents
+        let trBatch = pnp.sp.createBatch();
+        // 
+        for (let timeSpent of timeSpents) {
+          this.getTR(timeSpent.trId, trBatch)
+            .then((tr) => {
+              timeSpent.trPriority = tr.priority;
+              timeSpent.trStatus = tr.status;
+              timeSpent.trTitle = tr.title;
+              timeSpent.trRequiredDate = tr.requiredDate;
+            })
+            .catch((error) => {
+              console.log("ERROR, An error occured fetching the TRs for the TS");
+              console.log(error.message);
+            });
+        }
+        // add any trs user has not reported time for yet
+        return trBatch.execute().then((x) => {
+          for (const tr of activeTRs) {
+            // add a row for any active projects not on list
+            const itemIndex = _.findIndex(timeSpents, (item) => { return item.trId === tr.trId });
+            if (itemIndex === -1) {
+              timeSpents.push({
+                trId: tr.trId,
+                technicalSpecialist: userId,
+                weekEndingDate: date,
+                hoursSpent: 0,
+                tsId: null,
+                trTitle: tr.title,
+                trStatus: tr.status,
+                trRequiredDate: tr.requiredDate,
+                trPriority: tr.priority
+              });
+            }
+            else {
+              timeSpents[itemIndex].trPriority = tr.priority;
+              timeSpents[itemIndex].trRequiredDate = tr.requiredDate;
+              timeSpents[itemIndex].trStatus = tr.status;
+
+            }
+          }
+          return timeSpents;
+        });
+      });
+  }
   public render(): void {
 
     var defaultWeekEndDate: Date = new Date(moment().utc().endOf('isoWeek').startOf('day'));
     let props: ITrTimeCardProps = {
       userName: this.context.pageContext.user.displayName,
       userId: null,
-     
+      getTimeSpent: this.getTimeSpent.bind(this),
       save: this.save.bind(this),
       initialState: {
         weekEndingDate: defaultWeekEndDate,
         timeSpents: [],
-         message:"",
+        message: "",
       }
     }
     // mainBatch is used to fetch TimeSpents and users TRs
@@ -185,14 +252,12 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     });
     mainBatch.execute()
       .then((data) => {
-
-        // trBatc is used to fetch TRS associated with the timeSPents, needs to execute after we get all  the timespents
+        // trBatch is used to fetch TRS associated with the timeSPents, needs to execute after we get all  the timespents
         let trBatch = pnp.sp.createBatch();
         // 
         for (let timeSpent of props.initialState.timeSpents) {
           this.getTR(timeSpent.trId, trBatch)
             .then((tr) => {
-
               timeSpent.trPriority = tr.priority;
               timeSpent.trStatus = tr.status;
               timeSpent.trTitle = tr.title;
@@ -200,14 +265,11 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
             })
             .catch((error) => {
               console.log("ERROR, An error occured fetching the TRs for the TS");
-
               console.log(error.message);
             });
-
         }
         // add any trs user has not reported time for yet
         trBatch.execute().then((x) => {
-
           for (const tr of activeTRs) {
             // add a row for any active projects not on list
             const itemIndex = _.findIndex(props.initialState.timeSpents, (item) => { return item.trId === tr.trId });
@@ -234,18 +296,11 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
           this.reactElement = React.createElement(TrTimeCard, props);
           var formComponent: TrTimeCard = ReactDom.render(this.reactElement, this.domElement) as TrTimeCard;//render the component
         })
-
-
       })
-
       .catch((error) => {
         console.log("ERROR, An error occured executing the batch");
-
         console.log(error.message);
-
       })
-
-
   }
 
   protected get dataVersion(): Version {

@@ -98,8 +98,13 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
         <DatePicker
           value={moment(this.state.weekEndingDate).toDate()}
           onSelectDate={e => {
-            this.state.weekEndingDate = moment(e).utc().endOf('isoWeek').startOf('day').toDate();
-            this.setState(this.state);
+            const weekEndingDate = moment(e).utc().endOf('isoWeek').startOf('day').toDate();
+            this.props.getTimeSpent(weekEndingDate).then((timeSpents) => {
+              this.state.weekEndingDate = weekEndingDate;
+              this.state.timeSpents = timeSpents;
+              this.setState(this.state);
+            })
+
 
           }} />
         <Label>(if you do not see a TR you are working on displayed here, please ask you adminstrator to assign it to you, or to reopen it) </Label>
