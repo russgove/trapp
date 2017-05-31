@@ -115,8 +115,6 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           items={this.state.timeSpents}
           setKey="Id"
           columns={[
-            { key: "trId", name: "trId", fieldName: "trId", minWidth: 20, maxWidth: 20 },
-            { key: "tsId", name: "tsId", fieldName: "tsId", minWidth: 20, maxWidth: 20 },
             { key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 100 },
             { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 100 },
             { key: "Required", name: "Required", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 100,
