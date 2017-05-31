@@ -39,7 +39,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
   }
 
   public updateHoursSpent(trId: number, newValue: number) {
-    debugger;
+
     let timeSpent = _.find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
     if (timeSpent) {
       timeSpent.hoursSpent = newValue;
@@ -59,11 +59,11 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
   public save() {
     this.props.save(this.state.timeSpents)
       .then((response) => {
-        debugger
+     
         ;
       })
       .catch((error) => {
-        debugger;
+     
       })
     return false; // stop postback
   }
