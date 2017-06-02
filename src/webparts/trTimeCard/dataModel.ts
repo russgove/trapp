@@ -6,6 +6,7 @@ export class TimeSpent {
 
     public trId: number;
     public trTitle: string;
+    public trDescription: string;
     public trStatus: string;
     public trPriority: string;
     public trRequiredDate: Date;
@@ -14,9 +15,10 @@ export class TimeSpent {
 export class TechnicalRequest {
     public trId: number;
     public title: string;
+    public description: string;
     public status: string;
     public requiredDate: Date;
     public priority: string;
-    
+
 
 }
