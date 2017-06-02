@@ -21,7 +21,7 @@
       "properties": {
         "technicalRequestListName": "Technical Requests",
         "timeSpentListName": "Time Spent",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source={2}"
+        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR2/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source={2}"
       }
     }
   ]

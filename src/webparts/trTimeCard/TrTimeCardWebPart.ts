@@ -105,7 +105,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items
       .getById(trId)
       .expand("TRAssignedTo")
-      .select("Title,Description,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail");
+      .select("Title,RequestTitle,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail");
 
     if (batch) {
       command.inBatch(batch);
@@ -115,7 +115,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       return {
         trId: item["Id"],
         title: item["Title"],
-          description: item["Description"],
+        requestTitle: item["RequestTitle"],
         status: item["TRStatus"],
         requiredDate: item["RequiredDate"],
         priority: item["TRPriority"],
@@ -142,6 +142,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
             weekEndingDate: item["WeekEndingDate"],
             hoursSpent: item["HoursSpent"],
             trTitle: null,
+            trRequestTitle: null,
             trStatus: null,
             trPriority: null,
             trRequiredDate: null,
@@ -179,6 +180,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
               timeSpent.trPriority = tr.priority;
               timeSpent.trStatus = tr.status;
               timeSpent.trTitle = tr.title;
+              timeSpent.trRequestTitle = tr.requestTitle;
               timeSpent.trRequiredDate = tr.requiredDate;
             })
             .catch((error) => {
@@ -199,7 +201,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
                 hoursSpent: 0,
                 tsId: null,
                 trTitle: tr.title,
-                trDescription:tr.description,
+                trRequestTitle: tr.requestTitle,
                 trStatus: tr.status,
                 trRequiredDate: tr.requiredDate,
                 trPriority: tr.priority
@@ -224,7 +226,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       userId: null,
       getTimeSpent: this.getTimeSpent.bind(this),
       save: this.save.bind(this),
-      editFormUrlFormat:this.properties.editFormUrlFormat,
+      editFormUrlFormat: this.properties.editFormUrlFormat,
       initialState: {
         weekEndingDate: defaultWeekEndDate,
         timeSpents: [],
@@ -264,6 +266,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
               timeSpent.trPriority = tr.priority;
               timeSpent.trStatus = tr.status;
               timeSpent.trTitle = tr.title;
+              timeSpent.trRequestTitle = tr.requestTitle;
               timeSpent.trRequiredDate = tr.requiredDate;
             })
             .catch((error) => {
@@ -285,7 +288,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
                 tsId: null,
                 trTitle: tr.title,
                 trStatus: tr.status,
-                trDescription:tr.description,
+                trRequestTitle: tr.requestTitle,
                 trRequiredDate: tr.requiredDate,
                 trPriority: tr.priority
               });

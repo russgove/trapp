@@ -115,10 +115,19 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           items={this.state.timeSpents}
           setKey="Id"
           columns={[
-            { key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 100 },
-            { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 100 },
-            { key: "Required", name: "Required", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 100,
-              onRender: (item) => <div>{ moment(item.trRequiredDate).toLocaleString() }</div>},
+            {
+              key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 50,
+              onRender: (item) => <a href={this.props.editFormUrlFormat.replace("{1}", item.trId).replace("{2}", window.location.href)}>{item.trTitle}</a>
+            },
+            {
+              key: "Description", name: "Title", fieldName: "trRequestTitle", minWidth: 20, maxWidth: 150,
+              onRender: (item) => <div dangerouslySetInnerHTML={{__html: item.trRequestTitle}} /> 
+            },
+            { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 70 },
+            {
+              key: "Required", name: "Required", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 70,
+              onRender: (item) => <div>{moment(item.trRequiredDate).format("DD-MMM-YYYY")}</div>
+            },
             { key: "hoursSpent", name: "hoursSpent", fieldName: "hoursSpent", minWidth: 100, onRender: this.renderHoursSpent }
           ]}
         />
