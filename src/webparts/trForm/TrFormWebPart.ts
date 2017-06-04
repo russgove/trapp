@@ -378,7 +378,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
         });
       let customerFields = "Id,Title";
-      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("Active eq -1 ").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
+      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
           let customers: Array<Customer> = _.map(items, (item) => {
             return new Customer(item["Id"], item["Title"]);
