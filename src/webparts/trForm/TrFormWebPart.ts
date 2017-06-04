@@ -124,7 +124,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public getDocuments(id: number, batch?: any): Promise<Array<TRDocument>> {
     let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
     let docexpands = "File";
-   
+
     let command: Items = pnp.sp.web.lists
       .getByTitle(this.properties.trDocumentsListName)
       .items.filter("TR eq " + id)
@@ -135,7 +135,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     return command.get().then((items) => {
       let docs: Array<TRDocument> = [];
-    
+
       for (const item of items) {
         let trDoc: TRDocument = new TRDocument(item.Id, item.Title, item.File.ServerRelativeUrl, item.File.Length, item.File.Name, item.File.MajorVersion, item.File.MinorVersion);
         docs.push(trDoc);
@@ -183,10 +183,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       errorMessages: [],
       isDirty: false,
       showTRSearch: false,
-      documentCalloutVisible:false,
+      documentCalloutVisible: false,
       documents: [],
-      documentCalloutTarget:null,
-      documentCalloutIframeUrl:null,
+      documentCalloutTarget: null,
+      documentCalloutIframeUrl: null,
     };
     let batch = pnp.sp.createBatch();
     // get the Technincal Request content type so we can use it later in searches
@@ -215,18 +215,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log(error.message);
 
       });
-    pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.inBatch(batch).get()
-      .then((items) => {
-        formProps.workTypes = _.map(items, (item) => {
-          return new WorkType(item["Id"], item["Title"]);
-        });
 
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
-        console.log(error.message);
-
-      });
     pnp.sp.web.lists.getByTitle(this.properties.applicationTYpeListName).items.inBatch(batch).get()
       .then((items) => {
 
@@ -245,8 +234,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
-        let fields = "*,ParentTR/Title,Requestor/Title,Customer/Title,TRAssignedTo/Title,TRAssignedTo/Id";
-        let expands = "ParentTR,Requestor,Customer,TRAssignedTo";
+        let fields = "*,WorkType/Title,ParentTR/Title,Requestor/Title,Customer/Title,TRAssignedTo/Title,TRAssignedTo/Id";
+        let expands = "ParentTR,Requestor,Customer,TRAssignedTo,WorkType";
         // get the requested tr
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand(expands).select(fields).inBatch(batch).get()
 
@@ -263,6 +252,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
             if (item.Requestor) {// single value lookup
               formProps.requestors.push(new User(item.RequestorId, item.Requestor.Title));
+            }
+            if (item.WorkType) {// single value lookup
+              formProps.workTypes.push(new WorkType(item.WorkTypeId, item.WorkType.Title));
             }
           })
           .catch((error) => {
@@ -287,7 +279,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
           });
         // get the Documents
-        
+
         this.getDocuments(id, batch).then((docs) => {
           formState.documents = docs;
         }).catch((error) => {
@@ -319,7 +311,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               });
           }
         }).catch((err) => {
-         
+
           console.log("next number not increment to");
         });
     }
@@ -396,9 +388,38 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error.message);
         });
 
+      let workTypesFields = "Id,Title";
+      pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch2).get()
+        .then((items) => {
+          let workTypes: Array<WorkType> = _.map(items, (item) => {
+            return new WorkType(item["Id"], item["Title"]);
+          });
+          // add the one from the tr if not present
+          if (formProps.workTypes.length > 0 &&
+            _.find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
+            workTypes.push(formProps.workTypes[0]);
+          }
+          formProps.workTypes = workTypes;
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
+          console.log(error.message);
+
+        });
+
+
+
+
+
+
       let pigmentFields = "Id,Title,KMPigmentType,Manufacturer/Title";
       let pigmentExpands = "Manufacturer";
+
+
+
       pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
+
+
         .then((items) => {
           formProps.pigments = _.map(items, (item) => {
             let p: Pigment = new Pigment(item["Id"], item["Title"], item["KMPigmentType"]);
@@ -451,6 +472,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formComponent.props.propertyTests = formProps.propertyTests;
         formComponent.props.techSpecs = formProps.techSpecs;
         formComponent.props.requestors = formProps.requestors;
+            formComponent.props.workTypes = formProps.workTypes;
 
 
 
@@ -554,7 +576,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
   private navigateToSource() {
-       let queryParameters = new UrlQueryParameterCollection(window.location.href);
+    let queryParameters = new UrlQueryParameterCollection(window.location.href);
     let encodedSource = queryParameters.getValue("Source");
     if (encodedSource) {
       let source = decodeURIComponent(encodedSource);
@@ -639,7 +661,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     return new Promise((resolve, reject) => {
 
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
-    
+
         console.log("staffcc emails wil lnot be processed");
         resolve(null);
         return;
@@ -670,23 +692,23 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               Subject: subject,
               Body: body
             };
-                      console.log("in emailStaffCC, emailing user " + user.Email);
+            console.log("in emailStaffCC, emailing user " + user.Email);
             return pnp.sp.utility.sendEmail(emailProperties)
               .then((x) => {
                 console.log("email sent to " + emailProperties.To);
               })
               .catch((error) => {
-               console.log(error);
+                console.log(error);
               });
 
           }).catch((error) => {
             console.log("Error Fetching user with id " + staffCC);
           });
           promises.push(promise);
-         
+
         }
         Promise.all(promises).then((x) => {
-   
+
           resolve();
         });
       });
@@ -777,14 +799,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         .then((results) => {
           //return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
           return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem().then((item) => {
-  
+
             const itemID = parseInt(item["Id"])
             return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(itemID).update({ "TRId": trId, Title: file.name })
               .then((response) => {
-           
+
                 return;
               }).catch((error) => {
-          
+
               });
           }).catch((error) => {
             console.log(error);
@@ -800,10 +822,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log({ data: data, message: "progress" });
         }, true)
         .then((results) => {
-           console.log("done!")
+          console.log("done!")
         })
         .catch((error) => {
-   
+
           console.log(error)
         });
     }
