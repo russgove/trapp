@@ -538,7 +538,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     };
   }
   public TRsearch(searchText: string): Promise<TR[]> {
-
+debugger;
     //let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
     let queryText = "{0} Path:{1}*";
     queryText = queryText
@@ -548,13 +548,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let sq: SearchQuery = {
       Querytext: queryText,
       RowLimit: 50,
-      SelectProperties: ["Title", "ListItemID", "CEROWSTEXT", "CustomerOWSTEXT", "SiteOWSTEXT"]
+      SelectProperties: ["Title", "ListItemID", "RefinableString13", "RefinableString08", "RefinableString14"],
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
+      Refiners:"RefinableString02,RefinableString03"
     };
+    // refiners are in primarry query results reinemnet refiners
     console.log(sq);
 
-    return pnp.sp.search(sq).then((results: SearchResults) => {
+    return pnp.sp.search(sq). then((results: SearchResults) => {
       let returnValue: Array<TR> = [];
       for (let sr of results.PrimarySearchResults) {
         const temp = sr as any;

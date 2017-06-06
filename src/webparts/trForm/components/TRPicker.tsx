@@ -31,6 +31,7 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
 
     constructor(props: iTrPickerProps) {
         super(props);
+        debugger;
         this.state = {
             searchText: null,
             searchRusults: []
@@ -60,7 +61,7 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
         return moment(item[column.fieldName]).format("MMM Do YYYY");
     }
     public doSearch(newValue: any): void {
- 
+ debugger;
         this.props.callSearch(newValue).then((results) => {
             this.state.searchRusults = results;
             this.setState(this.state);
