@@ -27,6 +27,8 @@ import MessageDisplay from "./MessageDisplay";
 import * as tabs from "react-tabs";
 import TRPicker from "./TRPicker";
 import { ITRFormState } from "./ITRFormState";
+require('../../../../node_modules/office-ui-fabric-react/dist/css/fabric.css');
+require('../../../../node_modules/office-ui-fabric/dist/css/fabric.components.css');
 
 
 export default class TrForm extends React.Component<ITrFormProps, ITRFormState> {

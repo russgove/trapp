@@ -18,6 +18,9 @@ import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITRFormState } from './components/ITRFormState';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
+require('../../../node_modules/office-ui-fabric-react/dist/css/fabric.css');
+require('../../../node_modules/office-ui-fabric/dist/css/fabric.components.css');
+
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
   private tr: TR;
   private childTRs: Array<TR>;
@@ -548,7 +551,7 @@ debugger;
     let sq: SearchQuery = {
       Querytext: queryText,
       RowLimit: 50,
-      SelectProperties: ["Title", "ListItemID", "RefinableString13", "RefinableString08", "RefinableString14"],
+      SelectProperties: ["Title", "ListItemID", "RefinableString13", "RefinableString08", "RefinableString14","TR-RequestTitle","Description"],
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
       Refiners:"RefinableString02,RefinableString03"
@@ -563,9 +566,11 @@ debugger;
         let tr: TR = new TR();
         tr.Id = temp.ListItemID;
         tr.Title = temp.Title;
-        tr.CustomerId = temp.CustomerOWSTEXT;
-        tr.Site = temp.SiteOWSTEXT;
-        tr.CER = temp.CEROWSTEXT;
+        tr.CustomerId = temp.RefinableString08;
+        tr.Site = temp.RefinableString14;
+        tr.CER = temp.RefinableString13;
+        tr.RequestTitle=temp["TRRequestTitle"]
+        tr.Description=temp["Description"]
         returnValue.push(tr);
       }
 

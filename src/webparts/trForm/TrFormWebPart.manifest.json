@@ -1,3 +1,4 @@
+
 {
   "$schema": "../../../node_modules/@microsoft/sp-module-interfaces/lib/manifestSchemas/jsonSchemas/clientSideComponentManifestSchema.json",
   "id": "de8f72fd-5818-483e-a41a-c91968a94f17",
@@ -12,14 +13,14 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--US Edit Form"
+        "default": "TR-US Edit Form"
       },
       "description": {
         "default": "Edit Form for Technical Requests in the US Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "mode": "Edit",
+        "mode": 1,
         "technicalRequestListName": "Technical Requests",
         "applicationTYpeListName": "Application Types",
         "endUseListName": "End Uses",
@@ -45,14 +46,14 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--US Display Form"
+        "default": "TR-US Display Form"
       },
       "description": {
         "default": "Display Form for Technical Requests in the US Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "mode": "Display",
+        "mode": 2,
         "technicalRequestListName": "Technical Requests",
         "applicationTYpeListName": "Application Types",
         "endUseListName": "End Uses",
@@ -78,14 +79,14 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--US New Form"
+        "default": "TR--US New Form"
       },
       "description": {
         "default": "New Form for Technical Requests in the US Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "mode": "New",
+        "mode": 0,
         "technicalRequestListName": "Technical Requests",
         "applicationTYpeListName": "Application Types",
         "endUseListName": "End Uses",
@@ -111,14 +112,14 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--AP Display Form"
+        "default": "TR-AP Display Form"
       },
       "description": {
         "default": "Display Form for Technical Requests in the AP Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "mode": "Display",
+        "mode": 1,
         "technicalRequestListName": "Technical Requests",
         "applicationTYpeListName": "Application Types",
         "endUseListName": "End Uses",
@@ -144,14 +145,14 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--AU Edit Form"
+        "default": "TR-AP Edit Form"
       },
       "description": {
         "default": "Edit Form for Technical Requests in the AP Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "mode": "Edit",
+        "mode": 2,
         "technicalRequestListName": "Technical Requests",
         "applicationTYpeListName": "Application Types",
         "endUseListName": "End Uses",
@@ -177,14 +178,14 @@
         "default": "Technical Requests"
       },
       "title": {
-        "default": "Technical Requests--AP New Form"
+        "default": "TR-AP New Form"
       },
       "description": {
-        "default": "New Form for Technical Requests in the AU Site"
+        "default": "New Form for Technical Requests in the AP Site"
       },
       "officeFabricIconFontName": "Page",
       "properties": {
-        "mode": "New",
+        "mode": 0,
         "technicalRequestListName": "Technical Requests",
         "applicationTYpeListName": "Application Types",
         "endUseListName": "End Uses",
