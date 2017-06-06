@@ -75,31 +75,19 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
             <Modal isOpen={this.props.isOpen} >
 
                 <SearchBox onSearch={this.doSearch.bind(this)} />
-                {/*<DetailsList
-                    selectionMode={SelectionMode.none}
-                    layoutMode={DetailsListLayoutMode.fixedColumns}
-                    items={this.state.searchRusults}
-                    setKey="id"
-                    columns={[
-                        { key: "Select", onRender: this.renderSelect, name: "", fieldName: "Title", minWidth: 20, },
-                        { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
-                        { key: "CER", name: "CER", fieldName: "CER", minWidth: 90 },
-                        { key: "Customer", name: "Customer", fieldName: "Customer", minWidth: 80 },
-                        { key: "Site", name: "Site", fieldName: "Site", minWidth: 80 },
-
-                    ]}*/}
-                />
                 <List
 
 
                     items={this.state.searchRusults}
                     onRenderCell={(item, index) => (
-                        <div style={{ "width": "500px" }} onClick={(e) => { debugger; this.props.select(item.Id, item.Title); return false; }} >
+                        <div style={{ "width": "1700px" }} onClick={(e) => { debugger; this.props.select(item.Id, item.Title); return false; }} >
 
-                            <div className='ms-ListItem is-unread is-selectable'>
-                                <div className="ms-ListItem-selectionTarget js-toggleSelection"></div>
+                            <div className='ms-ListItem'>
                                 <span className='ms-ListItem-primaryText'>{item.Title}</span>
-                                <span className='ms-ListItem-tertiaryText'>{item.Description}</span>
+                                <span className='ms-ListItem-secondaryText'>
+                                    <Label style={{ "display": "inline" }} >Customer:</Label> <Label style={{ "display": "inline" }} >{item.CustomerId}</Label>
+                                </span>
+                                <div style={{ "width": "550px", "white-space": "normal" }} className='ms-ListItem-tertiaryText'>{item.Description}</div>
                             </div>
 
                         </div>
