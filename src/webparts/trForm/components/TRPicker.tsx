@@ -12,7 +12,6 @@ import { Label } from 'office-ui-fabric-react/lib/Label';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { List } from 'office-ui-fabric-react/lib/List';
 
-//require('../../../../node_modules/office-ui-fabric/dist/css/fabric.components.css');
 /** Framework */
 import * as React from 'react';
 
@@ -81,16 +80,16 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
             <Modal isOpen={this.props.isOpen} >
 
                 <SearchBox onSearch={this.doSearch.bind(this)} />
-                <List
+                <List style={{ "width": "700px" }}
 
 
                     items={this.state.searchRusults}
                     onRenderCell={(item, index) => (
-                        <div style={{ "width": "1700px" }} onClick={(e) => { debugger; this.props.select(item.Id, item.Title); return false; }} >
+                        <div style={{ "width": "700px" }} onClick={(e) => { debugger; this.props.select(item.Id, item.Title); return false; }} >
 
-                            <div className='ms-ListItem'>
-                                <span className='ms-ListItem-primaryText'>{item.Title}</span>
-                                <span className='ms-ListItem-secondaryText'>
+                            <div >
+                                <span style={{ "padding-right": "80px", "display": "block", "fontSize": "21px", "color": "#212121" }}>{item.Title}</span>
+                                <span style={{ "font-size": "14px", "color": "#333333" }}>
                                     <Label style={{ "display": "inline" }} >Customer:</Label> <Label style={{ "display": "inline" }} >{item.CustomerId}</Label>
                                 </span>
                                 <div style={{ "width": "550px", "white-space": "normal" }} className='ms-ListItem-tertiaryText'>{item.Description}</div>
