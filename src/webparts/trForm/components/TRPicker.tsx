@@ -12,15 +12,13 @@ import { Label } from 'office-ui-fabric-react/lib/Label';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { List } from 'office-ui-fabric-react/lib/List';
 
+//require('../../../../node_modules/office-ui-fabric/dist/css/fabric.components.css');
 /** Framework */
 import * as React from 'react';
 
-/** utilities */
-import * as _ from "lodash";
-
 /**Custom Stuff */
 import styles from './TrForm.module.scss';
-import { TR, modes } from "../dataModel";
+import { TR } from "../dataModel";
 
 export interface iTrPickerState {
     searchText: string;

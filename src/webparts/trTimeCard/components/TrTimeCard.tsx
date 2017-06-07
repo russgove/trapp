@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ITrTimeCardProps } from './ITrTimeCardProps';
 import { ITrTimeCardState } from './ITrTimeCardState';
-import { escape } from '@microsoft/sp-lodash-subset';
+//import { escape } from '@microsoft/sp-lodash-subset';
 ///// Add tab for testinParameters text block
 
 
@@ -19,7 +19,6 @@ import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, Selecti
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
-import { SPComponentLoader } from '@microsoft/sp-loader';
 import * as moment from 'moment';
 import * as _ from "lodash";
 import { TimeSpent } from "../dataModel";
@@ -76,19 +75,19 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
       validateOnFocusIn
       validateOnFocusOut
 
-      onChanged={(newValue) => { this.updateHoursSpent(item.trId, newValue) }}
+      onChanged={(newValue) => { this.updateHoursSpent(item.trId, newValue); }}
     />);
   }
   public save() {
     this.props.save(this.state.timeSpents)
       .then((timespents) => {
         this.state.timeSpents = timespents;
-        this.state.message = "Saved"
+        this.state.message = "Saved";
         this.setState(this.state);
       })
       .catch((error) => {
         this.state.message = error;
-      })
+      });
     return false; // stop postback
   }
   public render(): React.ReactElement<ITrTimeCardProps> {
@@ -103,8 +102,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
               this.state.weekEndingDate = weekEndingDate;
               this.state.timeSpents = timeSpents;
               this.setState(this.state);
-            })
-
+            });
 
           }} />
         <Label>(if you do not see a TR you are working on displayed here, please ask you adminstrator to assign it to you, or to reopen it) </Label>

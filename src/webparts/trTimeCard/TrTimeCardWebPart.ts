@@ -1,3 +1,4 @@
+import { ITrTimeCardWebPartProps } from './ITrTimeCardWebPartProps';
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { TimeSpent, TechnicalRequest } from "./dataModel";
@@ -12,8 +13,8 @@ import * as moment from "moment";
 import * as strings from 'trTimeCardStrings';
 import TrTimeCard from './components/TrTimeCard';
 import { ITrTimeCardProps } from './components/ITrTimeCardProps';
-import { ITrTimeCardState } from './components/ITrTimeCardState';
-import { ITrTimeCardWebPartProps } from './ITrTimeCardWebPartProps';
+
+
 import * as _ from 'lodash';
 export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCardWebPartProps> {
 
@@ -37,7 +38,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       debugger;
       return response.data.Id;
       // CAPTURE ID TO RETURN
-    })
+    });
 
   }
   public UpdateTimeSpent(batch, timeSpent: TimeSpent) {
@@ -95,7 +96,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
           status: item["TRStatus"],
           requiredDate: item["RequiredDate"],
           priority: item["TRPriority"],
-        }
+        };
       });
     });
   }
@@ -119,7 +120,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         status: item["TRStatus"],
         requiredDate: item["RequiredDate"],
         priority: item["TRPriority"],
-      }
+      };
     });
 
   }
@@ -146,7 +147,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
             trStatus: null,
             trPriority: null,
             trRequiredDate: null,
-          }
+          };
         });
       });
 
@@ -160,11 +161,11 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     pnp.sp.web.currentUser.inBatch(mainBatch).get()
       .then((user) => {
         userId = user.Id;
-      })
+      });
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
     this.getAssignedTrs(mainBatch).then((items) => {
       activeTRs = items;
-    })
+    });
     // get the Existing TimeSpents for the user in the selected weeek
     this.getExistingTimeSpent(date, mainBatch).then(items => {
       timeSpents = items;
@@ -192,7 +193,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         return trBatch.execute().then((x) => {
           for (const tr of activeTRs) {
             // add a row for any active projects not on list
-            const itemIndex = _.findIndex(timeSpents, (item) => { return item.trId === tr.trId });
+            const itemIndex = _.findIndex(timeSpents, (item) => { return item.trId === tr.trId; });
             if (itemIndex === -1) {
               timeSpents.push({
                 trId: tr.trId,
@@ -232,7 +233,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         timeSpents: [],
         message: "",
       }
-    }
+    };
     // mainBatch is used to fetch TimeSpents and users TRs
     let mainBatch = pnp.sp.createBatch();
 
@@ -250,7 +251,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
     this.getAssignedTrs(mainBatch).then((items) => {
       activeTRs = items;
-    })
+    });
     // get the Existing TimeSpents for the user in the selected weeek
     this.getExistingTimeSpent(defaultWeekEndDate, mainBatch).then(items => {
       props.initialState.timeSpents = items;
@@ -278,7 +279,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         trBatch.execute().then((x) => {
           for (const tr of activeTRs) {
             // add a row for any active projects not on list
-            const itemIndex = _.findIndex(props.initialState.timeSpents, (item) => { return item.trId === tr.trId });
+            const itemIndex = _.findIndex(props.initialState.timeSpents, (item) => { return item.trId === tr.trId; });
             if (itemIndex === -1) {
               props.initialState.timeSpents.push({
                 trId: tr.trId,
@@ -302,12 +303,12 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
           }
           this.reactElement = React.createElement(TrTimeCard, props);
           var formComponent: TrTimeCard = ReactDom.render(this.reactElement, this.domElement) as TrTimeCard;//render the component
-        })
+        });
       })
       .catch((error) => {
         console.log("ERROR, An error occured executing the batch");
         console.log(error.message);
-      })
+      });
   }
 
   protected get dataVersion(): Version {

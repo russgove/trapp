@@ -18,8 +18,7 @@ import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITRFormState } from './components/ITRFormState';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
-require('../../../node_modules/office-ui-fabric-react/dist/css/fabric.css');
-require('../../../node_modules/office-ui-fabric/dist/css/fabric.components.css');
+
 
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
   private tr: TR;
@@ -569,8 +568,8 @@ debugger;
         tr.CustomerId = temp.RefinableString08;
         tr.Site = temp.RefinableString14;
         tr.CER = temp.RefinableString13;
-        tr.RequestTitle=temp["TRRequestTitle"]
-        tr.Description=temp["Description"]
+        tr.RequestTitle=temp["TRRequestTitle"];
+        tr.Description=temp["Description"];
         returnValue.push(tr);
       }
 
@@ -657,7 +656,7 @@ debugger;
         Promise.all([newAssigneesPromise, staffccPromise]).then(() => {
           this.navigateToSource();// should stop here when on a form page  
           return newTR;
-        })
+        });
 
       });
 
@@ -768,7 +767,7 @@ debugger;
               };
               console.log("dending email to assignee assignee #" + assignee + "  " + user.Email);
               return pnp.sp.utility.sendEmail(emailProperties)
-                .then((x) => {
+                .then((resp) => {
                   console.log("Assignee email sent to " + emailProperties.To);
                 })
                 .catch((error) => {
@@ -785,7 +784,7 @@ debugger;
             console.log("asignee is not new");
           }
         }
-        Promise.all(promises).then((x) => {
+        Promise.all(promises).then((resp) => {
           resolve();
         });
       }).catch((error) => {
@@ -807,7 +806,7 @@ debugger;
           //return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
           return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem().then((item) => {
 
-            const itemID = parseInt(item["Id"])
+            const itemID = parseInt(item["Id"]);
             return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(itemID).update({ "TRId": trId, Title: file.name })
               .then((response) => {
 
@@ -821,7 +820,7 @@ debugger;
 
         }).catch((error) => {
           console.log(error);
-        })
+        });
     } else {
       // large upload
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
@@ -829,11 +828,11 @@ debugger;
           console.log({ data: data, message: "progress" });
         }, true)
         .then((results) => {
-          console.log("done!")
+          console.log("done!");
         })
         .catch((error) => {
 
-          console.log(error)
+          console.log(error);
         });
     }
   }

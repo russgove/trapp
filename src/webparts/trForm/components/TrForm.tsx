@@ -15,8 +15,7 @@ import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
 import { SPComponentLoader } from '@microsoft/sp-loader';
-require('../../../../node_modules/office-ui-fabric-react/dist/css/fabric.css');
-require('../../../../node_modules/office-ui-fabric/dist/css/fabric.components.css');
+
 
 /** SPFX Stuff */
 import * as React from 'react';
@@ -907,7 +906,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
 
-              <DatePicker
+              <DatePicker  isMonthPickerVisible={true} 
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
                 onSelectDate={e => {
                   this.state.isDirty = true;
@@ -1205,7 +1204,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
                 ]}
               />
-              <input type='file' id='uploadfile' onChange={e => { debugger; this.uploadFile(e) }} />
+              <input type='file' id='uploadfile' onChange={e => { debugger; this.uploadFile(e); }} />
             </div>
             <div style={{ float: "right" }}>
               <DocumentIframe src={this.state.documentCalloutIframeUrl} />
