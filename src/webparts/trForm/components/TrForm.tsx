@@ -1,10 +1,5 @@
-///// Add tab for testinParameters text block
-import { DocumentIframe } from "./DocumentIframe";
-import * as React from 'react';
-import styles from './TrForm.module.scss';
-import { ITrFormProps } from './ITrFormProps';
-import { escape } from '@microsoft/sp-lodash-subset';
-import { TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
+
+/** Fabric */
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
@@ -20,15 +15,27 @@ import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
 import { SPComponentLoader } from '@microsoft/sp-loader';
-import * as moment from 'moment';
-import * as _ from "lodash";
-import * as md from "./MessageDisplay";
-import MessageDisplay from "./MessageDisplay";
-import * as tabs from "react-tabs";
-import TRPicker from "./TRPicker";
-import { ITRFormState } from "./ITRFormState";
 require('../../../../node_modules/office-ui-fabric-react/dist/css/fabric.css');
 require('../../../../node_modules/office-ui-fabric/dist/css/fabric.components.css');
+
+/** SPFX Stuff */
+import * as React from 'react';
+import styles from './TrForm.module.scss';
+import { escape } from '@microsoft/sp-lodash-subset';
+
+/** Other utilities */
+import * as moment from 'moment';
+import * as _ from "lodash";
+import * as tabs from "react-tabs";
+
+/**  Custom Stuff */
+import { DocumentIframe } from "./DocumentIframe";
+import { TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
+import { ITrFormProps } from './ITrFormProps';
+import * as md from "./MessageDisplay";
+import MessageDisplay from "./MessageDisplay";
+import TRPicker from "./TRPicker";
+import { ITRFormState } from "./ITRFormState";
 
 
 export default class TrForm extends React.Component<ITrFormProps, ITRFormState> {

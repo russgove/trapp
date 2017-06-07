@@ -1,6 +1,4 @@
-import * as React from 'react';
-import styles from './TrForm.module.scss';
-import { TR, modes } from "../dataModel";
+/** FAbric */
 import {
     Modal, IModalProps
 } from 'office-ui-fabric-react/lib/Modal';
@@ -13,7 +11,17 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { List } from 'office-ui-fabric-react/lib/List';
+
+/** Framework */
+import * as React from 'react';
+
+/** utilities */
 import * as _ from "lodash";
+
+/**Custom Stuff */
+import styles from './TrForm.module.scss';
+import { TR, modes } from "../dataModel";
+
 export interface iTrPickerState {
     searchText: string;
     searchRusults: Array<TR>;
