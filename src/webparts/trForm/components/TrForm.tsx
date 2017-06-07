@@ -3,7 +3,7 @@
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
-import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
+import { PrimaryButton, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
@@ -15,7 +15,7 @@ import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
 import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
 import { SPComponentLoader } from '@microsoft/sp-loader';
-
+import {  IStyle,  ITheme,  getTheme,  mergeStyles} from '@uifabric/styling';
 
 /** SPFX Stuff */
 import * as React from 'react';
@@ -247,10 +247,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (this.props.mode === modes.DISPLAY) {
       return <div />;
     } else return (
-      <Button buttonType={ButtonType.primary} onClick={this.save} icon="ms-Icon--Save">
+      <PrimaryButton  theme={getTheme()} buttonType={ButtonType.primary} onClick={this.save} icon="ms-Icon--Save">
         <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
         Save
-      </Button>
+      </PrimaryButton>
       /*<span style={{ margin: 20 }}>
 
         <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
@@ -468,7 +468,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public renderTechSpecToggle(item?: any, index?: number, column?: IColumn): any {
 
     return (
-      <Toggle
+      <Toggle theme={getTheme()} 
         checked={item.selected}
         onText="Selected"
         offText=""
@@ -496,7 +496,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public renderStaffCCToggle(item?: any, index?: number, column?: IColumn): any {
 
     return (
-      <Toggle
+      <Toggle theme={getTheme()} 
         checked={item.selected}
         onText="Selected"
         offText=""
@@ -525,7 +525,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public renderAvailableTestsToggle(item?: any, index?: number, column?: IColumn): any {
     return (
-      <Toggle
+      <Toggle theme={getTheme()} 
         checked={false}
         onText=""
         offText=""
@@ -535,7 +535,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public renderSelectedTestsToggle(item?: any, index?: number, column?: IColumn): any {
     return (
-      <Toggle
+      <Toggle theme={getTheme()} 
         checked={true}
         onText=""
         offText=""
@@ -567,7 +567,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public renderAvailablePigmentsToggle(item?: any, index?: number, column?: IColumn): any {
 
     return (
-      <Toggle
+      <Toggle theme={getTheme()} 
         checked={false}
         onText=""
         offText=""
@@ -578,7 +578,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
   public renderSelectedPigmentsToggle(item?: any, index?: number, column?: IColumn): any {
     return (
-      <Toggle
+      <Toggle theme={getTheme()} 
         checked={true}
         onText=""
         offText=""
@@ -906,7 +906,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
 
-              <DatePicker  isMonthPickerVisible={true} 
+              <DatePicker  
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
                 onSelectDate={e => {
                   this.state.isDirty = true;
@@ -1217,10 +1217,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
         <this.SaveButton />
         <span style={{ margin: 20 }}>
-          <Button href="#" onClick={this.cancel} icon="ms-Icon--Cancel">
+          <PrimaryButton theme={getTheme()} href="#" onClick={this.cancel} icon="ms-Icon--Cancel">
             <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
             Cancel
-        </Button>
+        </PrimaryButton>
         </span>
         <TRPicker
           isOpen={this.state.showTRSearch}

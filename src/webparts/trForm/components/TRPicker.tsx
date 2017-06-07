@@ -6,11 +6,12 @@ import {
     SearchBox, ISearchBoxProps
 } from 'office-ui-fabric-react/lib/SearchBox';
 import { Link } from 'office-ui-fabric-react/lib/Link';
-import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
+import { PrimaryButton, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { List } from 'office-ui-fabric-react/lib/List';
+import {  IStyle,  ITheme,  getTheme,  mergeStyles} from '@uifabric/styling';
 
 /** Framework */
 import * as React from 'react';
@@ -99,10 +100,10 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
                     )}
 
                 />
-                <Button href="#" onClick={this.props.cancel} icon="ms-Icon--Cancel">
+                <PrimaryButton  theme={getTheme()} href="#" onClick={this.props.cancel} icon="ms-Icon--Cancel">
                     <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
                     Cancel
-        </Button>
+        </PrimaryButton>
 
             </Modal>
         );
