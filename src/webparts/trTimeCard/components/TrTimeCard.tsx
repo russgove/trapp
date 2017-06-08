@@ -111,12 +111,12 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           setKey="Id"
           columns={[
             {
-              key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 50,
+              key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 100,
               onRender: (item) => <a href={this.props.editFormUrlFormat.replace("{1}", item.trId).replace("{2}", window.location.href).replace("{3}",this.props.webUrl)}>{item.trTitle}</a>
             },
             {
               key: "Description", name: "Title", fieldName: "trRequestTitle", minWidth: 20, maxWidth: 150,
-              onRender: (item) => <div dangerouslySetInnerHTML={{__html: item.trRequestTitle}} /> 
+              onRender: (item) => <div style={{"whiteSpace":"normal"}} dangerouslySetInnerHTML={{__html: item.trRequestTitle}} /> 
             },
             { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 70 },
             {

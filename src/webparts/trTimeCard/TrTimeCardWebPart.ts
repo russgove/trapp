@@ -80,7 +80,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
     let filterString = `(TRAssignedTo/EMail eq '${this.context.pageContext.user.email}') and (TRStatus ne 'Completed')`;
     let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.expand("TRAssignedTo")
-      .select("Title,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail")
+      .select("Title,RequestTitle,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail")
       .filter(filterString)
       .orderBy('RequiredDate');
     if (batch) {
@@ -96,6 +96,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
           status: item["TRStatus"],
           requiredDate: item["RequiredDate"],
           priority: item["TRPriority"],
+          requestTitle: item["RequestTitle"],
         };
       });
     });
@@ -228,7 +229,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       getTimeSpent: this.getTimeSpent.bind(this),
       save: this.save.bind(this),
       editFormUrlFormat: this.properties.editFormUrlFormat,
-      webUrl:this.context.pageContext.web.absoluteUrl,
+      webUrl: this.context.pageContext.web.absoluteUrl,
       initialState: {
         weekEndingDate: defaultWeekEndDate,
         timeSpents: [],
@@ -259,12 +260,14 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     });
     mainBatch.execute()
       .then((data) => {
+        debugger;
         // trBatch is used to fetch TRS associated with the timeSPents, needs to execute after we get all  the timespents
         let trBatch = pnp.sp.createBatch();
         // 
         for (let timeSpent of props.initialState.timeSpents) {
           this.getTR(timeSpent.trId, trBatch)
             .then((tr) => {
+              debugger;
               timeSpent.trPriority = tr.priority;
               timeSpent.trStatus = tr.status;
               timeSpent.trTitle = tr.title;
@@ -278,8 +281,10 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         }
         // add any trs user has not reported time for yet
         trBatch.execute().then((x) => {
+          debugger;
           for (const tr of activeTRs) {
             // add a row for any active projects not on list
+            debugger;
             const itemIndex = _.findIndex(props.initialState.timeSpents, (item) => { return item.trId === tr.trId; });
             if (itemIndex === -1) {
               props.initialState.timeSpents.push({
@@ -327,9 +332,16 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
+                PropertyPaneTextField('editFormUrlFormat', {
+                  label: "Url format for edit form"
+                }),
+                PropertyPaneTextField('technicalRequestListName', {
+                  label: "List Name for Technical Requests"
+                }),
+                PropertyPaneTextField('timeSpentListName', {
+                  label: "List Name for Time Spent"
                 })
+
               ]
             }
           ]
