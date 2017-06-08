@@ -1,4 +1,3 @@
-
 {
   "$schema": "../../../node_modules/@microsoft/sp-module-interfaces/lib/manifestSchemas/jsonSchemas/clientSideComponentManifestSchema.json",
   "id": "de8f72fd-5818-483e-a41a-c91968a94f17",
@@ -34,10 +33,10 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
       }
     },
     {
@@ -67,10 +66,10 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
       }
     },
     {
@@ -100,10 +99,10 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/US/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FUS%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
       }
     },
     {
@@ -133,10 +132,10 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
       }
     },
     {
@@ -166,13 +165,13 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AU/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
       }
     },
-      {
+    {
       "groupId": "de8f72fd-5818-483e-a41a-c91968a94f17",
       "group": {
         "default": "Technical Requests"
@@ -199,10 +198,10 @@
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
         "enableEmail": true,
-        "searchPath": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx*",
+        "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx",
-        "displayFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR/AP/Lists/tblRequest/DispForm.aspx?ID={1}&Source=https%3A%2F%2Ftronoxglobal%2Esharepoint%2Ecom%2Fsites%2FTR%2FAP%2FLists%2FtblRequest%2FTRs%2Easpx"
+        "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
       }
     }
   ]

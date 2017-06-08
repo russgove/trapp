@@ -545,7 +545,7 @@ debugger;
     let queryText = "{0} Path:{1}*";
     queryText = queryText
       .replace("{0}", searchText)
-      .replace("{1}", this.properties.searchPath);
+      .replace("{1}", this.properties.searchPath.split('{0}').join(this.context.pageContext.web.absoluteUrl));
     //.replace("{2}", this.trContentTypeID);
     let sq: SearchQuery = {
       Querytext: queryText,
@@ -674,7 +674,10 @@ debugger;
       }
       let promises: Array<Promise<any>> = [];
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
+      editFormUrl= editFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+       displayFormUrl= displayFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
+      
       console.log("fetching email text in emailStaffCC");
 
       var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
