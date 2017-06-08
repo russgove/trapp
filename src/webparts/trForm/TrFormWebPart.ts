@@ -474,7 +474,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         formComponent.props.propertyTests = formProps.propertyTests;
         formComponent.props.techSpecs = formProps.techSpecs;
         formComponent.props.requestors = formProps.requestors;
-            formComponent.props.workTypes = formProps.workTypes;
+        formComponent.props.workTypes = formProps.workTypes;
 
 
 
@@ -533,6 +533,48 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   text: "Enable sending emails to assignees and staff cc",
                 })
               ]
+            },
+                        {
+              groupName: "List Names",
+              groupFields: [
+                
+                PropertyPaneTextField('technicalRequestListName', {
+                  label: "Technical Requests list name",
+                }),
+                PropertyPaneTextField('applicationTYpeListName', {
+                  label: "Application Types list name",
+                }),
+                PropertyPaneTextField('endUseListName', {
+                  label: "End Uses list name",
+                }),
+                PropertyPaneTextField('workTypeListName', {
+                  label: "Work Types list name",
+                }),
+                PropertyPaneTextField('setupListName', {
+                  label: "Setup list name",
+                }),
+                PropertyPaneTextField('pigmentListName', {
+                  label: "Pigments list name",
+                }),
+                PropertyPaneTextField('nextNumbersListName', {
+                  label: "Next Numbers list name",
+                }),
+                  PropertyPaneTextField('propertyListName', {
+                  label: "Properties list name",
+                }),
+                PropertyPaneTextField('testListName', {
+                  label: "Tests list name",
+                }),
+                PropertyPaneTextField('propertyTestListName', {
+                  label: "Test Propeterties list name",
+                }),
+                PropertyPaneTextField('partyListName', {
+                  label: "Customers list name",
+                }),
+                PropertyPaneTextField('trDocumentsListName', {
+                  label: "TR Documents library name",
+                }),
+              ]
             }
           ]
         }
@@ -540,7 +582,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     };
   }
   public TRsearch(searchText: string): Promise<TR[]> {
-debugger;
+  
     //let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
     let queryText = "{0} Path:{1}*";
     queryText = queryText
@@ -550,15 +592,15 @@ debugger;
     let sq: SearchQuery = {
       Querytext: queryText,
       RowLimit: 50,
-      SelectProperties: ["Title", "ListItemID", "RefinableString13", "RefinableString08", "RefinableString14","TR-RequestTitle","Description"],
+      SelectProperties: ["Title", "ListItemID", "RefinableString13", "RefinableString08", "RefinableString14", "TR-RequestTitle", "Description"],
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
       // SelectProperties: ["*"]
-      Refiners:"RefinableString02,RefinableString03"
+      Refiners: "RefinableString02,RefinableString03"
     };
     // refiners are in primarry query results reinemnet refiners
     console.log(sq);
 
-    return pnp.sp.search(sq). then((results: SearchResults) => {
+    return pnp.sp.search(sq).then((results: SearchResults) => {
       let returnValue: Array<TR> = [];
       for (let sr of results.PrimarySearchResults) {
         const temp = sr as any;
@@ -568,16 +610,12 @@ debugger;
         tr.CustomerId = temp.RefinableString08;
         tr.Site = temp.RefinableString14;
         tr.CER = temp.RefinableString13;
-        tr.RequestTitle=temp["TR-RequestTitle"];
-        tr.Description=temp["Description"];
+        tr.RequestTitle = temp["TR-RequestTitle"];
+        tr.Description = temp["Description"];
         returnValue.push(tr);
       }
-
-
       return _.sortBy(returnValue, "Title");
     });
-
-
   }
 
 
@@ -674,10 +712,10 @@ debugger;
       }
       let promises: Array<Promise<any>> = [];
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
-      editFormUrl= editFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
+      editFormUrl = editFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-       displayFormUrl= displayFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
-      
+      displayFormUrl = displayFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
+
       console.log("fetching email text in emailStaffCC");
 
       var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
