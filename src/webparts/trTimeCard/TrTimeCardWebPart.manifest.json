@@ -3,7 +3,7 @@
   "id": "9d061ba8-16dc-4333-a969-f5b44a20dea3",
   "alias": "TrTimeCardWebPart",
   "componentType": "WebPart",
-  "version": "0.0.1",
+  "version": "1.4.0",
   "manifestVersion": 2,
   "preconfiguredEntries": [
     {
@@ -21,7 +21,7 @@
       "properties": {
         "technicalRequestListName": "Technical Requests",
         "timeSpentListName": "Time Spent",
-        "editFormUrlFormat": "https://tronoxglobal.sharepoint.com/sites/TR2/AP/Lists/tblRequest/EditForm.aspx?ID={1}&Source={2}"
+        "editFormUrlFormat":  "{3}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={2}"
       }
     }
   ]

@@ -228,6 +228,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       getTimeSpent: this.getTimeSpent.bind(this),
       save: this.save.bind(this),
       editFormUrlFormat: this.properties.editFormUrlFormat,
+      webUrl:this.context.pageContext.web.absoluteUrl,
       initialState: {
         weekEndingDate: defaultWeekEndDate,
         timeSpents: [],

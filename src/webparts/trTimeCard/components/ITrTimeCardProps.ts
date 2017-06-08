@@ -8,4 +8,5 @@ export interface ITrTimeCardProps {
     save: (ts: Array<TimeSpent>) => Promise<Array<TimeSpent>>;
     getTimeSpent: (weekEndingDate: Date) => Promise<Array<TimeSpent>>;
     editFormUrlFormat: string;
+    webUrl: string;
 }

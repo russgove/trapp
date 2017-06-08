@@ -2,13 +2,9 @@ import * as React from 'react';
 import { ITrTimeCardProps } from './ITrTimeCardProps';
 import { ITrTimeCardState } from './ITrTimeCardState';
 //import { escape } from '@microsoft/sp-lodash-subset';
-///// Add tab for testinParameters text block
-
-
 import {
-
 } from 'office-ui-fabric-react/lib/Pickers';
-import { Button, ButtonType } from 'office-ui-fabric-react/lib/Button';
+import { PrimaryButton, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
@@ -91,6 +87,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
     return false; // stop postback
   }
   public render(): React.ReactElement<ITrTimeCardProps> {
+    debugger;
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
@@ -115,7 +112,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           columns={[
             {
               key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 50,
-              onRender: (item) => <a href={this.props.editFormUrlFormat.replace("{1}", item.trId).replace("{2}", window.location.href)}>{item.trTitle}</a>
+              onRender: (item) => <a href={this.props.editFormUrlFormat.replace("{1}", item.trId).replace("{2}", window.location.href).replace("{3}",this.props.webUrl)}>{item.trTitle}</a>
             },
             {
               key: "Description", name: "Title", fieldName: "trRequestTitle", minWidth: 20, maxWidth: 150,
@@ -130,10 +127,10 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           ]}
         />
         <span style={{ margin: 20 }}>
-          <Button href="#" onClick={this.save} icon="ms-Icon--Save">
+          <PrimaryButton  href="#" onClick={this.save} icon="ms-Icon--Save">
             <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
             Save
-        </Button>
+        </PrimaryButton>
         </span>
       </div>
 

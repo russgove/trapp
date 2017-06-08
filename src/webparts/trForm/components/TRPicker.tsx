@@ -11,7 +11,7 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { List } from 'office-ui-fabric-react/lib/List';
-import {  IStyle,  ITheme,  getTheme,  mergeStyles} from '@uifabric/styling';
+
 
 /** Framework */
 import * as React from 'react';
@@ -93,14 +93,14 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
                                 <span style={{ "font-size": "14px", "color": "#333333" }}>
                                     <Label style={{ "display": "inline" }} >Customer:</Label> <Label style={{ "display": "inline" }} >{item.CustomerId}</Label>
                                 </span>
-                                <div style={{ "width": "550px", "white-space": "normal" }} className='ms-ListItem-tertiaryText'>{item.Description}</div>
+                                <div style={{ "width": "550px", "white-space": "normal" }} className='ms-ListItem-tertiaryText'>{item.RequestTitle}</div>
                             </div>
 
                         </div>
                     )}
 
                 />
-                <PrimaryButton  theme={getTheme()} href="#" onClick={this.props.cancel} icon="ms-Icon--Cancel">
+                <PrimaryButton href="#" onClick={this.props.cancel} icon="ms-Icon--Cancel">
                     <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
                     Cancel
         </PrimaryButton>

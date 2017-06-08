@@ -268,7 +268,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTRId eq " + id).expand(expands).select(fields).inBatch(batch).get()
 
           .then((items) => {
-            // this may resilve befor we get the mainn tr, so jyst stash them away for now.
+            // this may resilve befor we get the mainn tr, so jyst stash  away for now.
             for (const item of items) {
               let childtr: TR = new TR();
               this.moveFieldsToTR(childtr, item);
@@ -568,7 +568,7 @@ debugger;
         tr.CustomerId = temp.RefinableString08;
         tr.Site = temp.RefinableString14;
         tr.CER = temp.RefinableString13;
-        tr.RequestTitle=temp["TRRequestTitle"];
+        tr.RequestTitle=temp["TR-RequestTitle"];
         tr.Description=temp["Description"];
         returnValue.push(tr);
       }
