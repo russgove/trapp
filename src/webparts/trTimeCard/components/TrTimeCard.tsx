@@ -23,12 +23,9 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
     super(props);
     this.state = props.initialState;
     this.setState(this.state);
-    
     this.updateHoursSpent = this.updateHoursSpent.bind(this);
     this.renderHoursSpent = this.renderHoursSpent.bind(this);
     this._getErrorMessage = this._getErrorMessage.bind(this);
-    
-
     this.save = this.save.bind(this);
   }
 
@@ -49,8 +46,15 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
   }
 
 
+  /**
+   * Called when the user enter info into the textbox, this method updates the hours spent on the TR stored in state
+   * 
+   * @param {number} trId  The ID of the TR the hours were entered for
+   * @param {*} newValue  Th evalue entered
+   * 
+   * @memberof TrTimeCard
+   */
   public updateHoursSpent(trId: number, newValue: any) {
-
     let timeSpent = _.find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
     this.state.message = "";
     if (timeSpent) {
@@ -61,6 +65,16 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
     this.setState(this.state);
   }
 
+  /**
+   * Called by the Details list to reneder the HoursWorked textbox with appropriate handlers
+   * 
+   * @param {*} [item] The timeSpent record
+   * @param {number} [index]  The index of the TimeSpent record in the array//not used
+   * @param {IColumn} [column]  The column tyo display//not used
+   * @returns 
+   * 
+   * @memberof TrTimeCard
+   */
   public renderHoursSpent(item?: any, index?: number, column?: IColumn) {
     const hoursSpent: number = item.hoursSpent;
     return (<TextField
@@ -68,10 +82,18 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
       onGetErrorMessage={this._getErrorMessage}
       validateOnFocusIn
       validateOnFocusOut
-
       onChanged={(newValue) => { this.updateHoursSpent(item.trId, newValue); }}
     />);
   }
+
+  /**
+   * Saves all data entered back to sharepoint. Then Updates the state with the info retuended. Note that When 
+   * new TimeSpent rows are created , the ID of the new row is returned, so we need to update our state to have the 
+   * new row id.
+   * @returns 
+   * 
+   * @memberof TrTimeCard
+   */
   public save() {
     this.props.save(this.state.timeSpents)
       .then((timespents) => {
@@ -84,6 +106,13 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
       });
     return false; // stop postback
   }
+
+  /**
+   * Renders the display.
+   * @returns {React.ReactElement<ITrTimeCardProps>} 
+   * 
+   * @memberof TrTimeCard
+   */
   public render(): React.ReactElement<ITrTimeCardProps> {
     debugger;
     return (

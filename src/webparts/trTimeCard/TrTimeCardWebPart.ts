@@ -216,7 +216,8 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
   /**
    * This is the main method used to fetch data to be displayed in the grid. It calls getAssignedTrs, getExistingTimeSpent,
    * and getTR, and merges all the info together into an array of TimeSpent that gets passed to the react component 
-   * to display.
+   * to display. This method is called from the Render method of the webpart to get the initial data to display, 
+   * and als when the user changes the date in the UI.
    * 
    * @param {Date} date -- the date to fetch timeSpent record s for
    * @returns {Promise<Array<TimeSpent>>}  An aArray of TimeSpent records to be displayed (includes infr from the TR as well)
@@ -293,7 +294,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
 
   /**
    * SPFX renbder method 
-   * 
+   * gets data , Sets props and renders component
    * 
    * @memberof TrTimeCardWebPart
    */
