@@ -20,14 +20,22 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
 
   private reactElement: React.ReactElement<ITrTimeCardProps>;
   public onInit(): Promise<void> {
-
     return super.onInit().then(_ => {
-
       pnp.setup({
         spfxContext: this.context,
       });
     });
   }
+
+  /**
+   * Adds a new row to the TimeSpent list
+   * 
+   * @param {any} batch The odata batch to execute the call in (from pnp.SP.createBatch)
+   * @param {TimeSpent} timeSpent  A TimeSpent reord to be added to the TImeSpent list
+   * @returns {Promise<number>}  The UID of the TimeSpent record that was edded
+   * 
+   * @memberof TrTimeCardWebPart
+   */
   public AddTimeSpent(batch, timeSpent: TimeSpent): Promise<number> {
     return pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.inBatch(batch).add({
       TRId: timeSpent.trId,
@@ -41,6 +49,15 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     });
 
   }
+
+  /**
+   * Updates an existing record in the TimeSpent list
+   * 
+   * @param {any} batch  batch The odata batch to execute the call in (from pnp.SP.createBatch)
+   * @param {TimeSpent} timeSpent  A TimeSpent reord to be added to the TImeSpent list. The Id must be present on this item
+   * 
+   * @memberof TrTimeCardWebPart
+   */
   public UpdateTimeSpent(batch, timeSpent: TimeSpent) {
     pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.getById(timeSpent.tsId).inBatch(batch).update({
       TRId: timeSpent.trId,
@@ -55,8 +72,18 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         console.log(JSON.stringify(error));
       });
   }
-  public save(timeSpents: Array<TimeSpent>): Promise<Array<TimeSpent>> {
 
+  /**
+   *  Called by the TRTimeCard react Component, this method saves changes to the TimeSPent list. Records with no id are 
+   * added. Record with an id are updated.
+   * 
+   * @param {Array<TimeSpent>} timeSpents -- the arry of timespents to be saved
+   * @returns {Promise<Array<TimeSpent>>} -- returns an updated array of TimeSpents. record which wer added to the list
+   * will have their ID's added.  TRTimeCard react Component sets its state to this new array after the update is made.
+   * 
+   * @memberof TrTimeCardWebPart
+   */
+  public save(timeSpents: Array<TimeSpent>): Promise<Array<TimeSpent>> {
     let batch = pnp.sp.createBatch();
     for (const timeSpent of timeSpents) {
       if (timeSpent.tsId === null) {
@@ -75,6 +102,21 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       return timeSpents;
     });
   }
+
+  /**
+   * Gets the TRs assigned to the current user that are not Completed..
+   * The initial Timesheet grid displays all trs assigned to the user that are not completed (this list) as well as any 
+   * TimeSpent record entered for the selectd week-ending date.
+   * Note that when I get the TimeSpent records in getExistingTimeSpent, I cannot get the 'Ststus' field because we cannot
+   * expand lookup columns with odata. So We get all the tomespent record for the selected week ending date, and then in 
+   * a secon batch (trBatch) we go back an get the TRs associated with the existing TimeSpent records, and then update the 
+   * TimeSpent records with the info from the TR.
+   * 
+   * @param {*} [batch]  batch The odata batch to execute the call in (from pnp.SP.createBatch)
+   * @returns {Promise<Array<TechnicalRequest>>}  The Technical requests (TRs) assigned to the current user which are not completed.
+   * 
+   * @memberof TrTimeCardWebPart
+   */
   public getAssignedTrs(batch?: any): Promise<Array<TechnicalRequest>> {
 
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
@@ -86,9 +128,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     if (batch) {
       command.inBatch(batch);
     }
-
     return command.get().then((items) => {
-
       return _.map(items, (item) => {
         return {
           trId: item["Id"],
@@ -101,9 +141,18 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       });
     });
   }
-  public getTR(trId: number, batch?: any): Promise<TechnicalRequest> {
 
-    // get the Active TRS Assigned to the user. These need to be shown in the timesheet
+  /**
+   * Gets the speficied tr from the TR list
+   * We call this for each TimeSpent record to get the additional TR metadata for a Timespent record.
+   * @param {number} trId  the ID of the tr to fetch
+   * @param {*} [batch]  The odata batch to execute the call in (from pnp.SP.createBatch)
+   * @returns {Promise<TechnicalRequest>}  The techinal requyest record(only partially filled in with the neccesary metadata to show
+   * in the Timesheet grid)
+   * 
+   * @memberof TrTimeCardWebPart
+   */
+  public getTR(trId: number, batch?: any): Promise<TechnicalRequest> {
     let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items
       .getById(trId)
       .expand("TRAssignedTo")
@@ -123,8 +172,18 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         priority: item["TRPriority"],
       };
     });
-
   }
+
+  /**
+   * Gets the TimeSpent record for the current user in the selecting week ending data. Note that each site must have
+   * it's timezone set to GMT for the week-ending logic to work. We use moment to get the week ending date.
+   * 
+   * @param {Date} weekEndingDate The week ending date to fetch data for
+   * @param {*} [batch] 
+   * @returns {Promise<Array<TimeSpent>>} 
+   * 
+   * @memberof TrTimeCardWebPart
+   */
   public getExistingTimeSpent(weekEndingDate: Date, batch?: any): Promise<Array<TimeSpent>> {
     let tsFilter = `(TechmicalSpecialist/EMail eq '${this.context.pageContext.user.email}') and (WeekEndingDate eq datetime'${weekEndingDate.toISOString()}')`;
     let command = pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.expand("TechmicalSpecialist,TR")
@@ -153,6 +212,17 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       });
 
   }
+
+  /**
+   * This is the main method used to fetch data to be displayed in the grid. It calls getAssignedTrs, getExistingTimeSpent,
+   * and getTR, and merges all the info together into an array of TimeSpent that gets passed to the react component 
+   * to display.
+   * 
+   * @param {Date} date -- the date to fetch timeSpent record s for
+   * @returns {Promise<Array<TimeSpent>>}  An aArray of TimeSpent records to be displayed (includes infr from the TR as well)
+   * 
+   * @memberof TrTimeCardWebPart
+   */
   public getTimeSpent(date: Date): Promise<Array<TimeSpent>> {
     // mainBatch is used to fetch TimeSpents and users TRs
     let mainBatch = pnp.sp.createBatch();
@@ -220,8 +290,14 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         });
       });
   }
-  public render(): void {
 
+  /**
+   * SPFX renbder method 
+   * 
+   * 
+   * @memberof TrTimeCardWebPart
+   */
+  public render(): void {
     var defaultWeekEndDate: Date = new Date(moment().utc().endOf('isoWeek').startOf('day'));
     let props: ITrTimeCardProps = {
       userName: this.context.pageContext.user.displayName,
@@ -236,85 +312,12 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         message: "",
       }
     };
-    // mainBatch is used to fetch TimeSpents and users TRs
-    let mainBatch = pnp.sp.createBatch();
-
-
-    pnp.sp.web.currentUser.inBatch(mainBatch).get()
-      .then((user) => {
-        props.userId = user.Id;
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching currentUser");
-        console.log(JSON.stringify(error));
-      });
-
-    let activeTRs: Array<TechnicalRequest> = [];
-    // get the Active TRS Assigned to the user. These need to be shown in the timesheet
-    this.getAssignedTrs(mainBatch).then((items) => {
-      activeTRs = items;
+    // 
+    this.getTimeSpent(defaultWeekEndDate).then((ts: Array<TimeSpent>) => {
+      props.initialState.timeSpents = ts;
+      this.reactElement = React.createElement(TrTimeCard, props);
+      var formComponent: TrTimeCard = ReactDom.render(this.reactElement, this.domElement) as TrTimeCard;//render the component
     });
-    // get the Existing TimeSpents for the user in the selected weeek
-    this.getExistingTimeSpent(defaultWeekEndDate, mainBatch).then(items => {
-      props.initialState.timeSpents = items;
-    });
-    mainBatch.execute()
-      .then((data) => {
-        debugger;
-        // trBatch is used to fetch TRS associated with the timeSPents, needs to execute after we get all  the timespents
-        let trBatch = pnp.sp.createBatch();
-        // 
-        for (let timeSpent of props.initialState.timeSpents) {
-          this.getTR(timeSpent.trId, trBatch)
-            .then((tr) => {
-              debugger;
-              timeSpent.trPriority = tr.priority;
-              timeSpent.trStatus = tr.status;
-              timeSpent.trTitle = tr.title;
-              timeSpent.trRequestTitle = tr.requestTitle;
-              timeSpent.trRequiredDate = tr.requiredDate;
-            })
-            .catch((error) => {
-              console.log("ERROR, An error occured fetching the TRs for the TS");
-              console.log(error.message);
-            });
-        }
-        // add any trs user has not reported time for yet
-        trBatch.execute().then((x) => {
-          debugger;
-          for (const tr of activeTRs) {
-            // add a row for any active projects not on list
-            debugger;
-            const itemIndex = _.findIndex(props.initialState.timeSpents, (item) => { return item.trId === tr.trId; });
-            if (itemIndex === -1) {
-              props.initialState.timeSpents.push({
-                trId: tr.trId,
-                technicalSpecialist: props.userId,
-                weekEndingDate: defaultWeekEndDate,
-                hoursSpent: 0,
-                tsId: null,
-                trTitle: tr.title,
-                trStatus: tr.status,
-                trRequestTitle: tr.requestTitle,
-                trRequiredDate: tr.requiredDate,
-                trPriority: tr.priority
-              });
-            }
-            else {
-              props.initialState.timeSpents[itemIndex].trPriority = tr.priority;
-              props.initialState.timeSpents[itemIndex].trRequiredDate = tr.requiredDate;
-              props.initialState.timeSpents[itemIndex].trStatus = tr.status;
-
-            }
-          }
-          this.reactElement = React.createElement(TrTimeCard, props);
-          var formComponent: TrTimeCard = ReactDom.render(this.reactElement, this.domElement) as TrTimeCard;//render the component
-        });
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured executing the batch");
-        console.log(error.message);
-      });
   }
 
   protected get dataVersion(): Version {

@@ -1,3 +1,10 @@
+
+/**
+ * Contains all information used to render the TimeSPen grid. This contains info from bot the TimeSPent table and the TR Table
+ * 
+ * @export
+ * @class TimeSpent
+ */
 export class TimeSpent {
     public technicalSpecialist: number;
     public weekEndingDate: Date;
@@ -12,6 +19,13 @@ export class TimeSpent {
     public trRequiredDate: Date;
 
 }
+
+/**
+ * Contains TR metadata to be added to a TimeSPent record
+ * 
+ * @export
+ * @class TechnicalRequest
+ */
 export class TechnicalRequest {
     public trId: number;
     public title: string;

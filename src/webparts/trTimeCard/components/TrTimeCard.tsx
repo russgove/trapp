@@ -20,18 +20,27 @@ import * as _ from "lodash";
 import { TimeSpent } from "../dataModel";
 export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTimeCardState> {
   constructor(props: ITrTimeCardProps) {
-
     super(props);
     this.state = props.initialState;
     this.setState(this.state);
-    this.getDisplayTRs = this.getDisplayTRs.bind(this);
+    
     this.updateHoursSpent = this.updateHoursSpent.bind(this);
     this.renderHoursSpent = this.renderHoursSpent.bind(this);
     this._getErrorMessage = this._getErrorMessage.bind(this);
-    this._getErrorMessagePromise = this._getErrorMessagePromise.bind(this);
+    
 
     this.save = this.save.bind(this);
   }
+
+  /**
+   * Validator for the Hours worked field. Must be nimeric
+   * 
+   * @private
+   * @param {string} value Value entered into the field.
+   * @returns {string} An error message, or an empty string
+   * 
+   * @memberof TrTimeCard
+   */
   private _getErrorMessage(value: string): string {
     var test = Number(value);
     return isNaN(test)
@@ -39,17 +48,6 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
       : "";
   }
 
-
-  private _getErrorMessagePromise(value: string): Promise<string> {
-    return new Promise((resolve) => {
-      // resolve the promise after 3 second. 
-      setTimeout(() => resolve(this._getErrorMessage(value)), 5000);
-    });
-  }
-
-  public getDisplayTRs(): Array<TimeSpent> {
-    return this.state.timeSpents;
-  }
 
   public updateHoursSpent(trId: number, newValue: any) {
 
