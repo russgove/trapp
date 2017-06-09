@@ -37,6 +37,13 @@ import TRPicker from "./TRPicker";
 import { ITRFormState } from "./ITRFormState";
 
 
+/**
+ * Renders the new and edit form for technical requests
+ * 
+ * @export
+ * @class TrForm
+ * @extends {React.Component<ITrFormProps, ITRFormState>}
+ */
 export default class TrForm extends React.Component<ITrFormProps, ITRFormState> {
   private ckeditor: any;
   private originalAssignees: Array<number> = [];
@@ -63,8 +70,17 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
 
+  /**
+   * The ckeditor is not a react component so it is handled outside of the react lifecycle.
+   * After the component mounts. We need toload ck editoe and replace wjat is the first tan with a ck-editor control.
+   * The first tab is the Title tab.  So that is the one that is initially displayed and needs the ckeditor.
+   * Later as the tabs changes we will add a ckeditor under the other tabks
+   * 
+   * 
+   * @memberof TrForm
+   */
   public componentDidMount() {
-
+//see https://github.com/SharePoint/sp-dev-docs/issues/374
     var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;

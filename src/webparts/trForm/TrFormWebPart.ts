@@ -20,24 +20,37 @@ import { ITRFormState } from './components/ITRFormState';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
 
 
+/**
+ * Webpart used to display the new and edit forms for Technical Requests.
+ * 
+ * @export
+ * @class TrFormWebPart
+ * @extends {BaseClientSideWebPart<ITrFormWebPartProps>}
+ */
 export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartProps> {
   private tr: TR;
   private childTRs: Array<TR>;
-
-
-
   private reactElement: React.ReactElement<ITrFormProps>;
   private trContentTypeID: string;
+ 
   public onInit(): Promise<void> {
-
     return super.onInit().then(_ => {
-
       pnp.setup({
         spfxContext: this.context,
       });
       //  this.loadData();
     });
   }
+ 
+  /**
+   * Utility method to move all the data from a listitem we got from the TR list to a TR record
+   * 
+   * @private
+   * @param {TR} tr The TR to add the fields to.
+   * @param {*} item the SPLIst item from teh Technical requests list
+   * 
+   * @memberof TrFormWebPart
+   */
   private moveFieldsToTR(tr: TR, item: any) {
     tr.Id = item.Id;
     tr.ActualCompletionDate = item.ActualCompletionDate;
@@ -73,6 +86,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.PigmentsId = item.PigmentsId;
     tr.TestsId = item.TestsId;
   }
+  /**
+   * Method to fetch a TR from the Technical Request list
+   * 
+   * @param {number} id The id of the TR to fetch
+   * @returns {Promise<TR>}  A Promise for the TR record
+   * 
+   * @memberof TrFormWebPart
+   */
   public fetchTR(id: number): Promise<TR> {
     let fields = "*,ParentTR/Title,Requestor/Title";
     return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand("ParentTR,Requestor").select(fields).get()
@@ -82,12 +103,31 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         return tr;
       });
   }
+
+  /**
+   * A method to fetch the WopiFrameURL for a Document in the TR Documents library.
+   * This url is used to display the document in the iframs
+   * @param {number} id the listitem id of the document in the TR Document Libtry
+   * @param {number} mode  The displayMode in the retuned url (display, edit, etc.)
+   * @returns {Promise<string>} The url used to display the document in the iframe
+   * 
+   * @memberof TrFormWebPart
+   */
   public fetchDocumentWopiFrameURL(id: number, mode: number): Promise<string> {
     let fields = "*,ParentTR/Title,Requestor/Title";
     return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(id).getWopiFrameUrl(mode).then((item) => {
       return item;
     });
   }
+
+  /**
+   * Method to fetch All child TRS for the selected TR
+   * 
+   * @param {number} id The ID of the TR to fetch children for
+   * @returns {Promise<Array<TR>>} An array of TRs that are childrent of the selected TRS. This is just a self-referncing lookup column.
+   * 
+   * @memberof TrFormWebPart
+   */
   public fetchChildTR(id: number): Promise<Array<TR>> {
     let fields = "*,ParentTR/Title,Requestor/Title";
     return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.filter("ParentTR eq " + id).expand("ParentTR,Requestor").select(fields).get()
@@ -103,7 +143,16 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
 
   }
-  // An accesser indicating whether or not the current page is in design mode.
+  
+
+  /**
+   *  An accesser indicating whether or not the current page is in design mode.
+   * Used to turn the ribbon off when not in edit mode
+   * 
+   * @returns {boolean} 
+   * 
+   * @memberof TrFormWebPart
+   */
   public inDesignMode(): boolean {
     if (document.getElementById("MSOLayout_InDesignMode")) {
       console.log(
@@ -123,6 +172,16 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
 
   }
+
+  /**
+   * Gets all the documents associated with a selected TR
+   * 
+   * @param {number} id The TR Id to get documents for
+   * @param {*} [batch] The odata batch to execute the call in (from pnp.SP.createBatch). If not present the request wont be batched.
+   * @returns {Promise<Array<TRDocument>>} The TRDocuments for the selectd Tr
+   * 
+   * @memberof TrFormWebPart
+   */
   public getDocuments(id: number, batch?: any): Promise<Array<TRDocument>> {
     let docfields = "Id,Title,File/ServerRelativeUrl,File/Length,File/Name,File/MajorVersion,File/MinorVersion";
     let docexpands = "File";
@@ -148,6 +207,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
 
   }
+
+  /**
+   * Renders the react Form.
+   * Fetches the initial data and renders the react compmonent, then fetches all the ancilliary dlookup data 
+   * and calls forceUpdate on the component to push down the additional lookup data
+   * 
+   * @memberof TrFormWebPart
+   */
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
@@ -191,21 +258,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutIframeUrl: null,
     };
     let batch = pnp.sp.createBatch();
-    // get the Technincal Request content type so we can use it later in searches
-    // pnp.sp.web.contentTypes.inBatch(batch).get()
-    //   .then((contentTypes) => {
-
-    //     const trContentTyoe = _.find(contentTypes, (contentType) => { return contentType["Name"] === "TechnicalRequest"; });
-    //     this.trContentTypeID = trContentTyoe["Id"]["StringValue"];
-    //   })
-    //   .catch((error) => {
-    //     console.log("ERROR, An error occured fetching content types'");
-    //     console.log(error.message);
-
-    //   });
-
-
-
     pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
@@ -337,8 +389,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         }
       }
       let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
-
-
       const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
       pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch2).get()
         .then((items) => {
@@ -408,20 +458,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error.message);
 
         });
-
-
-
-
-
-
       let pigmentFields = "Id,Title,KMPigmentType,Manufacturer/Title";
       let pigmentExpands = "Manufacturer";
-
-
-
       pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
-
-
         .then((items) => {
           formProps.pigments = _.map(items, (item) => {
             let p: Pigment = new Pigment(item["Id"], item["Title"], item["KMPigmentType"]);
@@ -440,7 +479,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         .then((items) => {
           formProps.tests = _.map(items, (item) => {
             let t: Test = new Test(item["Id"], item["Title"]);
-
             return t;
           });
         })
@@ -452,7 +490,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       let propertyTestExpands = "Property";
       pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
-
           formProps.propertyTests = _.map(items, (item) => {
             let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
             if (item["Property"]) {
@@ -467,21 +504,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
       batch2.execute().then(() => {
         //  formComponent.props = formProps; this did not work
-        // this.delay(5000).then(() => {
-        formComponent.props.customers = formProps.customers;
+           formComponent.props.customers = formProps.customers;
         formComponent.props.pigments = formProps.pigments;
         formComponent.props.tests = formProps.tests;
         formComponent.props.propertyTests = formProps.propertyTests;
         formComponent.props.techSpecs = formProps.techSpecs;
         formComponent.props.requestors = formProps.requestors;
         formComponent.props.workTypes = formProps.workTypes;
-
-
-
         formComponent.forceUpdate();
-        // });
-
-
       });
     }
     );
@@ -581,6 +611,19 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ]
     };
   }
+
+  /**
+   * Calls sharepoint search to find TRS to be set as the parent TR.
+   * The search path is set to only find items in the Technical Request List.
+   * 
+   * 
+   * @param {string} searchText 
+   * @returns {Promise<TR[]>} An array of TRS that match the seach text. Tese TRS do not have all metadata, just the data
+   * we need to display the search results
+   * 
+   * @memberof TrFormWebPart
+   */
+  
   public TRsearch(searchText: string): Promise<TR[]> {
   
     //let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
@@ -594,8 +637,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       RowLimit: 50,
       SelectProperties: ["Title", "ListItemID", "RefinableString13", "RefinableString08", "RefinableString14", "TR-RequestTitle", "Description"],
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
-      // SelectProperties: ["*"]
-      Refiners: "RefinableString02,RefinableString03"
+       Refiners: "RefinableString02,RefinableString03"
     };
     // refiners are in primarry query results reinemnet refiners
     console.log(sq);
@@ -618,7 +660,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     });
   }
 
-
+  /**
+   * Navigates to whatever URL was specified in the @Source=Querystring parameter.
+   * 
+   * @private
+   * 
+   * @memberof TrFormWebPart
+   */
   private navigateToSource() {
     let queryParameters = new UrlQueryParameterCollection(window.location.href);
     let encodedSource = queryParameters.getValue("Source");
@@ -632,6 +680,21 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     }
   }
+
+  /**
+   * Saves an updated TR back to Sharepoint , or adds a new one if no TR id is present,.
+   * 
+   * @private
+   * @param {TR} tr A tr record with the data to be saved.
+   * @param {Array<number>} orginalAssignees The list of people assigned to this TR before we started editting.
+   * If there are assignees on the TR we are saving that are not in the orginalAssignees, we sent them and email
+   * saying they have been added.
+   * @param {string} originalStatus The Status of the TR before we started editing. If the New Status is completed and 
+   * the old status was not completed , we email everyone in the StafCC list that the TR is now completed
+   * @returns {Promise<any>} 
+   * 
+   * @memberof TrFormWebPart
+   */
   private save(tr: TR, orginalAssignees: Array<number>, originalStatus: string): Promise<any> {
     // remove lookups
     let copy = _.clone(tr) as any;
@@ -697,15 +760,22 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
 
       });
-
     }
-
   }
+
+  /**
+   * Emails the StaffCC if the TR has just been completed
+   * 
+   * @private
+   * @param {TR} tr The TR we saved.
+   * @param {string} originalStatus The status of the TR Prior to us saving it,.
+   * @returns {Promise<any>} 
+   * 
+   * @memberof TrFormWebPart
+   */
   private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
     return new Promise((resolve, reject) => {
-
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
-
         console.log("staffcc emails wil lnot be processed");
         resolve(null);
         return;
@@ -715,9 +785,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       editFormUrl = editFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
       let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
       displayFormUrl = displayFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
-
       console.log("fetching email text in emailStaffCC");
-
       var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         console.log("fetched email text in emailStaffCC, extracting text");
         let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText
@@ -752,27 +820,31 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             console.log("Error Fetching user with id " + staffCC);
           });
           promises.push(promise);
-
         }
         Promise.all(promises).then((x) => {
-
           resolve();
         });
       });
-
-
     });
   }
+
+  /**
+   * Sends notifications to any new assignees.
+   * 
+   * @private
+   * @param {TR} tr The TR we just saved,
+   * @param {Array<number>} orginalAssignees The list of assignees prior to us saving the TR
+   * @returns {Promise<any>} 
+   * 
+   * @memberof TrFormWebPart
+   */
   private emailNewAssignees(tr: TR, orginalAssignees: Array<number>): Promise<any> {
     return new Promise((resolve, reject) => {
-
       if (!this.properties.enableEmail) {
-
         resolve(null);
         return;
       }
       if (tr.TRAssignedToId === null || tr.TRAssignedToId.length === 0) {
-
         resolve(null);
         return;
       }
@@ -836,9 +908,28 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     });
   }
+
+  /**
+   * Closes the app by navigating to teh source
+   * 
+   * @private
+   * 
+   * @memberof TrFormWebPart
+   */
   private cancel(): void {
     this.navigateToSource();
   }
+
+  /**
+   * Uploads a file to the TR DOcument library an associates it with the specified TR
+   * 
+   * @private
+   * @param {any} file The file to upload
+   * @param {any} trId  The ID of the TR to associate the file with
+   * @returns {Promise<any>} 
+   * 
+   * @memberof TrFormWebPart
+   */
   private uploadFile(file, trId): Promise<any> {
     if (file.size <= 10485760) {
       // small upload
@@ -863,7 +954,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error);
         });
     } else {
-      // large upload
+      // large upload// not tested yet
+      alert("large file support  not impletemented");
+      debugger;
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
         .addChunked(file.name, file, data => {
           console.log({ data: data, message: "progress" });
