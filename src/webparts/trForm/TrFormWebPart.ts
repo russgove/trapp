@@ -32,7 +32,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   private childTRs: Array<TR>;
   private reactElement: React.ReactElement<ITrFormProps>;
   private trContentTypeID: string;
- 
+
   public onInit(): Promise<void> {
     return super.onInit().then(_ => {
       pnp.setup({
@@ -41,7 +41,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       //  this.loadData();
     });
   }
- 
+
   /**
    * Utility method to move all the data from a listitem we got from the TR list to a TR record
    * 
@@ -143,7 +143,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
 
   }
-  
+
 
   /**
    *  An accesser indicating whether or not the current page is in design mode.
@@ -244,7 +244,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pigments: [],
       tests: [],
       propertyTests: [],
-      delayPriorToSettingCKEditor:this.properties.delayPriorToSettingCKEditor
+      delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor
 
     };
     let formState: ITRFormState = {
@@ -505,7 +505,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
       batch2.execute().then(() => {
         //  formComponent.props = formProps; this did not work
-           formComponent.props.customers = formProps.customers;
+        formComponent.props.customers = formProps.customers;
         formComponent.props.pigments = formProps.pigments;
         formComponent.props.tests = formProps.tests;
         formComponent.props.propertyTests = formProps.propertyTests;
@@ -565,10 +565,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 })
               ]
             },
-                        {
+            {
               groupName: "List Names",
               groupFields: [
-                
+
                 PropertyPaneTextField('technicalRequestListName', {
                   label: "Technical Requests list name",
                 }),
@@ -590,7 +590,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 PropertyPaneTextField('nextNumbersListName', {
                   label: "Next Numbers list name",
                 }),
-                  PropertyPaneTextField('propertyListName', {
+                PropertyPaneTextField('propertyListName', {
                   label: "Properties list name",
                 }),
                 PropertyPaneTextField('testListName', {
@@ -624,9 +624,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * 
    * @memberof TrFormWebPart
    */
-  
+
   public TRsearch(searchText: string): Promise<TR[]> {
-  
+
     //let queryText = "{0} Path:{1}* ContentTypeId:{2}*";
     let queryText = "{0} Path:{1}*";
     queryText = queryText
@@ -638,7 +638,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       RowLimit: 50,
       SelectProperties: ["Title", "ListItemID", "RefinableString13", "RefinableString08", "RefinableString14", "TR-RequestTitle", "Description"],
       ///SortList: [{ Property: "PreferredName", Direction: SortDirection.Ascending }] arghhh-- not sortable
-       Refiners: "RefinableString02,RefinableString03"
+      Refiners: "RefinableString02,RefinableString03"
     };
     // refiners are in primarry query results reinemnet refiners
     console.log(sq);
@@ -735,14 +735,17 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log("emailling staff cc");
         var staffccPromise = this.emailStaffCC(tr, originalStatus);
         console.log("awaiting promises from emails");
-        Promise.all([newAssigneesPromise, staffccPromise]).then((a) => {
-          console.log("emails sent continuing");
-          let x = newAssigneesPromise;
-          let y = staffccPromise;
-          this.navigateToSource();// should stop here when on a form page  
-          return tr;
-        })
+        return Promise.all([newAssigneesPromise, staffccPromise])
+          .then((a) => {
+            debugger;
+            console.log("emails sent continuing");
+            let x = newAssigneesPromise;
+            let y = staffccPromise;
+            this.navigateToSource();// should stop here when on a form page  
+            return tr;
+          })
           .catch((err) => {
+            debugger;
             console.log("error sending emails " + err);
           });
       });
@@ -755,7 +758,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         this.moveFieldsToTR(newTR, item.data);
         var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
         var staffccPromise = this.emailStaffCC(newTR, originalStatus);
-        Promise.all([newAssigneesPromise, staffccPromise]).then(() => {
+       return  Promise.all([newAssigneesPromise, staffccPromise]).then(() => {
           this.navigateToSource();// should stop here when on a form page  
           return newTR;
         });
@@ -775,6 +778,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * @memberof TrFormWebPart
    */
   private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
+    debugger;
     return new Promise((resolve, reject) => {
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
         console.log("staffcc emails wil lnot be processed");
@@ -849,10 +853,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         resolve(null);
         return;
       }
+      debugger;
       let promises: Array<Promise<any>> = [];
       let currentAssignees: Array<number> = tr.TRAssignedToId;
-      let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
-      let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+      let editFormUrl = this.properties.editFormUrlFormat
+        .split("{1}").join(tr.Id.toString())
+        .split("{0}").join(this.context.pageContext.web.absoluteUrl);
+      let displayFormUrl = this.properties.displayFormUrlFormat
+        .split("{1}").join(tr.Id.toString())
+        .split("{0}").join(this.context.pageContext.web.absoluteUrl);
       console.log("fetching email text in emailNewAssignees");
       var x = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         console.log("fetched email text in emailNewAssignees, extracting it now");

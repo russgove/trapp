@@ -55,12 +55,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.originalAssignees = _.clone(this.state.tr.TRAssignedToId);// sasve original so we can email new assignees
     this.originalStatus = this.state.tr.TRStatus;// sasve original so we can email if it gets closed
     this.SaveButton = this.SaveButton.bind(this);
-    this.ModeDisplay = this.ModeDisplay.bind(this);
-    this.StatusDisplay = this.StatusDisplay.bind(this);
     this.save = this.save.bind(this);
     this.cancel = this.cancel.bind(this);
-    this.rendeChildTRAsLink = this.rendeChildTRAsLink.bind(this);
-    this.rendeDocumentAsLink = this.rendeDocumentAsLink.bind(this);
+
     this.selectChildTR = this.selectChildTR.bind(this);
     this.cancelTrSearch = this.cancelTrSearch.bind(this);
     this.parentTRSelected = this.parentTRSelected.bind(this);
@@ -330,34 +327,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
   /**
-   * Renders the mode (New Edit Display) in the page
-   * 
-   * @returns {JSX.Element} 
-   * 
-   * @memberof TrForm
-   */
-  public ModeDisplay(): JSX.Element {
-    return (
-      <Label>MODE : {modes[this.props.mode]}</Label>
-    );
-
-  }
-
-  /**
-   * Renders the status (saved unsaved) in the display
-   * 
-   * @returns {JSX.Element} 
-   * 
-   * @memberof TrForm
-   */
-  public StatusDisplay(): JSX.Element {
-    return (
-      <Label>Status : {(this.state.isDirty) ? "Unsaved" : "Saved"}</Label>
-    );
-
-  }
-
-  /**
    * Determines if the TR contains the selected Pigment
    * 
    * @param {TR} tr  The TR to check.
@@ -614,28 +583,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.setState(this.state);
   }
 
-  /**
-   * Renders the Technical Specialist Toggle with appropriate handlers
-   * 
-   * @param {*} [item] 
-   * @param {number} [index] 
-   * @param {IColumn} [column] 
-   * @returns {*} 
-   * 
-   * @memberof TrForm
-   */
-  public renderTechSpecToggle(item?: any, index?: number, column?: IColumn): any {
 
-    return (
-      <Toggle
-        checked={item.selected}
-        onText="Selected"
-        offText=""
-        onChanged={e => { this.toggleTechSpec(e, item.id); }}
-      />
-
-    );
-  }
 
   /**
    * Adds or removes a preson from the StaffCC on the TR being edited
@@ -660,28 +608,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     this.setState(this.state);
   }
-  /**
-  * Renders the StaffCC Toggle with appropriate handlers
-  * 
-  * @param {*} [item] 
-  * @param {number} [index] 
-  * @param {IColumn} [column] 
-  * @returns {*} 
-  * 
-  * @memberof TrForm
-  */
-  public renderStaffCCToggle(item?: any, index?: number, column?: IColumn): any {
 
-    return (
-      <Toggle
-        checked={item.selected}
-        onText="Selected"
-        offText=""
-        onChanged={e => { this.toggleStaffCC(e, item.id); }}
-      />
-
-    );
-  }
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number) {
     this.state.isDirty = true;
@@ -700,28 +627,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     this.setState(this.state);
   }
-  public renderAvailableTestsToggle(item?: any, index?: number, column?: IColumn): any {
-    return (
-      <Toggle
-        checked={false}
-        onText=""
-        offText=""
-        onChanged={e => { this.addTest(item.testid); }}
-      />
-    );
-  }
-  public renderSelectedTestsToggle(item?: any, index?: number, column?: IColumn): any {
-    return (
-      <Toggle
-        checked={true}
-        onText=""
-        offText=""
-        onChanged={e => { this.removeTest(item.id); }}
-      />
-    );
-  }
-
-  /******** Pigmemt Toggles , this is two lists, toggling adds from one , removes from the other*/
 
   /**
    * Adds the selected Pigment to the TR being edited
@@ -757,54 +662,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.setState(this.state);
   }
 
-  /**
-   *  Renders an item in the Available Pigments list with approrpiate handlers
-   * 
-   * @param {*} [item] 
-   * @param {number} [index] 
-   * @param {IColumn} [column] 
-   * @returns {*} 
-   * 
-   * @memberof TrForm
-   */
-  public renderAvailablePigmentsToggle(item?: any, index?: number, column?: IColumn): any {
 
-    return (
-      <Toggle
-        checked={false}
-        onText=""
-        offText=""
-        onChanged={e => { this.addPigment(item.id); }}
-      />
-    );
-  }
-  /**
-   *  Renders an item in the Selected Pigments list with approrpiate handlers
-   * 
-   * @param {*} [item] 
-   * @param {number} [index] 
-   * @param {IColumn} [column] 
-   * @returns {*} 
-   * 
-   * @memberof TrForm
-   */
-  public renderSelectedPigmentsToggle(item?: any, index?: number, column?: IColumn): any {
-    return (
-      <Toggle
-        checked={true}
-        onText=""
-        offText=""
-        onChanged={e => { this.removePigment(item.id); }}
-      />
-    );
-  }
+ 
 
   /**
    * Renders a formatted date in the UI
    * 
-   * @param {*} [item] 
-   * @param {number} [index] 
-   * @param {IColumn} [column] 
+   * @param {*} [item]  The item the field resides in
+   * @param {number} [index] The index of the item in the list of items
+   * @param {IColumn} [column] The column that contains the date to dispplay
    * @returns {*} 
    * 
    * @memberof TrForm
@@ -882,25 +748,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     });
 
   }
-  public rendeDocumentAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
-    return (
-      <div>
-        <i onClick={(e) => { debugger; this.editDocument(item); }}
-          className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
-      </div>
-    );
-  }
-  public rendeChildTRAsLink(item?: any, index?: number, column?: IColumn): JSX.Element {
-    return (
-      <div>
-        <i onClick={(e) => {
-          debugger;
-          this.selectChildTR(item.Id);
-        }}
-          className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
-      </div>
-    );
-  }
+
   public parentTRSelected(id: number, title: string) {
     this.state.tr.ParentTR = title;
     this.state.tr.ParentTRId = id;
@@ -962,7 +810,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.setState(this.state);
     console.log("mouse exit for " + item.title);
   }
-  public renderDocumentRow(props, defaultRender): JSX.Element {
+  /*public renderDocumentRow(props, defaultRender): JSX.Element {
 
     return (
       <div
@@ -971,7 +819,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       >
         {defaultRender(props)}
       </div>);
-  }
+  }*/
   public render(): React.ReactElement<ITrFormProps> {
 
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
@@ -1009,8 +857,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
         <MessageDisplay messages={this.state.errorMessages}
           hideMessage={this.removeMessage.bind(this)} />
-        <div style={{ float: "left" }}> <this.ModeDisplay /></div>
-        <div style={{ float: "right" }}><this.StatusDisplay /></div>
+        <div style={{ float: "left" }}> <Label>MODE : {modes[this.props.mode]}</Label></div>
+        <div style={{ float: "right" }}>  <Label>Status : {(this.state.isDirty) ? "Unsaved" : "Saved"}</Label></div>
         <div style={{ clear: "both" }}></div>
         <table>
 
@@ -1148,7 +996,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
 
-              <DatePicker
+              <DatePicker 
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
                 onSelectDate={e => {
                   this.state.isDirty = true;
@@ -1326,7 +1174,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               setKey="id"
               columns={[
                 { key: "title", name: "Technical Specialist", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: this.renderTechSpecToggle.bind(this) }
+                {
+                  key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: (item) => <Toggle
+                    checked={item.selected}
+                    onText="Selected"
+                    offText=""
+                    onChanged={e => { this.toggleTechSpec(e, item.id); }}
+                  />
+                }
               ]}
             />
           </tabs.TabPanel>
@@ -1338,7 +1193,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               setKey="id"
               columns={[
                 { key: "title", name: "Staff", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                { key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 80, onRender: this.renderStaffCCToggle.bind(this) }
+                {
+                  key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                    checked={item.selected}
+                    onText="Selected"
+                    offText=""
+                    onChanged={e => { this.toggleStaffCC(e, item.id); }}
+                  />
+                }
               ]}
             />
           </tabs.TabPanel>
@@ -1353,7 +1215,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 setKey="id"
                 columns={[
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
-                  { key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: this.renderAvailablePigmentsToggle.bind(this) }
+                  {
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                      checked={false}
+                      onText=""
+                      offText=""
+                      onChanged={e => { this.addPigment(item.id); }}
+                    />
+                  }
                 ]}
               />
 
@@ -1368,7 +1237,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 columns={[
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
                   { key: "type", name: "Type", fieldName: "type", minWidth: 20, maxWidth: 100 },
-                  { key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: this.renderSelectedPigmentsToggle.bind(this) }
+                  {
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                      checked={true}
+                      onText=""
+                      offText=""
+                      onChanged={e => { this.removePigment(item.id); }}
+                    />
+                  }
                 ]}
               />
             </div>
@@ -1385,7 +1261,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 setKey="id"
                 columns={[
                   { key: "title", name: "test", fieldName: "test", minWidth: 20, maxWidth: 100 },
-                  { key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: this.renderAvailableTestsToggle.bind(this) }
+                  {
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                      checked={false}
+                      onText=""
+                      offText=""
+                      onChanged={e => { this.addTest(item.testid); }}
+                    />
+                  }
                 ]}
               />
 
@@ -1399,7 +1282,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 setKey="id"
                 columns={[
                   { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                  { key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: this.renderSelectedTestsToggle.bind(this) }
+                  {
+                    key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: (item) => <Toggle
+                      checked={true}
+                      onText=""
+                      offText=""
+                      onChanged={e => { this.removeTest(item.id); }}
+                    />
+                  }
                 ]}
               />
 
@@ -1422,7 +1312,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               setKey="id"
               selectionMode={SelectionMode.none}
               columns={[
-                { key: "Edit", onRender: this.rendeChildTRAsLink, name: "", fieldName: "Title", minWidth: 20, },
+                {
+                  key: "Edit", name: "", fieldName: "Title", minWidth: 20,
+                  onRender: (item?: any, index?: number, column?: IColumn) => <div>
+                    <i onClick={(e) => {
+                      debugger;
+                      this.selectChildTR(item.Id);
+                    }}
+                      className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
+                  </div>
+                },
                 { key: "Title", name: "Request #", fieldName: "Title", minWidth: 80, },
                 { key: "Status", name: "Status", fieldName: "Status", minWidth: 90 },
                 { key: "InitiationDate", onRender: this.renderDate, name: "Initiation Date", fieldName: "InitiationDate", minWidth: 80 },
@@ -1437,11 +1336,21 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DetailsList
                 layoutMode={DetailsListLayoutMode.fixedColumns}
                 items={this.state.documents}
-                onRenderRow={(props, defaultRender) => this.renderDocumentRow(props, defaultRender)}
+                onRenderRow={(props, defaultRender) => <div
+                  onMouseEnter={(event) => this.documentRowMouseEnter(props.item, event)}
+                  onMouseOut={(evemt) => this.documentRowMouseOut(props.item, event)}>
+                  {defaultRender(props)}
+                </div>}
                 setKey="id"
                 selectionMode={SelectionMode.none}
                 columns={[
-                  { key: "Edit", onRender: this.rendeDocumentAsLink, name: "", fieldName: "Title", minWidth: 20, },
+                  {
+                    key: "Edit", name: "", fieldName: "Title", minWidth: 20,
+                    onRender: (item) => <div>
+                      <i onClick={(e) => { debugger; this.editDocument(item); }}
+                        className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
+                    </div>
+                  },
                   { key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
 
                 ]}
