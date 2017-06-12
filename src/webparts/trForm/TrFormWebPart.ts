@@ -244,6 +244,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pigments: [],
       tests: [],
       propertyTests: [],
+      delayPriorToSettingCKEditor:this.properties.delayPriorToSettingCKEditor
 
     };
     let formState: ITRFormState = {

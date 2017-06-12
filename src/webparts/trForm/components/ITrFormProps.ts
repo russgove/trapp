@@ -23,6 +23,7 @@ export interface ITrFormProps {
   pigments: Array<Pigment>;
   tests: Array<Test>;
   propertyTests: Array<PropertyTest>;
+  delayPriorToSettingCKEditor:number;
 
 
 }

@@ -80,7 +80,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public componentDidMount() {
-//see https://github.com/SharePoint/sp-dev-docs/issues/374
+    //see https://github.com/SharePoint/sp-dev-docs/issues/374
     var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
@@ -89,13 +89,22 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     });
 
   }
+
+  /**
+   * When the user changes the tabs, if the new tab contains a ckeditor control, replcae the textarea that was rendered by default 
+   * with the ckeditor control. We need a breief delay before doing so so that we can be sure the control has been rendered
+   * @param {any} newTabID 
+   * @param {any} oldTabID 
+   * 
+   * @memberof TrForm
+   */
   public tabChanged(newTabID, oldTabID) {
 
 
     switch (newTabID) {
       case 0:
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-title");
             console.log("created tronoxtrtextarea-title");
           });
@@ -103,7 +112,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         break;
       case 1:
         if (this.ckeditor.instances["tronoxtrtextarea-description"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-description");
             console.log("created tronoxtrtextarea-description");
           });
@@ -111,7 +120,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         break;
       case 2:
         if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-summary");
             console.log("created tronoxtrtextarea-summary");
           });
@@ -119,7 +128,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         break;
       case 3:
         if (this.ckeditor.instances["tronoxtrtextarea-testparams"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-testparams");
             console.log("created tronoxtrtextarea-testparams");
           });
@@ -127,7 +136,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         break;
       case 8:
         if (this.ckeditor.instances["tronoxtrtextarea-formulae"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, 200)).then((xx) => {
+          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-formulae");
             console.log("created tronoxtrtextarea-formulae");
           });
@@ -140,6 +149,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
   }
+
+  /**
+   * Determines if the values entered in the TR are valid
+   * 
+   * @returns {boolean} 
+   * 
+   * @memberof TrForm
+   */
   public isValid(): boolean {
 
     this.state.errorMessages = [];
@@ -184,6 +201,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
     return !errorsFound;
   }
+
+  /**
+   * Saves the TR Back to sharepoint
+   * Gets the data out of the ckeditor controls and adds it to the TR, validates all the fields on the TR, and then calls the
+   * save method on the parent webpart.
+   * @returns 
+   * 
+   * @memberof TrForm
+   */
   public save() {
 
     for (let instanceName in this.ckeditor.instances) {
@@ -227,11 +253,27 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     return false; // stop postback
   }
+
+  /**
+   * Cancels editing the TR. Returs to the previos page (done in parent webpart.)
+   * 
+   * @returns 
+   * 
+   * @memberof TrForm
+   */
   public cancel() {
     this.props.cancel();
     return false; // stop postback
   }
-  public updateCKEditorText(tr: TR) { // updates the text in all the existingck editors after we loaded a new TR (parent or child)
+
+  /**
+   * Updates the text in all the existingck editors after we loaded a new TR (parent or child)
+   * 
+   * @param {TR} tr 
+   * 
+   * @memberof TrForm
+   */
+  public updateCKEditorText(tr: TR) {
     for (let instanceName in this.ckeditor.instances) {
       let instance = this.ckeditor.instances[instanceName];
       switch (instanceName) {
@@ -252,6 +294,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       }
     }
   }
+
+  /**
+   * Removes a message from the Message List . (called when the user clicks to remove a message)
+   * 
+   * @param {Array<md.Message>} messageList The message list to remove the message from
+   * @param {string} messageId The message to remove
+   * 
+   * @memberof TrForm
+   */
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
     _.remove(messageList, {
       Id: messageId
@@ -259,29 +310,46 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.setState(this.state);
   }
 
+  /**
+   * Renders the save buton with appropriate handler
+   * 
+   * @returns {JSX.Element} 
+   * 
+   * @memberof TrForm
+   */
   public SaveButton(): JSX.Element {
     if (this.props.mode === modes.DISPLAY) {
       return <div />;
     } else return (
-      <PrimaryButton   buttonType={ButtonType.primary} onClick={this.save} icon="ms-Icon--Save">
+      <PrimaryButton buttonType={ButtonType.primary} onClick={this.save} icon="ms-Icon--Save">
         <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
         Save
       </PrimaryButton>
-      /*<span style={{ margin: 20 }}>
 
-        <a href="#" onClick={this.save} style={{ border: 5, backgroundColor: 'lightBlue', fontSize: 'large' }}>
-          <i className="ms-Icon ms-Icon--Save"></i>Save
-        </a>
-
-      </span>*/
     );
   }
+
+  /**
+   * Renders the mode (New Edit Display) in the page
+   * 
+   * @returns {JSX.Element} 
+   * 
+   * @memberof TrForm
+   */
   public ModeDisplay(): JSX.Element {
     return (
       <Label>MODE : {modes[this.props.mode]}</Label>
     );
 
   }
+
+  /**
+   * Renders the status (saved unsaved) in the display
+   * 
+   * @returns {JSX.Element} 
+   * 
+   * @memberof TrForm
+   */
   public StatusDisplay(): JSX.Element {
     return (
       <Label>Status : {(this.state.isDirty) ? "Unsaved" : "Saved"}</Label>
@@ -290,29 +358,29 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
   /**
+   * Determines if the TR contains the selected Pigment
    * 
-   * 
-   * @returns 
+   * @param {TR} tr  The TR to check.
+   * @param {number} PigmentId  the ID of the pigment to check.
+   * @returns {boolean} 
    * 
    * @memberof TrForm
    */
-  public getTests() {
-    var tests = _.map(this.props.tests, (test) => {
-      return {
-        title: test.title,
-
-        selected: ((this.state.tr.TestsId) ? this.state.tr.TestsId.indexOf(test.id) != -1 : null),
-        id: test.id
-      };
-    });
-    return _.orderBy(tests, ["selected", "title"], ["desc", "asc"]);
-  }
   public trContainsPigment(tr: TR, PigmentId: number): boolean {
     if (tr.PigmentsId) {
       return (tr.PigmentsId.indexOf(PigmentId) != -1);
     }
     else return false;
   }
+  /**
+   * Determines if the TR contains the selected Test
+   * 
+   * @param {TR} tr  The TR to check.
+   * @param {number} TestId  the ID of the Test to check.
+   * @returns {boolean} 
+   * 
+   * @memberof TrForm
+   */
   public trContainsTest(tr: TR, TestId: number): boolean {
     if (tr.TestsId) {
       return (tr.TestsId.indexOf(TestId) != -1);
@@ -321,8 +389,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       return false;
     }
   }
+
   /**
-   * return Pigments on the tr
+   *  Gets all the Pigments on the TR being edited
+   * 
+   * @returns {Array<Pigment>} 
+   * 
+   * @memberof TrForm
    */
   public getSelectedPigments(): Array<Pigment> {
     var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
@@ -340,8 +413,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
 
+
   /**
-   * return tests available from the PropetyTest table and not on the tr
+   * return tests available from the PropetyTest table and not on the tr. These are the tests which can be added to the TR
+   * 
+   * @returns {Array<DisplayPropertyTest>} 
+   * 
+   * @memberof TrForm
    */
   public getAvailableTests(): Array<DisplayPropertyTest> {
     // select the propertyTest available based on the applicationType and EndUse of the tr
@@ -377,6 +455,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
   }
+
+  /**
+   * Gets the Groups used to display the available tests.
+   * (See https://dev.office.com/fabric#/components/groupedlist)
+   * The group contains the starting index of the group and the number of elements
+   * 
+   * @returns {Array<IGroup>} 
+   * 
+   * @memberof TrForm
+   */
   public getAvailableTestGroups(): Array<IGroup> {
     var displayPropertyTests: Array<DisplayPropertyTest> = this.getAvailableTests(); // all the avalable tests with their Property
     var properties = _.countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => { return dpt.property; });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
@@ -392,8 +480,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     return groups;
   }
+
   /**
-   * return Tests on the tr
+   * return Tests on the tr being edited
+   * 
+   * @returns {Array<Test>} 
+   * 
+   * @memberof TrForm
    */
   public getSelectedTests(): Array<Test> {
     var tempTests = _.filter(this.props.tests, (test: Test) => {
@@ -411,8 +504,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
 
+
   /**
-   * return pigments Not on the Tr
+   * Return pigments Not on the Tr being edited. Theses are the pigments that can be selected./
+   * 
+   * @returns {Array<Pigment>} 
+   * 
+   * @memberof TrForm
    */
   public getAvailablePigments(): Array<Pigment> {
     var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
@@ -428,6 +526,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     });
     return _.orderBy(pigments, ["type"], ["asc"]);
   }
+
+  /**
+ * Gets the Groups used to display the available pigments.
+ * (See https://dev.office.com/fabric#/components/groupedlist)
+ * The group contains the starting index of the group and the number of elements
+ * 
+ * @returns {Array<IGroup>} 
+ * 
+ * @memberof TrForm
+ */
   public getAvailablePigmentGroups(): Array<IGroup> {
     var pigs: Array<Pigment> = this.getAvailablePigments();
     //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
@@ -444,6 +552,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     return groups;
   }
+
+  /**
+   * Gets the technical Specialists, including an indicator if they are selected or not
+   * 
+   * @returns 
+   * 
+   * @memberof TrForm
+   */
   public getTechSpecs() {
     var techSpecs = _.map(this.props.techSpecs, (techSpec) => {
       return {
@@ -454,6 +570,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     });
     return _.orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
   }
+
+  /**
+   *  Gets the Staff CC (Same group as technical Specialists), including an indicator if they are selected or not
+   * 
+   * @returns 
+   * 
+   * @memberof TrForm
+   */
   public getStaffCC() {
     var staffCC = _.map(this.props.techSpecs, (techSpec) => {
       return {
@@ -465,8 +589,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     return _.orderBy(staffCC, ["selected", "title"], ["desc", "asc"]);
   }
 
-  public toggleTechSpec(isSelected: boolean, id: number) {
 
+  /**
+   * Adds or removes a preson from the TechnicalSpecialts on the TR being edited
+   * 
+   * @param {boolean} isSelected 
+   * @param {number} id 
+   * 
+   * @memberof TrForm
+   */
+  public toggleTechSpec(isSelected: boolean, id: number) {
     this.state.isDirty = true;
     if (isSelected) {
       if (this.state.tr.TRAssignedToId) {
@@ -481,10 +613,21 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     this.setState(this.state);
   }
+
+  /**
+   * Renders the Technical Specialist Toggle with appropriate handlers
+   * 
+   * @param {*} [item] 
+   * @param {number} [index] 
+   * @param {IColumn} [column] 
+   * @returns {*} 
+   * 
+   * @memberof TrForm
+   */
   public renderTechSpecToggle(item?: any, index?: number, column?: IColumn): any {
 
     return (
-      <Toggle 
+      <Toggle
         checked={item.selected}
         onText="Selected"
         offText=""
@@ -494,6 +637,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     );
   }
 
+  /**
+   * Adds or removes a preson from the StaffCC on the TR being edited
+   * 
+   * @param {boolean} isSelected 
+   * @param {number} id 
+   * 
+   * @memberof TrForm
+   */
   public toggleStaffCC(isSelected: boolean, id: number) {
     this.state.isDirty = true;
     if (isSelected) {
@@ -509,6 +660,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     this.setState(this.state);
   }
+  /**
+  * Renders the StaffCC Toggle with appropriate handlers
+  * 
+  * @param {*} [item] 
+  * @param {number} [index] 
+  * @param {IColumn} [column] 
+  * @returns {*} 
+  * 
+  * @memberof TrForm
+  */
   public renderStaffCCToggle(item?: any, index?: number, column?: IColumn): any {
 
     return (
@@ -541,7 +702,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public renderAvailableTestsToggle(item?: any, index?: number, column?: IColumn): any {
     return (
-      <Toggle 
+      <Toggle
         checked={false}
         onText=""
         offText=""
@@ -561,6 +722,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
   /******** Pigmemt Toggles , this is two lists, toggling adds from one , removes from the other*/
+
+  /**
+   * Adds the selected Pigment to the TR being edited
+   * In the UI Pigmemts is two lists (selected and unselected pigments, toggling adds from one , removes from the other
+   * 
+   * @param {number} id The ID if the pigment to add or remove
+   * 
+   * @memberof TrForm
+   */
   public addPigment(id: number) {
     this.state.isDirty = true;
     if (this.state.tr.PigmentsId) {
@@ -571,19 +741,36 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     this.setState(this.state);
   }
+  /**
+  * Removes  the selected Pigment to the TR being edited
+  * In the UI Pigmemts is two lists (selected and unselected pigments, toggling adds from one , removes from the other
+  * 
+  * @param {number} id The ID if the pigment to add or remove
+  * 
+  * @memberof TrForm
+  */
   public removePigment(id: number) {
-
     this.state.isDirty = true;
-
     if (this.state.tr.PigmentsId) {
       this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
     }
     this.setState(this.state);
   }
+
+  /**
+   *  Renders an item in the Available Pigments list with approrpiate handlers
+   * 
+   * @param {*} [item] 
+   * @param {number} [index] 
+   * @param {IColumn} [column] 
+   * @returns {*} 
+   * 
+   * @memberof TrForm
+   */
   public renderAvailablePigmentsToggle(item?: any, index?: number, column?: IColumn): any {
 
     return (
-      <Toggle 
+      <Toggle
         checked={false}
         onText=""
         offText=""
@@ -591,7 +778,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       />
     );
   }
-
+  /**
+   *  Renders an item in the Selected Pigments list with approrpiate handlers
+   * 
+   * @param {*} [item] 
+   * @param {number} [index] 
+   * @param {IColumn} [column] 
+   * @returns {*} 
+   * 
+   * @memberof TrForm
+   */
   public renderSelectedPigmentsToggle(item?: any, index?: number, column?: IColumn): any {
     return (
       <Toggle
@@ -603,16 +799,42 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     );
   }
 
+  /**
+   * Renders a formatted date in the UI
+   * 
+   * @param {*} [item] 
+   * @param {number} [index] 
+   * @param {IColumn} [column] 
+   * @returns {*} 
+   * 
+   * @memberof TrForm
+   */
   public renderDate(item?: any, index?: number, column?: IColumn): any {
 
     return moment(item[column.fieldName]).format("MMM Do YYYY");
   }
+
+  /**
+   * Hides the TR Search modal(TRPicker.tsx).
+   * The seatch modal is used to select a parent tr
+   * 
+   * @memberof TrForm
+   */
   public cancelTrSearch(): void {
     this.state.showTRSearch = false;
     this.setState(this.state);
   }
   //make the child tr the currently selected tr
 
+
+  /**
+   * Makes the selected Child TR the current TR. Called when the user clicks the edit icon in the child TR List.
+   * 
+   * @param {number} trId The ID of the Child TR to edit.
+   * @returns {*} 
+   * 
+   * @memberof TrForm
+   */
   public selectChildTR(trId: number): any {
     const childTr = _.find(this.state.childTRs, (tr) => { return tr.Id === trId; });
 
@@ -632,9 +854,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         this.setState(this.state);
       });
     }
-
     return false;
   }
+
+  /**
+   * Opens the selected TR Document in a new window.
+   * 
+   * @param {TRDocument} trdocument 
+   * 
+   * @memberof TrForm
+   */
   public editDocument(trdocument: TRDocument): void {
     debugger;
     //mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
@@ -747,8 +976,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
       return {
-        key: wt.id,
-        text: wt.workType
+        key: wt.id, text: wt.workType
       };
     });
 
@@ -761,8 +989,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       })
         .map((at) => {
           return {
-            key: at.id,
-            text: at.applicationType
+            key: at.id, text: at.applicationType
           };
         });
     let enduseDropDoownoptions =
@@ -773,11 +1000,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       })
         .map((eu) => {
           return {
-            key: eu.id,
-            text: eu.endUse
+            key: eu.id, text: eu.endUse
           };
         });
-    console.log("# of app types is " + applicationtypeDropDoownoptions.length);
+
     return (
       <div >
 
@@ -922,7 +1148,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
 
-              <DatePicker  
+              <DatePicker
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
                 onSelectDate={e => {
                   this.state.isDirty = true;

@@ -20,4 +20,5 @@ export interface ITrFormWebPartProps {
   enableEmail: boolean;// to disable sending emails while testing
   editFormUrlFormat: string;//
   displayFormUrlFormat: string;
+  delayPriorToSettingCKEditor:number;
 }

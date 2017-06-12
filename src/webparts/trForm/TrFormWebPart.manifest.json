@@ -36,7 +36,8 @@
         "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "delayPriorToSettingCKEditor":200
       }
     },
     {
@@ -69,7 +70,8 @@
         "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "delayPriorToSettingCKEditor":200
       }
     },
     {
@@ -102,7 +104,8 @@
         "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "delayPriorToSettingCKEditor":200
       }
     },
     {
@@ -135,7 +138,8 @@
         "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "delayPriorToSettingCKEditor":200
       }
     },
     {
@@ -168,7 +172,8 @@
         "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "delayPriorToSettingCKEditor":200
       }
     },
     {
@@ -201,7 +206,8 @@
         "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "AP",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx"
+        "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
+        "delayPriorToSettingCKEditor":200
       }
     }
   ]
