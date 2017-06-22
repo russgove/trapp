@@ -460,12 +460,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error.message);
 
         });
-      let pigmentFields = "Id,Title,IsActive,KMPigmentType,Manufacturer/Title";
+      let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
       let pigmentExpands = "Manufacturer";
       pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
           formProps.pigments = _.map(items, (item) => {
-            let p: Pigment = new Pigment(item["Id"], item["Title"], item["KMPigmentType"],item["IsActive"]);
+            let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
             if (item["Manufacturer"]) {
               p.manufacturer = item["Manufacturer"]["Title"];
             }

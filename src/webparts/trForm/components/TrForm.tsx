@@ -373,14 +373,41 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var pigments = _.map(tempPigments, (pigment) => {
       return {
         title: pigment.title,
-        type: (pigment.type) ? pigment.type : "(none)",
-        manufacturer: pigment.manufacturer,
+        manufacturer: (pigment.manufacturer)?pigment.manufacturer:"(none)",
         id: pigment.id,
         isActive:pigment.isActive
       };
-    }).filter((p)=>{debugger;return p.isActive==="Yes"});
-    return _.orderBy(pigments, ["type"], ["asc"]);
+    }).filter((p)=>{return p.isActive==="Yes"});
+    return _.orderBy(pigments, ["manufacturer"], ["asc"]);
   }
+
+
+  /**
+ * Gets the Groups used to display the available pigments.
+ * (See https://dev.office.com/fabric#/components/groupedlist)
+ * The group contains the starting index of the group and the number of elements
+ * 
+ * @returns {Array<IGroup>} 
+ * 
+ * @memberof TrForm
+ */
+  public getAvailablePigmentGroups(): Array<IGroup> {
+    var pigs: Array<Pigment> = this.getAvailablePigments();
+    //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
+    var pigmentManufactureres = _.countBy(pigs, (p1: Pigment) => { return p1.manufacturer; });
+    var groups: Array<IGroup> = [];
+    for (const pm in pigmentManufactureres) {
+      groups.push({
+        name: pm,
+        key: pm,
+        startIndex: _.findIndex(pigs, (pig) => { return pig.manufacturer === pm; }),
+        count: pigmentManufactureres[pm],
+        isCollapsed: true
+      });
+    }
+    return groups;
+  }
+
   /**
    *  Gets all the Pigments on the TR being edited
    * 
@@ -395,8 +422,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var selectedPigments = _.map(tempPigments, (pigment) => {
       return {
         title: pigment.title,
-        type: (pigment.type) ? pigment.type : "(none)",
-        manufacturer: pigment.manufacturer,
+        manufacturer: (pigment.manufacturer)?pigment.manufacturer:"(none)",
         id: pigment.id,
         isActive:pigment.isActive
       };
@@ -498,31 +524,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
 
-  /**
- * Gets the Groups used to display the available pigments.
- * (See https://dev.office.com/fabric#/components/groupedlist)
- * The group contains the starting index of the group and the number of elements
- * 
- * @returns {Array<IGroup>} 
- * 
- * @memberof TrForm
- */
-  public getAvailablePigmentGroups(): Array<IGroup> {
-    var pigs: Array<Pigment> = this.getAvailablePigments();
-    //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
-    var pigmentTypes = _.countBy(pigs, (p1: Pigment) => { return p1.type; });
-    var groups: Array<IGroup> = [];
-    for (const pt in pigmentTypes) {
-      groups.push({
-        name: pt,
-        key: pt,
-        startIndex: _.findIndex(pigs, (pig) => { return pig.type === pt; }),
-        count: pigmentTypes[pt],
-        isCollapsed: true
-      });
-    }
-    return groups;
-  }
 
   /**
    * Gets the technical Specialists, including an indicator if they are selected or not
