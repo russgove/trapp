@@ -107,7 +107,7 @@ export class Pigment {
         public id: number,
         public title: string,
         public type: string,
-
+        public isActive:string
 
     ) { this.manufacturer = null; }
 

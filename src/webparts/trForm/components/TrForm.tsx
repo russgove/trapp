@@ -360,6 +360,28 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
   /**
+   * Return pigments Not on the Tr being edited and are Active. Theses are the pigments that can be selected./
+   * 
+   * @returns {Array<Pigment>} 
+   * 
+   * @memberof TrForm
+   */
+  public getAvailablePigments(): Array<Pigment> {
+    var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
+      return !this.trContainsPigment(this.state.tr, pigment.id);
+    });
+    var pigments = _.map(tempPigments, (pigment) => {
+      return {
+        title: pigment.title,
+        type: (pigment.type) ? pigment.type : "(none)",
+        manufacturer: pigment.manufacturer,
+        id: pigment.id,
+        isActive:pigment.isActive
+      };
+    }).filter((p)=>{debugger;return p.isActive==="Yes"});
+    return _.orderBy(pigments, ["type"], ["asc"]);
+  }
+  /**
    *  Gets all the Pigments on the TR being edited
    * 
    * @returns {Array<Pigment>} 
@@ -375,7 +397,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         title: pigment.title,
         type: (pigment.type) ? pigment.type : "(none)",
         manufacturer: pigment.manufacturer,
-        id: pigment.id
+        id: pigment.id,
+        isActive:pigment.isActive
       };
     });
     return _.orderBy(selectedPigments, ["title"], ["asc"]);
@@ -474,27 +497,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
 
-  /**
-   * Return pigments Not on the Tr being edited. Theses are the pigments that can be selected./
-   * 
-   * @returns {Array<Pigment>} 
-   * 
-   * @memberof TrForm
-   */
-  public getAvailablePigments(): Array<Pigment> {
-    var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
-      return !this.trContainsPigment(this.state.tr, pigment.id);
-    });
-    var pigments = _.map(tempPigments, (pigment) => {
-      return {
-        title: pigment.title,
-        type: (pigment.type) ? pigment.type : "(none)",
-        manufacturer: pigment.manufacturer,
-        id: pigment.id
-      };
-    });
-    return _.orderBy(pigments, ["type"], ["asc"]);
-  }
 
   /**
  * Gets the Groups used to display the available pigments.
@@ -840,6 +842,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             key: at.id, text: at.applicationType
           };
         });
+        debugger;
+        
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
         // show if its valid for the selected ApplicationType, OR if its already on the tr
