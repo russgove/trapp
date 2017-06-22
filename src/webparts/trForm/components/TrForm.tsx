@@ -1241,7 +1241,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 setKey="id"
                 columns={[
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
-                  { key: "type", name: "Type", fieldName: "type", minWidth: 20, maxWidth: 100 },
+                  { key: "manufacturer", name: "Manufacturer", fieldName: "manufacturer", minWidth: 20, maxWidth: 100 },
                   {
                     key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
                       checked={true}
