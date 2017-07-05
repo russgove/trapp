@@ -259,7 +259,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutIframeUrl: null,
     };
     let batch = pnp.sp.createBatch();
-    debugger;
+  
     pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
@@ -471,7 +471,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
             return p;
           });
-          debugger;
+  
         })
         .catch((error) => {
           console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
@@ -739,7 +739,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log("awaiting promises from emails");
         return Promise.all([newAssigneesPromise, staffccPromise])
           .then((a) => {
-            debugger;
+         
             console.log("emails sent continuing");
             let x = newAssigneesPromise;
             let y = staffccPromise;
@@ -747,7 +747,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             return tr;
           })
           .catch((err) => {
-            debugger;
+           
             console.log("error sending emails " + err);
           });
       });
@@ -780,7 +780,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * @memberof TrFormWebPart
    */
   private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
-    debugger;
+
     return new Promise((resolve, reject) => {
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
         console.log("staffcc emails wil lnot be processed");
@@ -855,7 +855,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         resolve(null);
         return;
       }
-      debugger;
+  
       let promises: Array<Promise<any>> = [];
       let currentAssignees: Array<number> = tr.TRAssignedToId;
       let editFormUrl = this.properties.editFormUrlFormat
@@ -968,7 +968,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     } else {
       // large upload// not tested yet
       alert("large file support  not impletemented");
-      debugger;
+     
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
         .addChunked(file.name, file, data => {
           console.log({ data: data, message: "progress" });

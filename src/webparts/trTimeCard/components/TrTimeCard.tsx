@@ -114,7 +114,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * @memberof TrTimeCard
    */
   public render(): React.ReactElement<ITrTimeCardProps> {
-    debugger;
+
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>

@@ -43,7 +43,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       WeekEndingDate: timeSpent.weekEndingDate,
       HoursSpent: timeSpent.hoursSpent
     }).then((response) => {
-      debugger;
+   
       return response.data.Id;
       // CAPTURE ID TO RETURN
     });

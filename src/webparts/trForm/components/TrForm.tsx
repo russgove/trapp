@@ -734,10 +734,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public editDocument(trdocument: TRDocument): void {
-    debugger;
+    
     //mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 1).then(url => {
-      debugger;
+    
       if (!url || url === "") {
         window.open(trdocument.serverRalativeUrl, '_blank');
       }
@@ -759,7 +759,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.cancelTrSearch();
   }
   public uploadFile(e: any) {
-    debugger;
+  
     let target: any = e.target as any;
     let file = e.target["files"][0];
     this.props.uploadFile(file, this.state.tr.Id).then((response) => {
@@ -767,9 +767,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         this.state.documents = dox;
         this.setState(this.state);
       });
-      debugger;
+     
     }).catch((error) => {
-      debugger;
+     
     });
   }
   public editParentTR() {
@@ -794,8 +794,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
   }
   public documentRowMouseEnter(trdocument: TRDocument, e: any) {
+ 
     //mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
-    this.props.fetchDocumentWopiFrameURL(trdocument.id, 3).then(url => {
+    this.props.fetchDocumentWopiFrameURL(trdocument.id, 0).then(url => {
       if (!url || url === "") {
         url = trdocument.serverRalativeUrl;
       }
@@ -843,7 +844,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             key: at.id, text: at.applicationType
           };
         });
-        debugger;
+       
         
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
@@ -1321,7 +1322,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   key: "Edit", name: "", fieldName: "Title", minWidth: 20,
                   onRender: (item?: any, index?: number, column?: IColumn) => <div>
                     <i onClick={(e) => {
-                      debugger;
+                 
                       this.selectChildTR(item.Id);
                     }}
                       className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
@@ -1352,7 +1353,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   {
                     key: "Edit", name: "", fieldName: "Title", minWidth: 20,
                     onRender: (item) => <div>
-                      <i onClick={(e) => { debugger; this.editDocument(item); }}
+                      <i onClick={(e) => { this.editDocument(item); }}
                         className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
                     </div>
                   },
@@ -1360,7 +1361,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
                 ]}
               />
-              <input type='file' id='uploadfile' onChange={e => { debugger; this.uploadFile(e); }} />
+              <input type='file' id='uploadfile' onChange={e => {  this.uploadFile(e); }} />
             </div>
             <div style={{ float: "right" }}>
               <DocumentIframe src={this.state.documentCalloutIframeUrl} />
