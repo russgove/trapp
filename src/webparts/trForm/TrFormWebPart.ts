@@ -1,3 +1,5 @@
+
+import { IPersonaProps } from 'office-ui-fabric-react/lib/Persona';
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
@@ -82,9 +84,34 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       tr.ParentTR = item.ParentTR.Title;
     }
     tr.TRAssignedToId = item.TRAssignedToId;
-    tr.StaffCCId = item.StaffCCId;
-    tr.PigmentsId = item.PigmentsId;
+    tr.StaffCC = this.getStaffCCFromTR(item),
+      tr.PigmentsId = item.PigmentsId;
     tr.TestsId = item.TestsId;
+  }
+  /**
+ * Method to extract Personas from the STAfcc fields on a TR
+ * 
+ * @param {item} a tr getch throuh the rest api expanding the staffcc fields
+ * @returns {Promise<TR>}  A Promise for the TR record
+ * 
+ * @memberof TrFormWebPart
+ */
+  public getStaffCCFromTR(item: any): Array<IPersonaProps> {
+
+    let personas: Array<IPersonaProps> = [];
+    debugger;
+    for (let staffcc of item.StaffCC) {
+      debugger;
+      personas.push({
+        primaryText: staffcc["Title"],
+        secondaryText: staffcc["JobTitle"],
+        tertiaryText: staffcc["Department"],
+        optionalText: staffcc["EMail"],
+        //imageUrl:result["PictureURL"], cannot expand Picure when I join TR to site users list, would need to doubleback and get thes
+        id: staffcc['Id']
+      })
+    }
+    return personas;
   }
   /**
    * Method to fetch a TR from the Technical Request list
@@ -204,8 +231,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       return docs;
     });
 
-
-
   }
 
   /**
@@ -218,6 +243,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
+    debugger;
     if (document.getElementById("s4-ribbonrow")) {
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
@@ -231,6 +257,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       TRsearch: this.TRsearch.bind(this),
       uploadFile: this.uploadFile.bind(this),
       getDocuments: this.getDocuments.bind(this),
+      peopleSearch: this.PeopleSearch.bind(this),
+      ensureUsersInPersonas: this.ensureUsersInPersonas.bind(this),
 
       customers: [],
       initialState: null,
@@ -244,7 +272,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pigments: [],
       tests: [],
       propertyTests: [],
-      delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor
+      delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor,
+
 
     };
     let formState: ITRFormState = {
@@ -259,7 +288,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutIframeUrl: null,
     };
     let batch = pnp.sp.createBatch();
-  
+
     pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
@@ -290,8 +319,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
-        let fields = "*,WorkType/Title,ParentTR/Title,Requestor/Title,Customer/Title,TRAssignedTo/Title,TRAssignedTo/Id";
-        let expands = "ParentTR,Requestor,Customer,TRAssignedTo,WorkType";
+        let fields = "*,WorkType/Title,ParentTR/Title,Requestor/Title,Customer/Title,TRAssignedTo/Title,TRAssignedTo/Id,StaffCC/EMail,StaffCC/Title,StaffCC/Name,StaffCC/JobTitle,StaffCC/Department,StaffCC/Id";
+        let expands = "ParentTR,Requestor,Customer,TRAssignedTo,WorkType,StaffCC";
         // get the requested tr
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand(expands).select(fields).inBatch(batch).get()
 
@@ -471,7 +500,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
             return p;
           });
-  
+
         })
         .catch((error) => {
           console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
@@ -614,7 +643,70 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ]
     };
   }
+  public ensureUsersInPersonas(items: Array<IPersonaProps>): void {
+    for (const item of items) {
+      if (item.id === null) {
+        pnp.sp.web.ensureUser(item.optionalText).then((result) => {
+          item.id = result.data.Id.toString();
 
+        }).catch((error) => {
+          console.log("Error: failed to ensure user with email addrss " + item.optionalText);
+        });
+      }
+    }
+
+  }
+  public PeopleSearch(filter: string, selectedItems?: Array<IPersonaProps>): Promise<Array<IPersonaProps>> {
+
+    const query: SearchQuery = {
+
+      Querytext: 'PreferredName:' + filter + '*',
+      SourceId: 'b09a7990-05ea-4af9-81ef-edfab16c4e31', //people
+      RowLimit: 15,
+      SelectProperties: [
+        'JobTitle',
+        'WorkEmail',
+        'PreferredName',
+        'Department',
+        'PictureURL',
+        'Name'
+
+      ],
+      // SortList:[
+      //   {Property:'PreferredName',Direction:SortDirection.Ascending}
+      // ]
+
+
+    };
+    return pnp.sp.search(query).then((results: SearchResults) => {
+
+      let personas: Array<IPersonaProps> = [];
+      const suffix:string='@TRONOX.COM';
+      for (const result of results.PrimarySearchResults) {
+        const email:string = result[        "WorkEmail"        ];
+        debugger;
+        if (_.findIndex(selectedItems, (si) => { return si.optionalText===result["WorkEmail"] }) === -1 &&
+          email != null &&
+          email.toUpperCase().substr(-suffix.length) === suffix // endsWith
+        ) {
+          personas.push({
+            primaryText: result["PreferredName"],
+            secondaryText: result["JobTitle"],
+            tertiaryText: result["Department"],
+            optionalText: result["WorkEmail"],
+            imageUrl: result["PictureURL"],
+            id: null, // this needs to be set to the ID of the user in the sharepoint site. If user is selected we need to ensure user then add the ID
+          })
+        }
+      }
+      return personas;
+    }).catch((e) => {
+      debugger;
+      console.log("peoplesearch thew error " + e);
+      return null;
+    })
+
+  }
   /**
    * Calls sharepoint search to find TRS to be set as the parent TR.
    * The search path is set to only find items in the Technical Request List.
@@ -709,18 +801,24 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     delete copy.TechSpecId;
     copy["TRAssignedToId"] = {};
     copy["TRAssignedToId"]["results"] = technicalSpecialists;
-
     console.log("reformatetd techSpecs for save");
-    let StaffCCId = (copy.StaffCCId) ? copy.StaffCCId : [];
-    delete copy.StaffCCId;
+
+    // staffcc is an array of IPersonaProps where the id field is the users ID in the user infomation list.
+    // We need to convert this to StaffCCId/resulsts/ids to post back
     copy["StaffCCId"] = {};
-    copy["StaffCCId"]["results"] = StaffCCId;
+    copy["StaffCCId"]["results"] = _.map(copy.StaffCC, (cc: IPersonaProps) => {
+      debugger;
+      return parseInt(cc.id)
+    });
+    delete copy.StaffCC;
     console.log("reformatetd staffcc for save");
+
     let TestsId = (copy.TestsId) ? copy.TestsId : [];
     delete copy.TestsId;
     copy["TestsId"] = {};
     copy["TestsId"]["results"] = TestsId;
     console.log("reformatetd tests for save");
+
     let PigmentsId = (copy.PigmentsId) ? copy.PigmentsId : [];
     delete copy.PigmentsId;
     copy["PigmentsId"] = {};
@@ -739,7 +837,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log("awaiting promises from emails");
         return Promise.all([newAssigneesPromise, staffccPromise])
           .then((a) => {
-         
+
             console.log("emails sent continuing");
             let x = newAssigneesPromise;
             let y = staffccPromise;
@@ -747,7 +845,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             return tr;
           })
           .catch((err) => {
-           
+
             console.log("error sending emails " + err);
           });
       });
@@ -760,7 +858,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         this.moveFieldsToTR(newTR, item.data);
         var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
         var staffccPromise = this.emailStaffCC(newTR, originalStatus);
-       return  Promise.all([newAssigneesPromise, staffccPromise]).then(() => {
+        return Promise.all([newAssigneesPromise, staffccPromise]).then(() => {
           this.navigateToSource();// should stop here when on a form page  
           return newTR;
         });
@@ -782,7 +880,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
 
     return new Promise((resolve, reject) => {
-      if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCCId === null || tr.StaffCCId.length === 0) {
+      if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCC === null || tr.StaffCC.length === 0) {
         console.log("staffcc emails wil lnot be processed");
         resolve(null);
         return;
@@ -804,9 +902,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
         console.log("extracted text in emailStaffCC, looping users");
-        for (let staffCC of tr.StaffCCId) {
+        for (let staffCC of tr.StaffCC) {
           console.log("in emailStaffCC, fetching user " + staffCC);
-          let promise = pnp.sp.web.getUserById(staffCC).get().then((user) => {
+          //*******          TODO , O a;ready have the email address in the persona
+
+
+          let promise = pnp.sp.web.getUserById(parseInt(staffCC.id)).get().then((user) => {
             console.log("in emailStaffCC, fetched user " + staffCC);
             let emailProperties: EmailProperties = {
               From: this.context.pageContext.user.email,
@@ -855,7 +956,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         resolve(null);
         return;
       }
-  
+
       let promises: Array<Promise<any>> = [];
       let currentAssignees: Array<number> = tr.TRAssignedToId;
       let editFormUrl = this.properties.editFormUrlFormat
@@ -968,7 +1069,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     } else {
       // large upload// not tested yet
       alert("large file support  not impletemented");
-     
+
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
         .addChunked(file.name, file, data => {
           console.log({ data: data, message: "progress" });

@@ -39,7 +39,7 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
 
     constructor(props: iTrPickerProps) {
         super(props);
-        debugger;
+       
         this.state = {
             searchText: null,
             searchRusults: []

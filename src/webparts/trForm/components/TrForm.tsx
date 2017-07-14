@@ -1,8 +1,8 @@
 
-/** Fabric */
 import {
   NormalPeoplePicker, CompactPeoplePicker, IBasePickerSuggestionsProps,
 } from 'office-ui-fabric-react/lib/Pickers';
+import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
 import { PrimaryButton, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
@@ -373,11 +373,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var pigments = _.map(tempPigments, (pigment) => {
       return {
         title: pigment.title,
-        manufacturer: (pigment.manufacturer)?pigment.manufacturer:"(none)",
+        manufacturer: (pigment.manufacturer) ? pigment.manufacturer : "(none)",
         id: pigment.id,
-        isActive:pigment.isActive
+        isActive: pigment.isActive
       };
-    }).filter((p)=>{return p.isActive==="Yes"});
+    }).filter((p) => { return p.isActive === "Yes" });
     return _.orderBy(pigments, ["manufacturer"], ["asc"]);
   }
 
@@ -422,9 +422,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var selectedPigments = _.map(tempPigments, (pigment) => {
       return {
         title: pigment.title,
-        manufacturer: (pigment.manufacturer)?pigment.manufacturer:"(none)",
+        manufacturer: (pigment.manufacturer) ? pigment.manufacturer : "(none)",
         id: pigment.id,
-        isActive:pigment.isActive
+        isActive: pigment.isActive
       };
     });
     return _.orderBy(selectedPigments, ["title"], ["asc"]);
@@ -550,17 +550,20 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * 
    * @memberof TrForm
    */
-  public getStaffCC() {
-    var staffCC = _.map(this.props.techSpecs, (techSpec) => {
-      return {
-        title: techSpec.title,
-        selected: ((this.state.tr.StaffCCId) ? this.state.tr.StaffCCId.indexOf(techSpec.id) != -1 : null),
-        id: techSpec.id
-      };
-    });
-    return _.orderBy(staffCC, ["selected", "title"], ["desc", "asc"]);
+  // public getStaffCC() {
+  //   var staffCC = _.map(this.props.techSpecs, (techSpec) => {
+  //     return {
+  //       title: techSpec.title,
+  //       selected: ((this.state.tr.StaffCCId) ? this.state.tr.StaffCCId.indexOf(techSpec.id) != -1 : null),
+  //       id: techSpec.id
+  //     };
+  //   });
+  //   return _.orderBy(staffCC, ["selected", "title"], ["desc", "asc"]);
+  // }
+  public staffCCChanged(items?: Array<IPersonaProps>): void {
+    this.state.tr.StaffCC = items;
+    this.props.ensureUsersInPersonas(this.state.tr.StaffCC);
   }
-
 
   /**
    * Adds or removes a preson from the TechnicalSpecialts on the TR being edited
@@ -596,21 +599,21 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * 
    * @memberof TrForm
    */
-  public toggleStaffCC(isSelected: boolean, id: number) {
-    this.state.isDirty = true;
-    if (isSelected) {
-      if (this.state.tr.StaffCCId) {
-        this.state.tr.StaffCCId.push(id);//addit
-      }
-      else {
-        this.state.tr.StaffCCId = [id];
-      }
-    }
-    else {
-      this.state.tr.StaffCCId = _.filter(this.state.tr.StaffCCId, (x) => { return x != id; });//remove it
-    }
-    this.setState(this.state);
-  }
+  // public toggleStaffCC(isSelected: boolean, id: number) {
+  //   this.state.isDirty = true;
+  //   if (isSelected) {
+  //     if (this.state.tr.StaffCCId) {
+  //       this.state.tr.StaffCCId.push(id);//addit
+  //     }
+  //     else {
+  //       this.state.tr.StaffCCId = [id];
+  //     }
+  //   }
+  //   else {
+  //     this.state.tr.StaffCCId = _.filter(this.state.tr.StaffCCId, (x) => { return x != id; });//remove it
+  //   }
+  //   this.setState(this.state);
+  // }
 
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number) {
@@ -666,7 +669,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
 
- 
+
 
   /**
    * Renders a formatted date in the UI
@@ -734,10 +737,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public editDocument(trdocument: TRDocument): void {
-    
+
     //mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 1).then(url => {
-    
+
       if (!url || url === "") {
         window.open(trdocument.serverRalativeUrl, '_blank');
       }
@@ -759,7 +762,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.cancelTrSearch();
   }
   public uploadFile(e: any) {
-  
+
     let target: any = e.target as any;
     let file = e.target["files"][0];
     this.props.uploadFile(file, this.state.tr.Id).then((response) => {
@@ -767,9 +770,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         this.state.documents = dox;
         this.setState(this.state);
       });
-     
+
     }).catch((error) => {
-     
+
     });
   }
   public editParentTR() {
@@ -794,7 +797,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
   }
   public documentRowMouseEnter(trdocument: TRDocument, e: any) {
- 
+
     //mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 0).then(url => {
       if (!url || url === "") {
@@ -814,6 +817,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.setState(this.state);
     console.log("mouse exit for " + item.title);
   }
+
   /*public renderDocumentRow(props, defaultRender): JSX.Element {
 
     return (
@@ -844,8 +848,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             key: at.id, text: at.applicationType
           };
         });
-       
-        
+
+
     let enduseDropDoownoptions =
       _.filter(this.props.endUses, (eu) => {
         // show if its valid for the selected ApplicationType, OR if its already on the tr
@@ -1002,7 +1006,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
 
-              <DatePicker 
+              <DatePicker
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
                 onSelectDate={e => {
                   this.state.isDirty = true;
@@ -1133,7 +1137,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               Assigned To({(this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              Staff cc({(this.state.tr.StaffCCId) ? this.state.tr.StaffCCId.length : 0})
+              Staff cc({(this.state.tr.StaffCC) ? this.state.tr.StaffCC.length : 0})
              </tabs.Tab>
             <tabs.Tab>
               Pigments({(this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.length : 0})
@@ -1192,23 +1196,35 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            <DetailsList
-              layoutMode={DetailsListLayoutMode.fixedColumns}
-              selectionMode={SelectionMode.none}
-              items={this.getStaffCC()}
-              setKey="id"
-              columns={[
-                { key: "title", name: "Staff", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                {
-                  key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
-                    checked={item.selected}
-                    onText="Selected"
-                    offText=""
-                    onChanged={e => { this.toggleStaffCC(e, item.id); }}
-                  />
-                }
-              ]}
-            />
+            {/* DELETE THIS
+            <div style={{ float: "left" }}>
+              <DetailsList
+                layoutMode={DetailsListLayoutMode.fixedColumns}
+                selectionMode={SelectionMode.none}
+                items={this.getStaffCC()}
+                setKey="id"
+                columns={[
+                  { key: "title", name: "Staff", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                  {
+                    key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                      checked={item.selected}
+                      onText="Selected"
+                      offText=""
+                      onChanged={e => { this.toggleStaffCC(e, item.id); }}
+                    />
+                  }
+                ]}
+              />
+            </div>
+            <div style={{ float: "right" }}> */}
+            <NormalPeoplePicker
+              defaultSelectedItems={this.state.tr.StaffCC}
+              onChange={this.staffCCChanged.bind(this)}
+              onResolveSuggestions={this.props.peopleSearch}
+              >
+            </NormalPeoplePicker>
+            {/* </div>
+            <div style={{ clear: "both" }}></div> */}
           </tabs.TabPanel>
           <tabs.TabPanel>
             <div style={{ float: "left" }}>
@@ -1322,7 +1338,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   key: "Edit", name: "", fieldName: "Title", minWidth: 20,
                   onRender: (item?: any, index?: number, column?: IColumn) => <div>
                     <i onClick={(e) => {
-                 
+
                       this.selectChildTR(item.Id);
                     }}
                       className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
@@ -1361,7 +1377,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
                 ]}
               />
-              <input type='file' id='uploadfile' onChange={e => {  this.uploadFile(e); }} />
+              <input type='file' id='uploadfile' onChange={e => { this.uploadFile(e); }} />
             </div>
             <div style={{ float: "right" }}>
               <DocumentIframe src={this.state.documentCalloutIframeUrl} />
