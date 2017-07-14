@@ -971,7 +971,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label>Requestor</Label>
             </td>
             <td>
-              <Dropdown
+              {/* <Dropdown
                 label=""
                 options={this.props.requestors.map((r) => { return { key: r.id, text: r.title }; })}
                 onChanged={e => {
@@ -980,7 +980,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   this.setState(this.state);
                 }}
                 selectedKey={this.state.tr.RequestorId}
-              />
+              /> */}
+              <Label>{this.state.tr.RequestorName}</Label>
             </td>
             <td>
               <Label>Customer</Label>
