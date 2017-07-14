@@ -591,6 +591,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   label: "Display Form Url format",
                   description: "USed to format the link to the display form sent in emails"
                 }),
+                PropertyPaneTextField('emailSuffix', {
+                  label: "When searching for StaffCC only return people with email addresses ending with this",
+                  description: "USed to format the link to the display form sent in emails"
+                }),
                 PropertyPaneCheckbox('enableEmail', {
                   text: "Enable sending emails to assignees and staff cc",
                 })
@@ -681,11 +685,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     return pnp.sp.search(query).then((results: SearchResults) => {
 
       let personas: Array<IPersonaProps> = [];
-      const suffix:string='@TRONOX.COM';
+      const suffix: string = this.properties.emailSuffix.toUpperCase();
       for (const result of results.PrimarySearchResults) {
-        const email:string = result[        "WorkEmail"        ];
+        const email: string = result["WorkEmail"];
         debugger;
-        if (_.findIndex(selectedItems, (si) => { return si.optionalText===result["WorkEmail"] }) === -1 &&
+        if (_.findIndex(selectedItems, (si) => { return si.optionalText === result["WorkEmail"] }) === -1 &&
           email != null &&
           email.toUpperCase().substr(-suffix.length) === suffix // endsWith
         ) {

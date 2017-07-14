@@ -37,7 +37,8 @@
         "defaultSite": "OKC",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "delayPriorToSettingCKEditor":200
+        "delayPriorToSettingCKEditor":200,
+        "emailSuffix":"@TRONOX.COM"
       }
     },
     {
@@ -71,7 +72,8 @@
         "defaultSite": "OKC",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "delayPriorToSettingCKEditor":200
+        "delayPriorToSettingCKEditor":200,
+        "emailSuffix":"@TRONOX.COM"
       }
     },
     {
@@ -105,7 +107,8 @@
         "defaultSite": "OKC",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "delayPriorToSettingCKEditor":200
+        "delayPriorToSettingCKEditor":200,
+        "emailSuffix":"@TRONOX.COM"
       }
     },
     {
@@ -139,7 +142,8 @@
         "defaultSite": "AP",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "delayPriorToSettingCKEditor":200
+        "delayPriorToSettingCKEditor":200,
+        "emailSuffix":"@TRONOX.COM"
       }
     },
     {
@@ -173,7 +177,8 @@
         "defaultSite": "AP",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "delayPriorToSettingCKEditor":200
+        "delayPriorToSettingCKEditor":200,
+        "emailSuffix":"@TRONOX.COM"
       }
     },
     {
@@ -207,7 +212,8 @@
         "defaultSite": "AP",
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
-        "delayPriorToSettingCKEditor":200
+        "delayPriorToSettingCKEditor":200,
+        "emailSuffix":"@TRONOX.COM"
       }
     }
   ]

@@ -21,4 +21,5 @@ export interface ITrFormWebPartProps {
   editFormUrlFormat: string;//
   displayFormUrlFormat: string;
   delayPriorToSettingCKEditor:number;
+  emailSuffix:string; // when searching for People in staffCC we only rturn users with emails ending in emailsuffix
 }
