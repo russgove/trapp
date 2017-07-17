@@ -38,7 +38,8 @@
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
-        "emailSuffix":"@TRONOX.COM"
+        "emailSuffix":"@TRONOX.COM",
+        "visitorsGoupdName":"US Visitors"
       }
     },
     {
@@ -73,7 +74,8 @@
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
-        "emailSuffix":"@TRONOX.COM"
+        "emailSuffix":"@TRONOX.COM",
+        "visitorsGoupdName":"US Visitors"
       }
     },
     {
@@ -108,7 +110,8 @@
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
-        "emailSuffix":"@TRONOX.COM"
+        "emailSuffix":"@TRONOX.COM",
+        "visitorsGoupdName":"US Visitors"
       }
     },
     {
@@ -143,7 +146,8 @@
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
-        "emailSuffix":"@TRONOX.COM"
+        "emailSuffix":"@TRONOX.COM",
+        "visitorsGoupdName":"AP Visitors"
       }
     },
     {
@@ -178,7 +182,8 @@
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
-        "emailSuffix":"@TRONOX.COM"
+        "emailSuffix":"@TRONOX.COM",
+        "visitorsGoupdName":"AP Visitors"
       }
     },
     {
@@ -213,7 +218,8 @@
         "editFormUrlFormat": "{0}/Lists/tblRequest/EditForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
-        "emailSuffix":"@TRONOX.COM"
+        "emailSuffix":"@TRONOX.COM",
+        "visitorsGoupdName":"AP Visitors"
       }
     }
   ]

@@ -377,7 +377,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         id: pigment.id,
         isActive: pigment.isActive
       };
-    }).filter((p) => { return p.isActive === "Yes" });
+    }).filter((p) => { return p.isActive === "Yes" ;});
     return _.orderBy(pigments, ["manufacturer"], ["asc"]);
   }
 
@@ -1197,35 +1197,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             />
           </tabs.TabPanel>
           <tabs.TabPanel>
-            {/* DELETE THIS
-            <div style={{ float: "left" }}>
-              <DetailsList
-                layoutMode={DetailsListLayoutMode.fixedColumns}
-                selectionMode={SelectionMode.none}
-                items={this.getStaffCC()}
-                setKey="id"
-                columns={[
-                  { key: "title", name: "Staff", fieldName: "title", minWidth: 20, maxWidth: 200 },
-                  {
-                    key: "selected", name: "cc'd?", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
-                      checked={item.selected}
-                      onText="Selected"
-                      offText=""
-                      onChanged={e => { this.toggleStaffCC(e, item.id); }}
-                    />
-                  }
-                ]}
-              />
-            </div>
-            <div style={{ float: "right" }}> */}
             <NormalPeoplePicker
               defaultSelectedItems={this.state.tr.StaffCC}
               onChange={this.staffCCChanged.bind(this)}
               onResolveSuggestions={this.props.peopleSearch}
               >
             </NormalPeoplePicker>
-            {/* </div>
-            <div style={{ clear: "both" }}></div> */}
           </tabs.TabPanel>
           <tabs.TabPanel>
             <div style={{ float: "left" }}>

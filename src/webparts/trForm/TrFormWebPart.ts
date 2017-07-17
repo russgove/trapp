@@ -84,8 +84,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       tr.ParentTR = item.ParentTR.Title;
     }
     tr.TRAssignedToId = item.TRAssignedToId;
-    tr.StaffCC = this.getStaffCCFromTR(item),
-      tr.PigmentsId = item.PigmentsId;
+    tr.StaffCC = this.getStaffCCFromTR(item);
+    tr.PigmentsId = item.PigmentsId;
     tr.TestsId = item.TestsId;
   }
   /**
@@ -100,16 +100,18 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     let personas: Array<IPersonaProps> = [];
     debugger;
-    for (let staffcc of item.StaffCC) {
-      debugger;
-      personas.push({
-        primaryText: staffcc["Title"],
-        secondaryText: staffcc["JobTitle"],
-        tertiaryText: staffcc["Department"],
-        optionalText: staffcc["EMail"],
-        //imageUrl:result["PictureURL"], cannot expand Picure when I join TR to site users list, would need to doubleback and get thes
-        id: staffcc['Id']
-      })
+    if (item.StaffCC) {
+      for (let staffcc of item.StaffCC) {
+        debugger;
+        personas.push({
+          primaryText: staffcc["Title"],
+          secondaryText: staffcc["JobTitle"],
+          tertiaryText: staffcc["Department"],
+          optionalText: staffcc["EMail"],
+          //imageUrl:result["PictureURL"], cannot expand Picure when I join TR to site users list, would need to doubleback and get thes
+          id: staffcc['Id']
+        });
+      }
     }
     return personas;
   }
@@ -378,14 +380,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     else {
       formState.tr.Site = this.properties.defaultSite;
-       pnp.sp.web.currentUser.inBatch(batch).get().then((user) => {
-         debugger;
-         formState.tr.RequestorId = user["Id"];
-         formState.tr.RequestorName = user["Title"];
-       })
-         .catch((err) => {
-           console.log("unable to fetch current user");
-         });
+      pnp.sp.web.currentUser.inBatch(batch).get().then((user) => {
+        debugger;
+        formState.tr.RequestorId = user["Id"];
+        formState.tr.RequestorName = user["Title"];
+      })
+        .catch((err) => {
+          console.log("unable to fetch current user");
+        });
       pnp.sp.web.lists.getByTitle(this.properties.nextNumbersListName).items.select("Id,NextNumber").filter("CounterName eq 'RequestId'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
         .then((items) => {
           if (items.length != 1) {
@@ -600,8 +602,12 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   description: "USed to format the link to the display form sent in emails"
                 }),
                 PropertyPaneTextField('emailSuffix', {
-                  label: "When searching for StaffCC only return people with email addresses ending with this",
-                  description: "USed to format the link to the display form sent in emails"
+                  label: "E-Mail Suffix",
+                  description: "When searching for StaffCC only return people with email addresses ending with this"
+                }),
+                PropertyPaneTextField('visitorsGoupdName', {
+                  label: "Visitors Group Name",
+                  description: "When we add a StaffCC, the user gets added to this group so he can visit site"
                 }),
                 PropertyPaneCheckbox('enableEmail', {
                   text: "Enable sending emails to assignees and staff cc",
@@ -655,11 +661,20 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ]
     };
   }
+  public addUserToVisitorsGroup(userName: string) {
+    pnp.sp.web.siteGroups.getByName(this.properties.visitorsGoupdName).users.add(userName).then((d) => {
+    }).catch((err) => {
+      console.log("error adding user to visitors group");
+      console.log(err);
+
+    });
+  }
   public ensureUsersInPersonas(items: Array<IPersonaProps>): void {
     for (const item of items) {
       if (item.id === null) {
         pnp.sp.web.ensureUser(item.optionalText).then((result) => {
           item.id = result.data.Id.toString();
+          this.addUserToVisitorsGroup(item.optionalText);
 
         }).catch((error) => {
           console.log("Error: failed to ensure user with email addrss " + item.optionalText);
@@ -681,7 +696,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         'PreferredName',
         'Department',
         'PictureURL',
-        'Name'
+        'Name',
+        'AccountName'
 
       ],
       // SortList:[
@@ -696,8 +712,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       const suffix: string = this.properties.emailSuffix.toUpperCase();
       for (const result of results.PrimarySearchResults) {
         const email: string = result["WorkEmail"];
-        debugger;
-        if (_.findIndex(selectedItems, (si) => { return si.optionalText === result["WorkEmail"] }) === -1 &&
+
+        if (_.findIndex(selectedItems, (si) => { return si.optionalText === result["WorkEmail"]; }) === -1 &&
           email != null &&
           email.toUpperCase().substr(-suffix.length) === suffix // endsWith
         ) {
@@ -705,10 +721,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             primaryText: result["PreferredName"],
             secondaryText: result["JobTitle"],
             tertiaryText: result["Department"],
-            optionalText: result["WorkEmail"],
+            optionalText: result["AccountName"],
             imageUrl: result["PictureURL"],
             id: null, // this needs to be set to the ID of the user in the sharepoint site. If user is selected we need to ensure user then add the ID
-          })
+          });
         }
       }
       return personas;
@@ -716,7 +732,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       debugger;
       console.log("peoplesearch thew error " + e);
       return null;
-    })
+    });
 
   }
   /**
@@ -820,7 +836,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     copy["StaffCCId"] = {};
     copy["StaffCCId"]["results"] = _.map(copy.StaffCC, (cc: IPersonaProps) => {
       debugger;
-      return parseInt(cc.id)
+      return parseInt(cc.id);
     });
     delete copy.StaffCC;
     console.log("reformatetd staffcc for save");
@@ -869,7 +885,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         let newTR = new TR();
 
         newTR.Id = item.data.Id; // will be passed back toi component and component will set this to th eID NOT REALLY NEEDED
-        newTR.TRAssignedToId=copy.TRAssignedToId.results;//used to email new assignees
+        newTR.TRAssignedToId = copy.TRAssignedToId.results;//used to email new assignees
         // just makes debugging easier
         var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
         // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
@@ -1099,82 +1115,3 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
   }
 }
-const badnew =
-  {
-    "__metadata":
-    {
-      "type": "SP.Data.TblRequestListItem"
-    },
-    "ParentTRId": null,
-    "Title": "OKC2608",
-    "CER": null,
-    "RequestDate": "2017-07-12T04:00:00.000Z",
-    "RequiredDate": "2017-06-28T04:00:00.000Z",
-    "ActualStartDate": null,
-    "ActualCompletionDate": null,
-    "RequestorId": 9,
-    "EstManHours": null,
-    "Site": "OKC",
-    "TRPriority": "High",
-    "CustomerId": null,
-    "TRStatus": "In Progress",
-    "ApplicationTypeId": 1,
-    "EndUseId": 8,
-    "RequestTitle": "",
-    "Description": null,
-    "Summary": null,
-    "TestingParameters": null,
-    "Formulae": null,
-    "WorkTypeId": 3,
-    "TRAssignedToId": {
-      "results": []
-    },
-    "StaffCCId": {
-      "results": []
-    },
-    "TestsId": {
-      "results": []
-    },
-    "PigmentsId": {
-      "results": []
-    }
-  }
-const goodold =
-  {
-    "__metadata": {
-      "type": "SP.Data.TblRequestListItem"
-    },
-    "Id": 578,
-    "ParentTRId": null,
-    "Title": "TR4168",
-    "CER": null,
-    "RequestDate": "1999-09-04T07:00:00Z",
-    "RequiredDate": "2003-01-10T08:00:00Z",
-    "ActualStartDate": null,
-    "ActualCompletionDate": "2007-03-09T08:00:00Z",
-    "RequestorId": 33,
-    "Site": "US",
-    "TRPriority": "High",
-    "CustomerId": 264,
-    "TRStatus": "Completed",
-    "ApplicationTypeId": 1,
-    "EndUseId": null,
-    "RequestTitle": "<div>Evaluate CR-826 and CR-860 versus R-960 and RCL-6 in Lilly&#39;s Acrylic Fluorocarbon (PVDF)formula</div>\n",
-    "Description": "<div>During the Dec.1, 1998 technical meeting with Lilly Industries, customer has requested for Kerr-McGee to conduct an evaluation of CR-826 versus R-960 in their&#160; formula.&#160; They are interested in the dispersibility of CR-826 as they are currently experiencing dispersion difficulty with R-960 and RCL-6. Also, they would like to see a durability comparisons between CR-826 and R-960 &amp; RCL-6.</div>",
-    "Summary": "<div>72 Months Florida data, many hrs. of Xenon reported.\r\n<br>\r\n<br>Document stored in LiveLink as &quot;Combined Report for TR-4131 &amp; TR-4168.doc&quot;.\r\n<br>\r\n<br>Optical and Dispersibility Rating \r\n<br>High Solids Polyester White Baking Enamel&#58;\r\n<br>&quot;\tAll pigments dispersed equally, but R-960 showed a slightly higher nib count and tracks than the other pigments.\r\n<br>&quot;\tRCL-6's measured faster wet-in time than the other pigments evaluated.\r\n<br>&quot;\tRCL-6 was higher in tint strength than R-960, CR-826 and CR-880.&#160; \r\n<br>&quot;\tHowever, the CR-826 and CR-880 samples were 4-5% higher in tint strength than R-960.\r\n<br>&quot;\tCR-826 and CR-880 samples were comparable to R-960 in hiding power.\r\n<br>\r\n<br>Optical Rating for Fluorocarbon System&#58;\r\n<br>&quot;\tCR-826 and CR-880 were better than R-960 and RCL-6 in gloss.\r\n<br>&quot;\tCR-826 was comparable to R-960 in hiding power, brightness, masstone and tint strength.\r\n<br>&quot;\tCR-880 was comparable to both R-960 and RCL-6 in hiding power.\r\n<br>\r\n<br>\r\n<br>South Florida Exposure - High Solids Polyester White Baking Enamel\r\n<br>\r\n<br>Parameter measured\tDurability Rankings\r\n<br> best to worst\r\n<br>\r\n<br>Color Retention\tR-960 = RCL-6 &gt; CR-880 &gt; CR-826\r\n<br>Gloss Retention\tR-960 &gt; CR-880 &gt;&#160; RCL-6 &gt; CR-826\r\n<br>Chalk Resistance*\tCR-880 = R-960 = RCL-6 &gt; CR-826 \r\n<br>*data possibly skewed-lower half of panels washed at 48 months.&#160; This set of panels was shipped back to Florida for additional 24 months of exposure.&#160; Chalk values taken at 72 months were therefore lower.\r\n<br>\r\n<br>South Florida Exposure - Fluorocarbon System\r\n<br>\r\n<br>Parameter measured\tDurability Rankings\r\n<br> best to worst\r\n<br>\r\n<br>Color Retention\tR-960 &gt; CR-880 &gt; CR-826 &gt; RCL-6\r\n<br>Gloss Retention\tR-960 &gt; RCL-6&#160; &gt;&#160; CR-880&#160; &gt; CR-826\r\n<br>Chalk Resistance\tR-960 &gt; RCL-6 &gt; CR-880 &gt; CR-826\r\n<br>\r\n<br> \r\n<br>Xenon Accelerated Exposure - High Solids Polyester White Baking Enamel&#58;\r\n<br>\r\n<br>Parameter measured\tDurability Rankings\r\n<br> best to worst\r\n<br>\r\n<br>Color Retention\tR-960 = RCL-6&#160; &gt; CR-880 &gt; CR-826\r\n<br>Gloss Retention\tCR-880 = CR-826 = R-960 = RCL-6\r\n<br>Chalk Resistance\tCR-880 = RCL-6 &gt; CR-826 = R-960 \r\n<br>\r\n<br>\r\n<br>Xenon Accelerated Exposure - Fluorocarbon System\r\n<br>\r\n<br>Parameter measured\tDurability Rankings\r\n<br> best to worst\r\n<br>\r\n<br>Color Retention\tCR-880 &gt; R-960 = RCL-6&#160; = CR-826\r\n<br>Gloss Retention\tCR-880 = CR-826 = RCL-6 = R-960\r\n<br>Chalk Resistance\tCR-880 = R-960 &gt; RCL-6&#160; &gt; CR-826\r\n<br></div>",
-    "TestingParameters": null,
-    "Formulae": null,
-    "WorkTypeId": 4,
-    "TRAssignedToId": {
-      "results": [27]
-    },
-    "StaffCCId": {
-      "results": [9]
-    },
-    "TestsId": {
-      "results": []
-    },
-    "PigmentsId": {
-      "results": []
-    }
-  }
