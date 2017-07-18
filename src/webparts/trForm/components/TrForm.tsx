@@ -7,6 +7,7 @@ import { PrimaryButton, ButtonType } from 'office-ui-fabric-react/lib/Button';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
+import { Checkbox } from 'office-ui-fabric-react/lib/Checkbox';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
@@ -1186,11 +1187,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               columns={[
                 { key: "title", name: "Technical Specialist", fieldName: "title", minWidth: 20, maxWidth: 200 },
                 {
-                  key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: (item) => <Toggle
+                  key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: (item) => <Checkbox
                     checked={item.selected}
-                    onText="Selected"
-                    offText=""
-                    onChanged={e => { this.toggleTechSpec(e, item.id); }}
+                    onChange={(element,value) => { this.toggleTechSpec(value, item.id); }}
                   />
                 }
               ]}
@@ -1216,11 +1215,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 columns={[
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
                   {
-                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
                       checked={false}
-                      onText=""
-                      offText=""
-                      onChanged={e => { this.addPigment(item.id); }}
+                      onChange={(element,value) => { this.addPigment(item.id); }}
                     />
                   }
                 ]}
@@ -1238,11 +1235,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
                   { key: "manufacturer", name: "Manufacturer", fieldName: "manufacturer", minWidth: 20, maxWidth: 100 },
                   {
-                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
                       checked={true}
-                      onText=""
-                      offText=""
-                      onChanged={e => { this.removePigment(item.id); }}
+                      onChange={(element,value)=> { this.removePigment(item.id); }}
                     />
                   }
                 ]}
@@ -1262,11 +1257,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 columns={[
                   { key: "title", name: "test", fieldName: "test", minWidth: 20, maxWidth: 100 },
                   {
-                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Toggle
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
                       checked={false}
-                      onText=""
-                      offText=""
-                      onChanged={e => { this.addTest(item.testid); }}
+                  
+                      onChange={(element,value)=> { this.addTest(item.testid); }}
                     />
                   }
                 ]}
@@ -1283,11 +1277,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 columns={[
                   { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
                   {
-                    key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: (item) => <Toggle
+                    key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: (item) => <Checkbox
                       checked={true}
-                      onText=""
-                      offText=""
-                      onChanged={e => { this.removeTest(item.id); }}
+                   
+                      onChange={(element,value)=> { this.removeTest(item.id); }}
                     />
                   }
                 ]}
