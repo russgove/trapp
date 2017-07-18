@@ -120,7 +120,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
   public getAssignedTrs(batch?: any): Promise<Array<TechnicalRequest>> {
 
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
-    let filterString = `(TRAssignedTo/EMail eq '${this.context.pageContext.user.email}') and (TRStatus ne 'Completed')`;
+    let filterString = `(TRAssignedTo/EMail eq '${this.context.pageContext.user.email}') and (TRStatus ne 'Completed') and (TRStatus ne 'Canceled')`;
     let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.expand("TRAssignedTo")
       .select("Title,RequestTitle,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail")
       .filter(filterString)
