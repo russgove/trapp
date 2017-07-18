@@ -17,7 +17,7 @@
     "@types/react-tabs": "^0.5.22",
     "@types/webpack-env": ">=1.12.1 <1.14.0",
     "moment": "^2.18.1",
-    "office-ui-fabric-react": "^4.21.1",
+    "office-ui-fabric-react": "^2.34.2",
     "react": "15.4.2",
     "react-dom": "15.4.2",
     "react-iframe": "^1.0.5",
