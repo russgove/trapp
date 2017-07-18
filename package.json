@@ -16,6 +16,7 @@
     "@types/react-dom": "0.14.18",
     "@types/react-tabs": "^0.5.22",
     "@types/webpack-env": ">=1.12.1 <1.14.0",
+    "ckeditor": "^4.6.2",
     "moment": "^2.18.1",
     "office-ui-fabric-react": "^2.34.2",
     "react": "15.4.2",

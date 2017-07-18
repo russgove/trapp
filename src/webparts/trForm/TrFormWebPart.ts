@@ -270,10 +270,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       workTypes: [],
       applicationTypes: [],
       endUses: [],
-
       pigments: [],
       tests: [],
       propertyTests: [],
+      ckeditorUrl: this.properties.ckeditorUrl,
       delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor,
 
 
@@ -611,7 +611,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 }),
                 PropertyPaneCheckbox('enableEmail', {
                   text: "Enable sending emails to assignees and staff cc",
-                })
+                }),
+                PropertyPaneTextField('ckeditorUrl', {
+                  label: "Url used to load CKEditor",
+                  description: "CKEditor is the Roch text editor used oin the forms. It can be loaded from the public url(//cdn.ckeditor.com/4.6.2/full/ckeditor.js) or our cdn"
+                }),
+
+
               ]
             },
             {

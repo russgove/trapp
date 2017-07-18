@@ -78,8 +78,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public componentDidMount() {
-    //see https://github.com/SharePoint/sp-dev-docs/issues/374
-    var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
+    //see https://github.com/SharePoint/sp-de//cdn.ckeditor.com/4.6.2/full/ckeditor.jsv-docs/issues/374
+    //var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
+    var ckEditorCdn: string = this.props.ckeditorUrl;
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
       this.ckeditor.replace("tronoxtrtextarea-title"); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active

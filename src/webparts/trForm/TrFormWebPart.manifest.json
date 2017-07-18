@@ -39,7 +39,8 @@
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
-        "visitorsGoupdName":"US Visitors"
+        "visitorsGoupdName":"US Visitors",
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
       }
     },
     {
@@ -75,7 +76,8 @@
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
-        "visitorsGoupdName":"US Visitors"
+        "visitorsGoupdName":"US Visitors",
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
       }
     },
     {
@@ -111,7 +113,8 @@
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
-        "visitorsGoupdName":"US Visitors"
+        "visitorsGoupdName":"US Visitors",
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
       }
     },
     {
@@ -147,7 +150,8 @@
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
-        "visitorsGoupdName":"AP Visitors"
+        "visitorsGoupdName":"AP Visitors",
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
       }
     },
     {
@@ -183,7 +187,8 @@
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
-        "visitorsGoupdName":"AP Visitors"
+        "visitorsGoupdName":"AP Visitors",
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
       }
     },
     {
@@ -219,7 +224,8 @@
         "displayFormUrlFormat": "{0}/Lists/tblRequest/DispForm.aspx?ID={1}&Source={0}/Lists/tblRequest/Active.aspx",
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
-        "visitorsGoupdName":"AP Visitors"
+        "visitorsGoupdName":"AP Visitors",
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
       }
     }
   ]
