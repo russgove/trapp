@@ -62,7 +62,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.CustomerId = item.CustomerId;
 
     tr.RequiredDate = item.RequiredDate;
-    tr.EstManHours = item.EstimatedHours;
+    debugger;
+    tr.EstManHours = item.EstManHours;
     tr.RequestDate = item.RequestDate;
     tr.TRPriority = item.TRPriority;
     tr.RequestorId = item.RequestorId;
@@ -892,6 +893,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
         newTR.Id = item.data.Id; // will be passed back toi component and component will set this to th eID NOT REALLY NEEDED
         newTR.TRAssignedToId = copy.TRAssignedToId.results;//used to email new assignees
+        newTR.Title=copy.Title;
         // just makes debugging easier
         var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
         // var staffccPromise = this.emailStaffCC(newTR, originalStatus);

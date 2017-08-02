@@ -880,7 +880,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.Title} onChanged={e => {
-                this.state.isDirty = true;
+                           this.state.isDirty = true;
                 this.state.tr.Title = e; this.setState(this.state);
               }} />
             </td>
