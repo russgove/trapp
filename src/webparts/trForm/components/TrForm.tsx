@@ -118,6 +118,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         }
         break;
       case 2:
+        debugger;
         if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-summary");
@@ -223,7 +224,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           this.state.tr.Description = data;
           break;
         case "tronoxtrtextarea-summary":
-          this.state.tr.Summary = data;
+          this.state.tr.SummaryNew = data; // summaryNew gets appended to summary when we save
           break;
         case "tronoxtrtextarea-testparams":
           this.state.tr.TestingParameters = data;
@@ -283,7 +284,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           instance.setData(tr.Description);
           break;
         case "tronoxtrtextarea-summary":
-          instance.setData(tr.Summary);
+          instance.setData(tr.SummaryNew);
           break;
         case "tronoxtrtextarea-formulae":
           instance.setData(tr.Formulae);
@@ -820,16 +821,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     console.log("mouse exit for " + item.title);
   }
 
-  /*public renderDocumentRow(props, defaultRender): JSX.Element {
-
-    return (
-      <div
-        onMouseEnter={(event) => this.documentRowMouseEnter(props.item, event)}
-        onMouseOut={(evemt) => this.documentRowMouseOut(props.item, event)}
-      >
-        {defaultRender(props)}
-      </div>);
-  }*/
+  public createSummaryMarkup(tr:TR){
+      return {__html: tr.Summary}; 
+  }
   public render(): React.ReactElement<ITrFormProps> {
 
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
@@ -1170,8 +1164,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>
+            <div dangerouslySetInnerHTML={this.createSummaryMarkup(this.state.tr)} />
             <textarea name="tronoxtrtextarea-summary" id="tronoxtrtextarea-summary" style={{ display: "none" }}>
-              {this.state.tr.Summary}
+              {this.state.tr.SummaryNew}
             </textarea>
           </tabs.TabPanel>
           <tabs.TabPanel>

@@ -50,6 +50,7 @@ export class TR {
         this.RequestTitle = null;
         this.Description = null;
         this.Summary = null;
+        this.SummaryNew = null;
         this.TestingParameters = null;
         this.Formulae = null;
         this.WorkTypeId = null;
@@ -79,7 +80,11 @@ export class TR {
     public EndUseId: number;
     public RequestTitle: string;//TitleArea
     public Description: string;//DescriptionArea
-    public Summary: string;//SummaryArea
+    // User request from carol-lynn:Is it possible for the “summary” part (free text area) to have a date automatically generated whenever someone updates it?
+    //Just like how entering notes in SAP works. 
+    // so the Summary will be the text we get from sharepoint , and when we save i will append SummaryNew to Summary
+    public Summary: string;//SummaryArea-- not updateable in UI
+    public SummaryNew: string;// Updatable in UI, will be appended to Summary before saving.
     public Formulae: string;
     public TestingParameters: string;//TestParamsArea
     public WorkTypeId: number;

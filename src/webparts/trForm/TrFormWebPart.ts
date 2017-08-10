@@ -3,6 +3,7 @@ import { IPersonaProps } from 'office-ui-fabric-react/lib/Persona';
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import pnp from "sp-pnp-js";
+import * as moment from "moment";
 import { SearchQuery, SearchResults, SortDirection, EmailProperties, Items } from "sp-pnp-js";
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
@@ -860,8 +861,20 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     copy["PigmentsId"]["results"] = PigmentsId;
 
     console.log("reformatetd pigments for save");
-
-
+    // append the date and SummaryNew to Summary prior to save.
+    if (copy.SummaryNew) {
+      
+      let today =moment(new Date()).format("DD-MMM-YYYY")
+      if (copy.Summary){
+        copy.Summary=copy.Summary+"<br /><b>"+today+"</b><br />"+copy.SummaryNew;        
+      }
+      else{
+      copy.Summary="<b>"+today+"</b><br />"+copy.SummaryNew;        
+      
+      }
+      
+      delete copy.SummaryNew;
+    }
     if (copy.Id !== null) {
       console.log("id is mot null will update");
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
@@ -893,7 +906,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
         newTR.Id = item.data.Id; // will be passed back toi component and component will set this to th eID NOT REALLY NEEDED
         newTR.TRAssignedToId = copy.TRAssignedToId.results;//used to email new assignees
-        newTR.Title=copy.Title;
+        newTR.Title = copy.Title;
         // just makes debugging easier
         var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
         // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
