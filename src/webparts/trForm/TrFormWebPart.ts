@@ -872,8 +872,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       copy.Summary="<b>"+today+"</b><br />"+copy.SummaryNew;        
       
       }
-      
-      delete copy.SummaryNew;
+          
+    }
+    if (copy.hasOwnProperty("SummaryNew")){
+         delete copy.SummaryNew;
     }
     if (copy.Id !== null) {
       console.log("id is mot null will update");
