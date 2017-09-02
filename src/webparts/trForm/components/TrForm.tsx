@@ -1007,9 +1007,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <Select
-                simpleValue placeholder="+ Add skill"
+                simpleValue 
+                placeholder="+ Add a Customer"
                 options={customerSelectOptions}
                 value={this.state.tr.CustomerId}
+                matchPos={"start"}
                 onChange={(newValue) => {
                   debugger;
                   this.state.tr.CustomerId=newValue;
