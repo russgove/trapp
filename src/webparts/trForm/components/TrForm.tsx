@@ -13,7 +13,7 @@ import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageB
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
 // switch to fabric  ComboBox on next upgrade
 let Select = require("react-select") as any;
-
+import 'react-select/dist/react-select.css';
 import { TagItem } from 'office-ui-fabric-react/lib/components/pickers/TagPicker/TagItem';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from 'office-ui-fabric-react/lib/DetailsList';
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
