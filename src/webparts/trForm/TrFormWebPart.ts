@@ -63,7 +63,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.CustomerId = item.CustomerId;
 
     tr.RequiredDate = item.RequiredDate;
-    debugger;
+   
     tr.EstManHours = item.EstManHours;
     tr.RequestDate = item.RequestDate;
     tr.TRPriority = item.TRPriority;
@@ -101,10 +101,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public getStaffCCFromTR(item: any): Array<IPersonaProps> {
 
     let personas: Array<IPersonaProps> = [];
-    debugger;
+    
     if (item.StaffCC) {
       for (let staffcc of item.StaffCC) {
-        debugger;
+      
         personas.push({
           primaryText: staffcc["Title"],
           secondaryText: staffcc["JobTitle"],
@@ -247,7 +247,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
-    debugger;
+   
     if (document.getElementById("s4-ribbonrow")) {
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
@@ -290,6 +290,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documents: [],
       documentCalloutTarget: null,
       documentCalloutIframeUrl: null,
+      customer:''
     };
     let batch = pnp.sp.createBatch();
 
@@ -383,7 +384,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     else {
       formState.tr.Site = this.properties.defaultSite;
       pnp.sp.web.currentUser.inBatch(batch).get().then((user) => {
-        debugger;
+       
         formState.tr.RequestorId = user["Id"];
         formState.tr.RequestorName = user["Title"];
       })
@@ -843,7 +844,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     // We need to convert this to StaffCCId/resulsts/ids to post back
     copy["StaffCCId"] = {};
     copy["StaffCCId"]["results"] = _.map(copy.StaffCC, (cc: IPersonaProps) => {
-      debugger;
+     
       return parseInt(cc.id);
     });
     delete copy.StaffCC;

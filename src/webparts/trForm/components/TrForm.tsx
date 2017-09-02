@@ -11,6 +11,10 @@ import { Checkbox } from 'office-ui-fabric-react/lib/Checkbox';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
+// switch to fabric  ComboBox on next upgrade
+let Select = require("react-select") as any;
+
+import { TagItem } from 'office-ui-fabric-react/lib/components/pickers/TagPicker/TagItem';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from 'office-ui-fabric-react/lib/DetailsList';
 import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
@@ -20,7 +24,7 @@ import { SPComponentLoader } from '@microsoft/sp-loader';
 
 /** SPFX Stuff */
 import * as React from 'react';
-import styles from './TrForm.module.scss';
+//import styles from './TrForm.module.scss';
 import { escape } from '@microsoft/sp-lodash-subset';
 
 /** Other utilities */
@@ -30,7 +34,7 @@ import * as tabs from "react-tabs";
 
 /**  Custom Stuff */
 import { DocumentIframe } from "./DocumentIframe";
-import { TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest } from "../dataModel";
+import { TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest, Customer } from "../dataModel";
 import { ITrFormProps } from './ITrFormProps';
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
@@ -118,7 +122,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         }
         break;
       case 2:
-        debugger;
+
         if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-summary");
@@ -380,7 +384,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         id: pigment.id,
         isActive: pigment.isActive
       };
-    }).filter((p) => { return p.isActive === "Yes" ;});
+    }).filter((p) => { return p.isActive === "Yes"; });
     return _.orderBy(pigments, ["manufacturer"], ["asc"]);
   }
 
@@ -821,8 +825,22 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     console.log("mouse exit for " + item.title);
   }
 
-  public createSummaryMarkup(tr:TR){
-      return {__html: tr.Summary}; 
+  public createSummaryMarkup(tr: TR) {
+    return { __html: tr.Summary };
+  }
+  public onCustomerResolveSuggestions(filter) {
+    debugger;
+    let matches = this.props.customers.filter(cust => {
+      return cust.title.toUpperCase().substring(0, filter.value.length) === filter.value.toUpperCase();
+    })
+
+    return matches;
+  }
+  public onCustomerChanged(event, suggestion): void {
+
+    debugger;
+    this.state.customer = suggestion;
+
   }
   public render(): React.ReactElement<ITrFormProps> {
 
@@ -857,7 +875,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             key: eu.id, text: eu.endUse
           };
         });
-
+        debugger;
+    let customerSelectOptions = _.map(this.props.customers,(c) => {
+      return {
+        value: c.id, label: c.title
+      };
+    });
     return (
       <div >
 
@@ -874,7 +897,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.Title} onChanged={e => {
-                           this.state.isDirty = true;
+                this.state.isDirty = true;
                 this.state.tr.Title = e; this.setState(this.state);
               }} />
             </td>
@@ -983,7 +1006,27 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label>Customer</Label>
             </td>
             <td>
-              <Dropdown
+              <Select
+                simpleValue placeholder="+ Add skill"
+                options={customerSelectOptions}
+                value={this.state.tr.CustomerId}
+                onChange={(newValue) => {
+                  debugger;
+                  this.state.tr.CustomerId=newValue;
+                  this.state.isDirty = true;
+                  this.setState(this.state);
+                }}
+              />
+              {/* <TagPicker ref="customerPicker"
+                onResolveSuggestions={this.onCustomerResolveSuggestions.bind(this)}
+                onChange={this.onCustomerChanged.bind(this)}
+                pickerSuggestionsProps={
+                  {
+                    noResultsFoundText: 'No Matches found'
+                  }
+                }
+              /> */}
+              {/* <Dropdown
                 label=""
                 options={this.props.customers.map((r) => { return { key: r.id, text: r.title }; })}
                 onChanged={e => {
@@ -992,7 +1035,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   this.setState(this.state);
                 }}
                 selectedKey={this.state.tr.CustomerId}
-              />
+              /> */}
 
             </td>
 
@@ -1185,7 +1228,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 {
                   key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: (item) => <Checkbox
                     checked={item.selected}
-                    onChange={(element,value) => { this.toggleTechSpec(value, item.id); }}
+                    onChange={(element, value) => { this.toggleTechSpec(value, item.id); }}
                   />
                 }
               ]}
@@ -1196,7 +1239,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               defaultSelectedItems={this.state.tr.StaffCC}
               onChange={this.staffCCChanged.bind(this)}
               onResolveSuggestions={this.props.peopleSearch}
-              >
+            >
             </NormalPeoplePicker>
           </tabs.TabPanel>
           <tabs.TabPanel>
@@ -1213,7 +1256,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   {
                     key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
                       checked={false}
-                      onChange={(element,value) => { this.addPigment(item.id); }}
+                      onChange={(element, value) => { this.addPigment(item.id); }}
                     />
                   }
                 ]}
@@ -1233,7 +1276,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   {
                     key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
                       checked={true}
-                      onChange={(element,value)=> { this.removePigment(item.id); }}
+                      onChange={(element, value) => { this.removePigment(item.id); }}
                     />
                   }
                 ]}
@@ -1255,8 +1298,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   {
                     key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
                       checked={false}
-                  
-                      onChange={(element,value)=> { this.addTest(item.testid); }}
+
+                      onChange={(element, value) => { this.addTest(item.testid); }}
                     />
                   }
                 ]}
@@ -1275,8 +1318,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   {
                     key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: (item) => <Checkbox
                       checked={true}
-                   
-                      onChange={(element,value)=> { this.removeTest(item.id); }}
+
+                      onChange={(element, value) => { this.removeTest(item.id); }}
                     />
                   }
                 ]}
