@@ -505,7 +505,24 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     return groups;
   }
+  public getPropertyName(testId:number,applicationTypeid:number,endUseId:number):string{
+    /**
+     * A property can be valid for many enduses, application  types amd tests
+     * Find the proprty for the  selected enduse, application  type amd test
+     */
 
+    var property=_.find(this.props.propertyTests,(pt)=>{
+        return (
+          pt.applicationTypeid===applicationTypeid
+          &&
+          pt.testIds.indexOf(testId) !== -1
+          &&
+          pt.endUseIds.indexOf(endUseId) !== -1
+
+        )
+    });
+    return (property)?property.property:'';
+  }
   /**
    * return Tests on the tr being edited
    * 
@@ -520,10 +537,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var selectedTests = _.map(tempTests, (test) => {
       return {
         title: test.title,
-        id: test.id
+        id: test.id,
+        propertyName:this.getPropertyName(test.id,this.state.tr.ApplicationTypeId,this.state.tr.EndUseId)
       };
     });
-    return _.orderBy(selectedTests, ["title"], ["asc"]);
+    return _.orderBy(selectedTests, ["propertyName","title"], ["asc","asc"]);
   }
 
 
@@ -1296,9 +1314,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 items={this.getAvailableTests()}
                 setKey="id"
                 columns={[
-                  { key: "title", name: "test", fieldName: "test", minWidth: 20, maxWidth: 100 },
+                  { key: "title", name: "test", fieldName: "test", minWidth: 20, maxWidth: 150 },
                   {
-                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 70, onRender: (item) => <Checkbox
                       checked={false}
 
                       onChange={(element, value) => { this.addTest(item.testid); }}
@@ -1316,11 +1334,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 items={this.getSelectedTests()}
                 setKey="id"
                 columns={[
-                  { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 200 },
+                  { key: "propertyName", name: "Property", fieldName: "propertyName", minWidth: 20, maxWidth: 80 },
+                  { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 150 },
                   {
-                    key: "selected", name: "Selected?", fieldName: "selected", minWidth: 200, onRender: (item) => <Checkbox
+                    key: "selected", name: "Selected?", fieldName: "selected", minWidth: 70, onRender: (item) => <Checkbox
                       checked={true}
-
                       onChange={(element, value) => { this.removeTest(item.id); }}
                     />
                   }
