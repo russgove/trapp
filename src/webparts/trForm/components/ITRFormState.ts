@@ -10,6 +10,6 @@ export interface ITRFormState {
   documentCalloutVisible: boolean;
   documentCalloutTarget: HTMLElement;
   documentCalloutIframeUrl: string;
-  customer;
+
 
 }

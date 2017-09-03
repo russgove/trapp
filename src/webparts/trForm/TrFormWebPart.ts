@@ -289,8 +289,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutVisible: false,
       documents: [],
       documentCalloutTarget: null,
-      documentCalloutIframeUrl: null,
-      customer:''
+      documentCalloutIframeUrl: null
     };
     let batch = pnp.sp.createBatch();
 

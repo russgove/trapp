@@ -846,20 +846,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public createSummaryMarkup(tr: TR) {
     return { __html: tr.Summary };
   }
-  public onCustomerResolveSuggestions(filter) {
-    debugger;
-    let matches = this.props.customers.filter(cust => {
-      return cust.title.toUpperCase().substring(0, filter.value.length) === filter.value.toUpperCase();
-    })
-
-    return matches;
-  }
-  public onCustomerChanged(event, suggestion): void {
-
-    debugger;
-    this.state.customer = suggestion;
-
-  }
+ 
   public render(): React.ReactElement<ITrFormProps> {
 
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
