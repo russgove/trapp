@@ -498,12 +498,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var groups: Array<IGroup> = [];
     for (const property in properties) {
       groups.push({
-
+        isCollapsed: (property !== this.state.expandedProperty),
         name: property,
         key: property,
         startIndex: _.findIndex(displayPropertyTests, (dpt) => { return dpt.property === property; }),
         count: properties[property],
-        isCollapsed: true
+        
       });
     }
     return groups;
@@ -1309,6 +1309,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <div style={{ float: "left" }}>
               <Label> Available Tests</Label>
               <DetailsList
+              onDidUpdate={(dl: DetailsList) => {
+                  // save expanded group in state;
+                  debugger;
+                  var expandedGroup = _.find(dl.props.groups, (group) => { 
+                    return !(group.isCollapsed) && group.key !==this.state.expandedProperty // its an expanded group that want expanded before
+                    });
+                  if (expandedGroup) {
+                    this.state.expandedProperty = expandedGroup.key;
+                  }
+                }}
                 layoutMode={DetailsListLayoutMode.fixedColumns}
                 selectionMode={SelectionMode.none}
                 groups={this.getAvailableTestGroups()}

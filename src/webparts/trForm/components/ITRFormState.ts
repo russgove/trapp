@@ -11,6 +11,7 @@ export interface ITRFormState {
   documentCalloutTarget: HTMLElement;
   documentCalloutIframeUrl: string;
   expandedPigmentManufacturer?:string;
+  expandedProperty?:string;
 
 
 }
