@@ -63,7 +63,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.CustomerId = item.CustomerId;
 
     tr.RequiredDate = item.RequiredDate;
-   
+
     tr.EstManHours = item.EstManHours;
     tr.RequestDate = item.RequestDate;
     tr.TRPriority = item.TRPriority;
@@ -101,10 +101,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public getStaffCCFromTR(item: any): Array<IPersonaProps> {
 
     let personas: Array<IPersonaProps> = [];
-    
+
     if (item.StaffCC) {
       for (let staffcc of item.StaffCC) {
-      
+
         personas.push({
           primaryText: staffcc["Title"],
           secondaryText: staffcc["JobTitle"],
@@ -247,7 +247,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
-   
+
     if (document.getElementById("s4-ribbonrow")) {
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
@@ -383,7 +383,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     else {
       formState.tr.Site = this.properties.defaultSite;
       pnp.sp.web.currentUser.inBatch(batch).get().then((user) => {
-       
+
         formState.tr.RequestorId = user["Id"];
         formState.tr.RequestorName = user["Title"];
       })
@@ -418,6 +418,16 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       formProps.initialState = formState;
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
+      window.onbeforeunload = function (e) {
+        debugger;
+
+        if (formComponent.state.isDirty) {
+          var dialogText = "You have unsaved changes, are you sure you want to leave?";
+          e.returnValue = dialogText;
+          return dialogText;
+
+        }
+      };
       if (Environment.type === EnvironmentType.ClassicSharePoint) {
         const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
         if (buttons && buttons.length) {
@@ -843,7 +853,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     // We need to convert this to StaffCCId/resulsts/ids to post back
     copy["StaffCCId"] = {};
     copy["StaffCCId"]["results"] = _.map(copy.StaffCC, (cc: IPersonaProps) => {
-     
+
       return parseInt(cc.id);
     });
     delete copy.StaffCC;
@@ -863,19 +873,19 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     console.log("reformatetd pigments for save");
     // append the date and SummaryNew to Summary prior to save.
     if (copy.SummaryNew) {
-      
-      let today =moment(new Date()).format("DD-MMM-YYYY")
-      if (copy.Summary){
-        copy.Summary=copy.Summary+"<br /><b>"+today+"</b><br />"+copy.SummaryNew;        
+
+      let today = moment(new Date()).format("DD-MMM-YYYY");
+      if (copy.Summary) {
+        copy.Summary = copy.Summary + "<br /><b>" + today + "</b><br />" + copy.SummaryNew;
       }
-      else{
-      copy.Summary="<b>"+today+"</b><br />"+copy.SummaryNew;        
-      
+      else {
+        copy.Summary = "<b>" + today + "</b><br />" + copy.SummaryNew;
+
       }
-          
+
     }
-    if (copy.hasOwnProperty("SummaryNew")){
-         delete copy.SummaryNew;
+    if (copy.hasOwnProperty("SummaryNew")) {
+      delete copy.SummaryNew;
     }
     if (copy.Id !== null) {
       console.log("id is mot null will update");

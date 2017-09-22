@@ -54,6 +54,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   private originalAssignees: Array<number> = [];
   private originalStatus: string = "";
   private resultsPersonas: Array<IPersonaProps> = new Array<IPersonaProps>();
+
   constructor(props: ITrFormProps) {
     super(props);
     this.state = props.initialState;
@@ -411,7 +412,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         key: pm,
         startIndex: _.findIndex(pigs, (pig) => { return pig.manufacturer === pm; }),
         count: pigmentManufactureres[pm],
-        
+
       });
     }
     return groups;
@@ -503,7 +504,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         key: property,
         startIndex: _.findIndex(displayPropertyTests, (dpt) => { return dpt.property === property; }),
         count: properties[property],
-        
+
       });
     }
     return groups;
@@ -522,7 +523,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         &&
         pt.endUseIds.indexOf(endUseId) !== -1
 
-      )
+      );
     });
     return (property) ? property.property : '';
   }
@@ -883,7 +884,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             key: eu.id, text: eu.endUse
           };
         });
-    debugger;
+
     let customerSelectOptions = _.map(this.props.customers, (c) => {
       return {
         value: c.id, label: c.title
@@ -1021,7 +1022,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 value={this.state.tr.CustomerId}
                 matchPos={"start"}
                 onChange={(newValue) => {
-                  debugger;
                   this.state.tr.CustomerId = newValue;
                   this.state.isDirty = true;
                   this.setState(this.state);
@@ -1259,9 +1259,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
                   debugger;
-                  var expandedGroup = _.find(dl.props.groups, (group) => { 
-                    return !(group.isCollapsed) && group.key !==this.state.expandedPigmentManufacturer // its an expanded group that want expanded before
-                    });
+                  var expandedGroup = _.find(dl.props.groups, (group) => {
+                    return !(group.isCollapsed) && group.key !== this.state.expandedPigmentManufacturer;// its an expanded group that want expanded before
+                  });
                   if (expandedGroup) {
                     this.state.expandedPigmentManufacturer = expandedGroup.key;
                   }
@@ -1309,12 +1309,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <div style={{ float: "left" }}>
               <Label> Available Tests</Label>
               <DetailsList
-              onDidUpdate={(dl: DetailsList) => {
+                onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
                   debugger;
-                  var expandedGroup = _.find(dl.props.groups, (group) => { 
-                    return !(group.isCollapsed) && group.key !==this.state.expandedProperty // its an expanded group that want expanded before
-                    });
+                  var expandedGroup = _.find(dl.props.groups, (group) => {
+                    return !(group.isCollapsed) && group.key !== this.state.expandedProperty; // its an expanded group that want expanded before
+                  });
                   if (expandedGroup) {
                     this.state.expandedProperty = expandedGroup.key;
                   }
