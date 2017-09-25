@@ -186,6 +186,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.state.errorMessages.push(new md.Message("Due Date  is required"));
       errorsFound = true;
     }
+    if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate){
+      this.state.errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
+      errorsFound = true;
+      
+    }
     if (!this.state.tr.Site) {
       this.state.errorMessages.push(new md.Message("Site is required"));
       errorsFound = true;
@@ -1437,6 +1442,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             Cancel
         </PrimaryButton>
         </span>
+        <br />
+        version 2
         <TRPicker
           isOpen={this.state.showTRSearch}
           callSearch={this.props.TRsearch}
