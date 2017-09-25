@@ -29,6 +29,8 @@ export interface ITrFormProps {
   propertyTests: Array<PropertyTest>;
   delayPriorToSettingCKEditor: number;
   ckeditorUrl:string;
+  ckeditorConfig:any
+  ;
 
 
 }

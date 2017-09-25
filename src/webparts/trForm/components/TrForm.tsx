@@ -88,7 +88,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var ckEditorCdn: string = this.props.ckeditorUrl;
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
-      this.ckeditor.replace("tronoxtrtextarea-title"); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
+      this.ckeditor.replace("tronoxtrtextarea-title",this.props.ckeditorConfig); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
 
     });
 

@@ -277,6 +277,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       propertyTests: [],
       ckeditorUrl: this.properties.ckeditorUrl,
       delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor,
+      ckeditorConfig:{}
 
 
     };
@@ -293,6 +294,16 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     };
     let batch = pnp.sp.createBatch();
 
+    pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.filter("Title eq 'ckeditorConfig'").inBatch(batch).getAs<SetupItem[]>()
+    .then((setupItems) => {
+      debugger;
+      formProps.ckeditorConfig = JSON.parse(setupItems[0].PlainText)
+    })
+    .catch((error) => {
+      console.log("ERROR, An error occured fetching and parsing ckeditorConfig " + this.properties.setupListName);
+      console.log(error.message);
+
+    });
     pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
