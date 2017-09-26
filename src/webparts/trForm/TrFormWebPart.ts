@@ -431,12 +431,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
       window.onbeforeunload = function (e) {
         debugger;
-
         if (formComponent.state.isDirty) {
           var dialogText = "You have unsaved changes, are you sure you want to leave?";
           e.returnValue = dialogText;
           return dialogText;
-
+        }
+        else{
+          return null;
         }
       };
       if (Environment.type === EnvironmentType.ClassicSharePoint) {

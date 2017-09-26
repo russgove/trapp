@@ -1,6 +1,6 @@
 {
   "$schema": "../../../node_modules/@microsoft/sp-module-interfaces/lib/manifestSchemas/jsonSchemas/clientSideComponentManifestSchema.json",
-  "id": "11074c77-8574-4740-9373-16a9b7175c86",
+  "id": "de8f72fd-5818-483e-a41a-c91968a94f17",
   "alias": "TrFormWebPart",
   "componentType": "WebPart",
   "version": "1.4.0",

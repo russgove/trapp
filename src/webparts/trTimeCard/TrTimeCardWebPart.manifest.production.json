@@ -1,6 +1,6 @@
 {
   "$schema": "../../../node_modules/@microsoft/sp-module-interfaces/lib/manifestSchemas/jsonSchemas/clientSideComponentManifestSchema.json",
-  "id": "22112836-5f0e-468a-a170-37baef96d42b",
+  "id": "9d061ba8-16dc-4333-a969-f5b44a20dea3",
   "alias": "TrTimeCardWebPart",
   "componentType": "WebPart",
   "version": "1.4.0",
