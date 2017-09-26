@@ -88,7 +88,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     var ckEditorCdn: string = this.props.ckeditorUrl;
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
-      this.ckeditor.replace("tronoxtrtextarea-title",this.props.ckeditorConfig); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
+      this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
 
     });
 
@@ -186,10 +186,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.state.errorMessages.push(new md.Message("Due Date  is required"));
       errorsFound = true;
     }
-    if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate){
+    if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
       this.state.errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
       errorsFound = true;
-      
+
     }
     if (!this.state.tr.Site) {
       this.state.errorMessages.push(new md.Message("Site is required"));
@@ -251,7 +251,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.props.save(this.state.tr, this.originalAssignees, this.originalStatus)
         .then((result: TR) => {
           this.state.tr.Id = result.Id;
-          this.state.isDirty = false;
+          this.setDirty(false);
           this.setState(this.state);
         })
         .catch((response) => {
@@ -608,7 +608,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public toggleTechSpec(isSelected: boolean, id: number) {
-    this.state.isDirty = true;
+    this.setDirty(true);
     if (isSelected) {
       if (this.state.tr.TRAssignedToId) {
         this.state.tr.TRAssignedToId.push(id);//addit
@@ -634,7 +634,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   // public toggleStaffCC(isSelected: boolean, id: number) {
-  //   this.state.isDirty = true;
+  //   this.setDirty(true);
   //   if (isSelected) {
   //     if (this.state.tr.StaffCCId) {
   //       this.state.tr.StaffCCId.push(id);//addit
@@ -651,7 +651,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number) {
-    this.state.isDirty = true;
+    this.setDirty(true);
     if (this.state.tr.TestsId) {
       this.state.tr.TestsId.push(id);//addit
     }
@@ -661,7 +661,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.setState(this.state);
   }
   public removeTest(id: number) {
-    this.state.isDirty = true;
+    this.setDirty(true);
     if (this.state.tr.TestsId) {
       this.state.tr.TestsId = _.filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
     }
@@ -677,7 +677,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public addPigment(id: number) {
-    this.state.isDirty = true;
+    this.setDirty(true);
     if (this.state.tr.PigmentsId) {
       this.state.tr.PigmentsId.push(id);//addit
     }
@@ -695,7 +695,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   * @memberof TrForm
   */
   public removePigment(id: number) {
-    this.state.isDirty = true;
+    this.setDirty(true);
     if (this.state.tr.PigmentsId) {
       this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
     }
@@ -792,7 +792,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public parentTRSelected(id: number, title: string) {
     this.state.tr.ParentTR = title;
     this.state.tr.ParentTRId = id;
-    this.state.isDirty = true;
+    this.setDirty(true);
     this.cancelTrSearch();
   }
   public uploadFile(e: any) {
@@ -856,6 +856,20 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     return { __html: tr.Summary };
   }
 
+  public setDirty(isDirty: boolean) {
+    debugger;
+    if (!this.state.isDirty && isDirty) { //wasnt dirty now it is 
+      window.onbeforeunload = function (e) {
+        var dialogText = "You have unsaved changes, are you sure you want to leave?";
+        e.returnValue = dialogText;
+        return dialogText;
+      };
+    }
+    if (this.state.isDirty && !isDirty) { //was dirty now it is not
+      window.onbeforeunload = null;
+    };
+    this.state.isDirty = isDirty;
+  }
   public render(): React.ReactElement<ITrFormProps> {
 
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
@@ -911,7 +925,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.Title} onChanged={e => {
-                this.state.isDirty = true;
+                this.setDirty(true);
                 this.state.tr.Title = e; this.setState(this.state);
               }} />
             </td>
@@ -923,7 +937,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 selectedKey={this.state.tr.WorkTypeId}
                 options={worktypeDropDoownoptions}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.WorkTypeId = e.key as number;
                   this.setState(this.state);
                 }} />
@@ -934,7 +948,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.Site} onChanged={e => {
-                this.state.isDirty = true;
+                this.setDirty(true);
                 this.state.tr.Site = e;
                 this.setState(this.state);
               }} />
@@ -966,7 +980,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 selectedKey={this.state.tr.ApplicationTypeId}
                 options={applicationtypeDropDoownoptions}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.ApplicationTypeId = e.key as number;
                   this.setState(this.state);
                 }}
@@ -985,7 +999,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
                 ]}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.TRPriority = e.text;
                   this.setState(this.state);
                 }}
@@ -998,7 +1012,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label>CER #</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.CER} onChanged={e => { this.state.isDirty = true; this.state.tr.CER = e; }} />
+              <TextField value={this.state.tr.CER} onChanged={e => {
+                this.setDirty(true);
+                this.state.tr.CER = e;
+              }} />
             </td>
             <td>
               <Label>Requestor</Label>
@@ -1008,7 +1025,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 label=""
                 options={this.props.requestors.map((r) => { return { key: r.id, text: r.title }; })}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.RequestorId = e.key as number;
                   this.setState(this.state);
                 }}
@@ -1028,7 +1045,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 matchPos={"start"}
                 onChange={(newValue) => {
                   this.state.tr.CustomerId = newValue;
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.setState(this.state);
                 }}
               />
@@ -1045,7 +1062,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 label=""
                 options={this.props.customers.map((r) => { return { key: r.id, text: r.title }; })}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.CustomerId = e.key as number;
                   this.setState(this.state);
                 }}
@@ -1064,7 +1081,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DatePicker
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
                 onSelectDate={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.RequestDate = moment(e).toISOString();
                   this.setState(this.state);
                 }} />
@@ -1077,7 +1094,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 selectedKey={this.state.tr.EndUseId}
                 options={enduseDropDoownoptions}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.EndUseId = e.key as number;
                   this.setState(this.state);
                 }} />
@@ -1095,7 +1112,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   { key: 'Canceled', text: 'Canceled' },
                 ]}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.TRStatus = e.text;
                   this.setState(this.state);
                 }}
@@ -1113,7 +1130,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DatePicker
                 value={(this.state.tr.RequiredDate) ? moment(this.state.tr.RequiredDate).toDate() : null}
                 onSelectDate={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.RequiredDate = moment(e).toISOString();
                   this.setState(this.state);
                 }} />
@@ -1125,7 +1142,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DatePicker
                 value={(this.state.tr.ActualStartDate) ? moment(this.state.tr.ActualStartDate).toDate() : null}
                 onSelectDate={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.ActualStartDate = moment(e).toISOString();
                   this.setState(this.state);
                 }} />
@@ -1137,7 +1154,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DatePicker
                 value={(this.state.tr.ActualCompletionDate) ? moment(this.state.tr.ActualCompletionDate).toDate() : null}
                 onSelectDate={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.ActualCompletionDate = moment(e).toISOString();
                   this.setState(this.state);
                 }} />
@@ -1153,7 +1170,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <TextField datatype="number"
                 value={(this.state.tr.EstManHours) ? this.state.tr.EstManHours.toString() : null}
                 onChanged={e => {
-                  this.state.isDirty = true;
+                  this.setDirty(true);
                   this.state.tr.EstManHours = parseInt(e);
                   this.setState(this.state);
                 }} />
@@ -1444,7 +1461,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         </span>
         <br />
         version 2
-        <TRPicker
+      < TRPicker
           isOpen={this.state.showTRSearch}
           callSearch={this.props.TRsearch}
           cancel={this.cancelTrSearch}
