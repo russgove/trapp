@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "name": "test-tr-app-client-side-solution",
+    "id": "bbbebfe6-1a83-46e3-b57c-e22deeb5e027",
+    "version": "1.8.0.0"
+  },
+  "paths": {
+    "zippedPackage": "solution/test-tr-app.sppkg"
+  }
+}

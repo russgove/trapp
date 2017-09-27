@@ -109,7 +109,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       case 0:
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-title");
+            this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig);
             console.log("created tronoxtrtextarea-title");
           });
         }
@@ -117,7 +117,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       case 1:
         if (this.ckeditor.instances["tronoxtrtextarea-description"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-description");
+            this.ckeditor.replace("tronoxtrtextarea-description", this.props.ckeditorConfig);
             console.log("created tronoxtrtextarea-description");
           });
         }
@@ -126,7 +126,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
         if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-summary");
+            this.ckeditor.replace("tronoxtrtextarea-summary", this.props.ckeditorConfig);
             console.log("created tronoxtrtextarea-summary");
           });
         }
@@ -134,7 +134,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       case 3:
         if (this.ckeditor.instances["tronoxtrtextarea-testparams"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-testparams");
+            this.ckeditor.replace("tronoxtrtextarea-testparams", this.props.ckeditorConfig);
             console.log("created tronoxtrtextarea-testparams");
           });
         }
@@ -142,7 +142,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       case 8:
         if (this.ckeditor.instances["tronoxtrtextarea-formulae"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-formulae");
+            this.ckeditor.replace("tronoxtrtextarea-formulae", this.props.ckeditorConfig);
             console.log("created tronoxtrtextarea-formulae");
           });
         }
@@ -186,6 +186,24 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.state.errorMessages.push(new md.Message("Due Date  is required"));
       errorsFound = true;
     }
+    debugger;
+    if (this.state.tr.RequestDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate <  this.state.tr.RequestDate) {
+      this.state.errorMessages.push(new md.Message("Actual Start Date must be on or after Initiation Date"));
+      errorsFound = true;
+    }
+    if (this.state.tr.ActualCompletionDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate >  this.state.tr.ActualCompletionDate) {
+      this.state.errorMessages.push(new md.Message("Actual Completion Date must be on or after Actual Start Date"));
+      errorsFound = true;
+    }
+    if (this.state.tr.TRStatus==="Completed" && ! this.state.tr.ActualStartDate ){
+      this.state.errorMessages.push(new md.Message("Actual Start Date is required to complete a request"));
+      errorsFound = true;
+    }
+    if (this.state.tr.TRStatus==="Completed" && ! this.state.tr.ActualCompletionDate ){
+      this.state.errorMessages.push(new md.Message("Actual Completion Date is required to complete a request"));
+      errorsFound = true;
+    }
+      
     if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
       this.state.errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
       errorsFound = true;
@@ -1080,6 +1098,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
               <DatePicker
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
+                
                 onSelectDate={e => {
                   this.setDirty(true);
                   this.state.tr.RequestDate = moment(e).toISOString();

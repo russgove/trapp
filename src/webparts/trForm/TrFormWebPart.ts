@@ -394,7 +394,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     else {
       debugger;
       formState.tr.Site = this.properties.defaultSite;
-      formState.tr.RequestDate=new Date().toISOString();
+      formState.tr.RequestDate=moment().startOf("day").toISOString();
+      formState.tr.TRStatus="Pending";
       pnp.sp.web.currentUser.inBatch(batch).get().then((user) => {
 
         formState.tr.RequestorId = user["Id"];
