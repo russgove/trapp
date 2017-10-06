@@ -24,4 +24,6 @@ export interface ITrFormWebPartProps {
   emailSuffix:string; // when searching for People in staffCC we only rturn users with emails ending in emailsuffix
   visitorsGoupdName:string;// When we add a staffCC user gets added to this group so he can visit site
   ckeditorUrl:string; //path to load ckeditor from  (//cdn.ckeditor.com/4.6.2/full/ckeditor.js  OR our  cdn)
+  documentIframeHeight:number; // heighht of the iframe that shows the document in the Documents Tab
+  documentIframeWidth:number; // width of the iframe that shows the document in the Documents Tab
 }

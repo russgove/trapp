@@ -8,7 +8,7 @@ import { SearchQuery, SearchResults, SortDirection, EmailProperties, Items } fro
 import { Version, UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import {
   BaseClientSideWebPart,
-  IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField, PropertyPaneCheckbox
+  IPropertyPaneConfiguration, PropertyPaneDropdown, PropertyPaneTextField, PropertyPaneCheckbox, PropertyPaneSlider
 } from '@microsoft/sp-webpart-base';
 import {
   Environment,
@@ -38,6 +38,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
   public onInit(): Promise<void> {
     return super.onInit().then(_ => {
+      debugger;
       pnp.setup({
         spfxContext: this.context,
       });
@@ -90,7 +91,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.PigmentsId = item.PigmentsId;
     tr.TestsId = item.TestsId;
   }
-  /**
+ /**
  * Method to extract Personas from the STAfcc fields on a TR
  * 
  * @param {item} a tr getch throuh the rest api expanding the staffcc fields
@@ -247,7 +248,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
-
+    debugger;
     if (document.getElementById("s4-ribbonrow")) {
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
@@ -277,7 +278,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       propertyTests: [],
       ckeditorUrl: this.properties.ckeditorUrl,
       delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor,
-      ckeditorConfig:{}
+      ckeditorConfig: {},
+      documentIframeHeight: this.properties.documentIframeHeight,
+      documentIframeWidth: this.properties.documentIframeWidth
 
 
     };
@@ -295,15 +298,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     let batch = pnp.sp.createBatch();
 
     pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.filter("Title eq 'ckeditorConfig'").inBatch(batch).getAs<SetupItem[]>()
-    .then((setupItems) => {
-      debugger;
-      formProps.ckeditorConfig = JSON.parse(setupItems[0].PlainText)
-    })
-    .catch((error) => {
-      console.log("ERROR, An error occured fetching and parsing ckeditorConfig " + this.properties.setupListName);
-      console.log(error.message);
+      .then((setupItems) => {
+        debugger;
+        formProps.ckeditorConfig = JSON.parse(setupItems[0].PlainText)
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching and parsing ckeditorConfig " + this.properties.setupListName);
+        console.log(error.message);
 
-    });
+      });
     pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
         formProps.endUses = _.map(items, (item) => {
@@ -394,8 +397,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     else {
       debugger;
       formState.tr.Site = this.properties.defaultSite;
-      formState.tr.RequestDate=moment().startOf("day").toISOString();
-      formState.tr.TRStatus="Pending";
+      formState.tr.RequestDate = moment().startOf("day").toISOString();
+      formState.tr.TRStatus = "Pending";
       pnp.sp.web.currentUser.inBatch(batch).get().then((user) => {
 
         formState.tr.RequestorId = user["Id"];
@@ -432,7 +435,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       formProps.initialState = formState;
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
-     
+
       if (Environment.type === EnvironmentType.ClassicSharePoint) {
         const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
         if (buttons && buttons.length) {
@@ -633,7 +636,21 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   label: "Url used to load CKEditor",
                   description: "CKEditor is the Roch text editor used oin the forms. It can be loaded from the public url(//cdn.ckeditor.com/4.6.2/full/ckeditor.js) or our cdn"
                 }),
+                PropertyPaneSlider('documentIframeHeight', {
+                  label: "Hight of Iframe used to show Documents",
+                  min: 100,
+                  max: 2000,
+                  step: 5,
+                  showValue: true
+                }),
 
+                PropertyPaneSlider('documentIframeWidth', {
+                  label: "Width of Iframe used to show Documents",
+                  min: 100,
+                  max: 2000,
+                  step: 5,
+                  showValue: true
+                })
 
               ]
             },

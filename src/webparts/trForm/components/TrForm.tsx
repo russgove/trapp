@@ -851,7 +851,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public documentRowMouseEnter(trdocument: TRDocument, e: any) {
 
     //mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
-    this.props.fetchDocumentWopiFrameURL(trdocument.id, 0).then(url => {
+    this.props.fetchDocumentWopiFrameURL(trdocument.id, 3).then(url => {
       if (!url || url === "") {
         url = trdocument.serverRalativeUrl;
       }
@@ -1456,14 +1456,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                         className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
                     </div>
                   },
-                  { key: "title", name: "Request #", fieldName: "title", minWidth: 80, },
+                  { key: "title", name: "Request #", fieldName: "title", minWidth: 1,maxWidth:300 },
 
                 ]}
               />
               <input type='file' id='uploadfile' onChange={e => { this.uploadFile(e); }} />
             </div>
             <div style={{ float: "right" }}>
-              <DocumentIframe src={this.state.documentCalloutIframeUrl} />
+              <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight} 
+              width={this.props.documentIframeWidth}/>
             </div>
             <div style={{ clear: "both" }}></div>
 

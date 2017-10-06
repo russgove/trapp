@@ -3,7 +3,7 @@
   "id": "11074c77-8574-4740-9373-16a9b7175c86",
   "alias": "TrFormWebPart",
   "componentType": "WebPart",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "manifestVersion": 2,
   "preconfiguredEntries": [
     {
@@ -40,7 +40,10 @@
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
         "visitorsGoupdName":"US Visitors",
-        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
+        "documentIframeWidth":500,
+        "documentIframeHeight":500
+
       }
     },
     {
@@ -77,7 +80,9 @@
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
         "visitorsGoupdName":"US Visitors",
-        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
+        "documentIframeWidth":500,
+        "documentIframeHeight":500
       }
     },
     {
@@ -114,7 +119,9 @@
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
         "visitorsGoupdName":"US Visitors",
-        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
+        "documentIframeWidth":500,
+        "documentIframeHeight":500
       }
     },
     {
@@ -151,7 +158,9 @@
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
         "visitorsGoupdName":"AP Visitors",
-        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
+        "documentIframeWidth":500,
+        "documentIframeHeight":500
       }
     },
     {
@@ -188,7 +197,9 @@
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
         "visitorsGoupdName":"AP Visitors",
-        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
+        "documentIframeWidth":500,
+        "documentIframeHeight":500
       }
     },
     {
@@ -225,7 +236,9 @@
         "delayPriorToSettingCKEditor":200,
         "emailSuffix":"@TRONOX.COM",
         "visitorsGoupdName":"AP Visitors",
-        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js"
+        "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
+        "documentIframeWidth":500,
+        "documentIframeHeight":500
       }
     }
   ]
