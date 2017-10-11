@@ -40,6 +40,7 @@ export class TR {
         this.RequestorId = null;
         this.RequestorName = null;
         this.EstManHours = null;
+        this.ActualManHours=null;
         this.Site = null;
 
         this.TRPriority = null;
@@ -72,6 +73,7 @@ export class TR {
     public RequestorId: number;
     public RequestorName: string;
     public EstManHours: number;//Edtimated hours
+    public ActualManHours: number;//Edtimated hours
     public Site: string;
     public TRPriority: string;//TRPriority
     public CustomerId: number;

@@ -203,6 +203,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.state.errorMessages.push(new md.Message("Actual Completion Date is required to complete a request"));
       errorsFound = true;
     }
+    if (this.state.tr.TRStatus==="Completed" && ! this.state.tr.ActualManHours ){
+      this.state.errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
+      errorsFound = true;
+    }
       
     if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
       this.state.errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
@@ -1196,9 +1200,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 }} />
             </td>
             <td>
-              <Label ></Label>
+              <Label >Actual Hours</Label>
             </td>
-
+            <TextField datatype="number"
+                value={(this.state.tr.ActualManHours) ? this.state.tr.ActualManHours.toString() : null}
+                onChanged={e => {
+                  this.setDirty(true);
+                  this.state.tr.ActualManHours = parseInt(e);
+                  this.setState(this.state);
+                }} />
 
             <td>
               <Label ></Label>

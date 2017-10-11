@@ -66,6 +66,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.RequiredDate = item.RequiredDate;
 
     tr.EstManHours = item.EstManHours;
+    tr.ActualManHours=item.ActualManHours;
     tr.RequestDate = item.RequestDate;
     tr.TRPriority = item.TRPriority;
     tr.RequestorId = item.RequestorId;
