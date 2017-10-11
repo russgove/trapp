@@ -186,7 +186,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.state.errorMessages.push(new md.Message("Due Date  is required"));
       errorsFound = true;
     }
-    debugger;
+   
     if (this.state.tr.RequestDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate <  this.state.tr.RequestDate) {
       this.state.errorMessages.push(new md.Message("Actual Start Date must be on or after Initiation Date"));
       errorsFound = true;
@@ -427,7 +427,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
     var pigmentManufactureres = _.countBy(pigs, (p1: Pigment) => { return p1.manufacturer; });
     var groups: Array<IGroup> = [];
-    debugger;
+  
     for (const pm in pigmentManufactureres) {
       groups.push({
         isCollapsed: (pm !== this.state.expandedPigmentManufacturer),
@@ -502,7 +502,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     // now remove those that are already on the tr
     const displayTests = _.filter(tempDisplayTests, (dt) => { return !this.trContainsTest(this.state.tr, dt.testid); });
-    return _.orderBy(displayTests, ["type"], ["asc"]);
+    debugger;
+    return _.orderBy(displayTests, ["property","test"], ["asc","asc"]);
 
 
   }
@@ -875,7 +876,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
   public setDirty(isDirty: boolean) {
-    debugger;
+    
     if (!this.state.isDirty && isDirty) { //wasnt dirty now it is 
       window.onbeforeunload = function (e) {
         var dialogText = "You have unsaved changes, are you sure you want to leave?";
@@ -1299,7 +1300,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DetailsList
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
-                  debugger;
+               
                   var expandedGroup = _.find(dl.props.groups, (group) => {
                     return !(group.isCollapsed) && group.key !== this.state.expandedPigmentManufacturer;// its an expanded group that want expanded before
                   });
@@ -1352,7 +1353,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DetailsList
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
-                  debugger;
+               
                   var expandedGroup = _.find(dl.props.groups, (group) => {
                     return !(group.isCollapsed) && group.key !== this.state.expandedProperty; // its an expanded group that want expanded before
                   });

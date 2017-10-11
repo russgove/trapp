@@ -38,7 +38,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
   public onInit(): Promise<void> {
     return super.onInit().then(_ => {
-      debugger;
+    
       pnp.setup({
         spfxContext: this.context,
       });
@@ -248,7 +248,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
-    debugger;
+ 
     if (document.getElementById("s4-ribbonrow")) {
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
@@ -299,7 +299,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.filter("Title eq 'ckeditorConfig'").inBatch(batch).getAs<SetupItem[]>()
       .then((setupItems) => {
-        debugger;
+      
         formProps.ckeditorConfig = JSON.parse(setupItems[0].PlainText)
       })
       .catch((error) => {
@@ -395,7 +395,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       }
     }
     else {
-      debugger;
+     
       formState.tr.Site = this.properties.defaultSite;
       formState.tr.RequestDate = moment().startOf("day").toISOString();
       formState.tr.TRStatus = "Pending";
@@ -521,7 +521,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
       let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
       let pigmentExpands = "Manufacturer";
-      pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
+      pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
           formProps.pigments = _.map(items, (item) => {
             let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
@@ -537,7 +537,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error.message);
         });
       let testFields = "Id,Title";
-      pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).top(5000).inBatch(batch2).get()// get the lookup info
+      pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
           formProps.tests = _.map(items, (item) => {
             let t: Test = new Test(item["Id"], item["Title"]);

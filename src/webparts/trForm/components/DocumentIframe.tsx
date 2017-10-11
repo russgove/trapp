@@ -9,8 +9,7 @@ export class DocumentIframe extends React.Component<IDocumentIframeProps, {}>{
     public render() {
         const heightAttr:string=this.props.height+"px";
         const widthAttr:string=this.props.width+"px";
-        debugger;
-        console.log("iframe source set to " + this.props.src);
+            console.log("iframe source set to " + this.props.src);
         return (<iframe src={this.props.src} height={heightAttr} width={widthAttr}/>);
     }
 }
