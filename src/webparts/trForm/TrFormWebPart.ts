@@ -300,7 +300,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.filter("Title eq 'ckeditorConfig'").inBatch(batch).getAs<SetupItem[]>()
       .then((setupItems) => {
       
-        formProps.ckeditorConfig = JSON.parse(setupItems[0].PlainText)
+        formProps.ckeditorConfig = JSON.parse(setupItems[0].PlainText);
       })
       .catch((error) => {
         console.log("ERROR, An error occured fetching and parsing ckeditorConfig " + this.properties.setupListName);

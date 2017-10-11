@@ -886,7 +886,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     if (this.state.isDirty && !isDirty) { //was dirty now it is not
       window.onbeforeunload = null;
-    };
+    }
     this.state.isDirty = isDirty;
   }
   public render(): React.ReactElement<ITrFormProps> {
