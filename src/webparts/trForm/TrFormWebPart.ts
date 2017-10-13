@@ -14,7 +14,7 @@ import {
   Environment,
   EnvironmentType
 } from '@microsoft/sp-core-library';
-import { TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import {TRFieldDefinition, TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 import * as _ from 'lodash';
 import TrForm from './components/TrForm';
@@ -277,6 +277,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pigments: [],
       tests: [],
       propertyTests: [],
+      fieldDefinitions:[],
       ckeditorUrl: this.properties.ckeditorUrl,
       delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor,
       ckeditorConfig: {},
@@ -297,7 +298,17 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutIframeUrl: null
     };
     let batch = pnp.sp.createBatch();
+    // get tr list field titles
+    pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).fields.select("Title, InternalName,Description").inBatch(batch).getAs<TRFieldDefinition[]>()
+    .then((fieldDefinitions) => {
+    debugger
+      formProps.fieldDefinitions = fieldDefinitions;
+    })
+    .catch((error) => {
+      console.log("ERROR, An error occured fetching TR Field D3efinitions " + this.properties.setupListName);
+      console.log(error.message);
 
+    });
     pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.filter("Title eq 'ckeditorConfig'").inBatch(batch).getAs<SetupItem[]>()
       .then((setupItems) => {
       

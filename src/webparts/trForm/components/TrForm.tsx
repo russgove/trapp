@@ -34,7 +34,7 @@ import * as tabs from "react-tabs";
 
 /**  Custom Stuff */
 import { DocumentIframe } from "./DocumentIframe";
-import { TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest, Customer } from "../dataModel";
+import {TRFieldDefinition,  TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest, Customer } from "../dataModel";
 import { ITrFormProps } from './ITrFormProps';
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
@@ -893,6 +893,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     this.state.isDirty = isDirty;
   }
+  public getFieldDefinition(InternalName:string):TRFieldDefinition{
+    return _.find(this.props.fieldDefinitions,(fd=>{return fd.InternalName===InternalName}));
+  }
+  public getFieldTitle(InternalName:string):string{
+    debugger;
+     let  fd:TRFieldDefinition = this.getFieldDefinition(InternalName);
+     return fd?fd.Title:InternalName;
+  }
   public render(): React.ReactElement<ITrFormProps> {
 
     let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
@@ -944,7 +952,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
           <tr>
             <td>
-              <Label >Request #</Label>
+              <Label required={true}>{this.getFieldTitle('Title')}</Label>
             </td>
             <td>
               <TextField value={this.state.tr.Title} onChanged={e => {
@@ -953,7 +961,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               }} />
             </td>
             <td>
-              <Label >Work Type</Label>
+              <Label required={true}>{this.getFieldTitle('WorkType')}</Label>
             </td>
             <td>
               <Dropdown label=''
@@ -967,7 +975,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
 
             <td>
-              <Label >Site</Label>
+              <Label required={true} >{this.getFieldTitle('Site')}</Label>
             </td>
             <td>
               <TextField value={this.state.tr.Site} onChanged={e => {
@@ -980,7 +988,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           </tr>
           <tr>
             <td>
-              <Label  >Parent TR</Label>
+              <Label  >{this.getFieldTitle('ParentTR')}</Label>
             </td>
             <td>
               <div>
@@ -996,7 +1004,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
             </td>
             <td>
-              <Label >Application Type</Label>
+              <Label required={true} >{this.getFieldTitle('ApplicationType')}</Label>
             </td>
             <td>
               <Dropdown label=''
@@ -1010,7 +1018,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               />
             </td>
             <td>
-              <Label >Priority</Label>
+              <Label required={true} >{this.getFieldTitle('TRPriority')}</Label>
             </td>
             <td>
               <Dropdown
@@ -1032,7 +1040,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           </tr>
           <tr>
             <td>
-              <Label>CER #</Label>
+              <Label>{this.getFieldTitle('CER')}</Label>
             </td>
             <td>
               <TextField value={this.state.tr.CER} onChanged={e => {
@@ -1041,7 +1049,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               }} />
             </td>
             <td>
-              <Label>Requestor</Label>
+              <Label required={true}>{this.getFieldTitle('Requestor')}</Label>
             </td>
             <td>
               {/* <Dropdown
@@ -1057,7 +1065,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label>{this.state.tr.RequestorName}</Label>
             </td>
             <td>
-              <Label>Customer</Label>
+              <Label>{this.getFieldTitle('Customer')}</Label>
             </td>
             <td>
               <Select
@@ -1097,7 +1105,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           </tr>
           <tr>
             <td>
-              <Label  >Initiation Date</Label>
+              <Label required={true} >{this.getFieldTitle('RequestDate')}</Label>
             </td>
             <td>
 
@@ -1111,7 +1119,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 }} />
             </td>
             <td>
-              <Label >End Use</Label>
+              <Label required={true}>{this.getFieldTitle('EndUse')}</Label>
             </td>
             <td>
               <Dropdown label=''
@@ -1124,7 +1132,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 }} />
             </td>
             <td>
-              <Label >Status</Label>
+              <Label required={true} >{this.getFieldTitle('TRStatus')}</Label>
             </td>
             <td>
               <Dropdown
@@ -1147,7 +1155,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           </tr>
           <tr>
             <td>
-              <Label  >Due Date</Label>
+              <Label required={true} >{this.getFieldTitle('RequiredDate')}</Label>
             </td>
             <td>
 
@@ -1160,7 +1168,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 }} />
             </td>
             <td>
-              <Label >Actual Start Date</Label>
+              <Label >{this.getFieldTitle('ActualStartDate')}</Label>
             </td>
             <td>
               <DatePicker
@@ -1172,7 +1180,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 }} />
             </td>
             <td>
-              <Label >Actual Completion Date</Label>
+              <Label >{this.getFieldTitle('ActualCompletionDate')}</Label>
             </td>
             <td>
               <DatePicker
@@ -1187,7 +1195,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           </tr>
           <tr>
             <td>
-              <Label  >Estimated Hours</Label>
+              <Label required={true} >{this.getFieldTitle('EstManHours')}</Label>
             </td>
             <td>
 
@@ -1200,7 +1208,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 }} />
             </td>
             <td>
-              <Label >Actual Hours</Label>
+              <Label >{this.getFieldTitle('ActualManHours')}</Label>
             </td>
             <TextField datatype="number"
                 value={(this.state.tr.ActualManHours) ? this.state.tr.ActualManHours.toString() : null}
@@ -1224,31 +1232,31 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         <tabs.Tabs onSelect={this.tabChanged.bind(this)}>
           <tabs.TabList>
             <tabs.Tab>
-              Title
+            {this.getFieldTitle('RequestTitle')}
              </tabs.Tab>
             <tabs.Tab>
-              Description
+            {this.getFieldTitle('Description')}
              </tabs.Tab>
             <tabs.Tab>
-              Summary
+            {this.getFieldTitle('Summary')}
              </tabs.Tab>
             <tabs.Tab>
-              Test Params
+            {this.getFieldTitle('TestingParameters')}
              </tabs.Tab>
             <tabs.Tab>
-              Assigned To({(this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.length : 0})
+            {this.getFieldTitle('TRAssignedTo')}({(this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              Staff cc({(this.state.tr.StaffCC) ? this.state.tr.StaffCC.length : 0})
+            {this.getFieldTitle('StaffCC')}({(this.state.tr.StaffCC) ? this.state.tr.StaffCC.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              Pigments({(this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.length : 0})
+            {this.getFieldTitle('Pigments')}({(this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              Tests({(this.state.tr.TestsId) ? this.state.tr.TestsId.length : 0})
+            {this.getFieldTitle('Tests')}({(this.state.tr.TestsId) ? this.state.tr.TestsId.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              Formulae
+            {this.getFieldTitle('Formulas')}
              </tabs.Tab>
             <tabs.Tab>
               Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})

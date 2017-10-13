@@ -1,4 +1,4 @@
-import { TRDocument, Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
+import {TRFieldDefinition, TRDocument, Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
 import { ITRFormState } from "./ITRFormState";
   import { IPersonaProps } from 'office-ui-fabric-react/lib/Persona';
 
@@ -32,6 +32,7 @@ export interface ITrFormProps {
   ckeditorConfig:any;
   documentIframeHeight:number;
   documentIframeWidth:number;
+  fieldDefinitions:TRFieldDefinition[];
   
 
 
