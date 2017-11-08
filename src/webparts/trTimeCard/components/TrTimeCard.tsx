@@ -56,13 +56,13 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    */
   public updateHoursSpent(trId: number, newValue: any) {
     let timeSpent = _.find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
-    this.state.message = "";
+    //this.state.message = "";
     if (timeSpent) {
       timeSpent.hoursSpent = newValue;
     } else {
       console.log(`Cannot find timespent record with a TR id of ${trId}`);
     }
-    this.setState(this.state);
+    this.setState({ ...this.state, message: "" });
   }
 
   /**
@@ -97,12 +97,13 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
   public save() {
     this.props.save(this.state.timeSpents)
       .then((timespents) => {
-        this.state.timeSpents = timespents;
-        this.state.message = "Saved";
-        this.setState(this.state);
+        //this.state.timeSpents = timespents;
+        //this.state.message = "Saved";
+        this.setState({ ...this.state, timeSpents: timespents, message : "Saved" });
       })
       .catch((error) => {
-        this.state.message = error;
+        //this.state.message = error;
+        this.setState({ ...this.state, message: error });
       });
     return false; // stop postback
   }
@@ -123,9 +124,9 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           onSelectDate={e => {
             const weekEndingDate = moment(e).utc().endOf('isoWeek').startOf('day').toDate();
             this.props.getTimeSpent(weekEndingDate).then((timeSpents) => {
-              this.state.weekEndingDate = weekEndingDate;
-              this.state.timeSpents = timeSpents;
-              this.setState(this.state);
+              // this.state.weekEndingDate = weekEndingDate;
+              // this.state.timeSpents = timeSpents;
+              this.setState({ ...this.state, weekEndingDate: weekEndingDate, timeSpents: timeSpents });
             });
 
           }} />

@@ -11,8 +11,9 @@ import { Checkbox } from 'office-ui-fabric-react/lib/Checkbox';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
 import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
+import { ComboBox, IComboBoxOption,IComboBoxProps } from 'office-ui-fabric-react/lib/ComboBox';
 // switch to fabric  ComboBox on next upgrade
-let Select = require("react-select") as any;
+//let Select = require("react-select") as any;
 import 'react-select/dist/react-select.css';
 import { TagItem } from 'office-ui-fabric-react/lib/components/pickers/TagPicker/TagItem';
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from 'office-ui-fabric-react/lib/DetailsList';
@@ -30,6 +31,7 @@ import { escape } from '@microsoft/sp-lodash-subset';
 /** Other utilities */
 import * as moment from 'moment';
 import * as _ from "lodash";
+// switch to fabric pivot on text update
 import * as tabs from "react-tabs";
 
 /**  Custom Stuff */
@@ -164,7 +166,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public isValid(): boolean {
 
-    this.state.errorMessages = [];
+    //this.state.errorMessages = [];
+    this.setState({ ...this.state, errorMessages: [] })
     let errorsFound = false;
     if (!this.state.tr.Title) {
       this.state.errorMessages.push(new md.Message("Request #  is required"));
@@ -186,28 +189,28 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.state.errorMessages.push(new md.Message("Due Date  is required"));
       errorsFound = true;
     }
-   
-    if (this.state.tr.RequestDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate <  this.state.tr.RequestDate) {
+
+    if (this.state.tr.RequestDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate < this.state.tr.RequestDate) {
       this.state.errorMessages.push(new md.Message("Actual Start Date must be on or after Initiation Date"));
       errorsFound = true;
     }
-    if (this.state.tr.ActualCompletionDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate >  this.state.tr.ActualCompletionDate) {
+    if (this.state.tr.ActualCompletionDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate > this.state.tr.ActualCompletionDate) {
       this.state.errorMessages.push(new md.Message("Actual Completion Date must be on or after Actual Start Date"));
       errorsFound = true;
     }
-    if (this.state.tr.TRStatus==="Completed" && ! this.state.tr.ActualStartDate ){
+    if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualStartDate) {
       this.state.errorMessages.push(new md.Message("Actual Start Date is required to complete a request"));
       errorsFound = true;
     }
-    if (this.state.tr.TRStatus==="Completed" && ! this.state.tr.ActualCompletionDate ){
+    if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualCompletionDate) {
       this.state.errorMessages.push(new md.Message("Actual Completion Date is required to complete a request"));
       errorsFound = true;
     }
-    if (this.state.tr.TRStatus==="Completed" && ! this.state.tr.ActualManHours ){
+    if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualManHours) {
       this.state.errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
       errorsFound = true;
     }
-      
+
     if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
       this.state.errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
       errorsFound = true;
@@ -413,7 +416,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         isActive: pigment.isActive
       };
     }).filter((p) => { return p.isActive === "Yes"; });
-    return _.orderBy(pigments, ["manufacturer"], ["asc"]);
+    return _.sortBy(pigments, ["manufacturer"], ["asc"]);
   }
 
 
@@ -431,7 +434,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
     var pigmentManufactureres = _.countBy(pigs, (p1: Pigment) => { return p1.manufacturer; });
     var groups: Array<IGroup> = [];
-  
+
     for (const pm in pigmentManufactureres) {
       groups.push({
         isCollapsed: (pm !== this.state.expandedPigmentManufacturer),
@@ -464,7 +467,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         isActive: pigment.isActive
       };
     });
-    return _.orderBy(selectedPigments, ["title"], ["asc"]);
+    return _.sortBy(selectedPigments, ["title"], ["asc"]);
   }
 
 
@@ -507,7 +510,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     // now remove those that are already on the tr
     const displayTests = _.filter(tempDisplayTests, (dt) => { return !this.trContainsTest(this.state.tr, dt.testid); });
     debugger;
-    return _.orderBy(displayTests, ["property","test"], ["asc","asc"]);
+    return _.sortBy(displayTests, ["property", "test"], ["asc", "asc"]);
 
 
   }
@@ -573,7 +576,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         propertyName: this.getPropertyName(test.id, this.state.tr.ApplicationTypeId, this.state.tr.EndUseId)
       };
     });
-    return _.orderBy(selectedTests, ["propertyName", "title"], ["asc", "asc"]);
+    return _.sortBy(selectedTests, ["propertyName", "title"], ["asc", "asc"]);
   }
 
 
@@ -597,7 +600,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         id: techSpec.id
       };
     });
-    return _.orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
+    return _.sortBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
   }
 
   /**
@@ -750,8 +753,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public cancelTrSearch(): void {
-    this.state.showTRSearch = false;
-    this.setState(this.state);
+    //this.state.showTRSearch = false;
+    this.setState({ ...this.state, showTRSearch: false });
   }
   //make the child tr the currently selected tr
 
@@ -769,18 +772,18 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
     if (childTr) {
       console.log("switching to tr " + trId);
-      delete this.state.tr;
-      this.state.tr = childTr;
-      this.originalAssignees = _.clone(this.state.tr.TRAssignedToId);
-      this.originalStatus = this.state.tr.TRStatus;
+      // delete this.state.tr;
+      //this.state.tr = childTr;
+      this.originalAssignees = _.clone(childTr.TRAssignedToId);
+      this.originalStatus = childTr.TRStatus;
       this.updateCKEditorText(this.state.tr);
-      this.state.childTRs = [];
-
+      // this.state.childTRs = [];
+      this.setState({ ...this.state, tr: childTr, childTRs: [] })
       this.setState(this.state);
       // now get its children, need to move children to state
       this.props.fetchChildTr(this.state.tr.Id).then((trs) => {
-        this.state.childTRs = trs;
-        this.setState(this.state);
+        // this.state.childTRs = trs;
+        this.setState({ ... this.state, childTRs: trs });
       });
     }
     return false;
@@ -824,8 +827,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     let file = e.target["files"][0];
     this.props.uploadFile(file, this.state.tr.Id).then((response) => {
       this.props.getDocuments(this.state.tr.Id).then((dox) => {
-        this.state.documents = dox;
-        this.setState(this.state);
+        //this.state.documents = dox;
+        this.setState({ ...this.state, documents: dox });
       });
 
     }).catch((error) => {
@@ -838,15 +841,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       const parentId = this.state.tr.ParentTRId;
       this.props.fetchTR(parentId).then((parentTR) => {
 
-        this.state.tr = parentTR;
-        this.originalAssignees = _.clone(this.state.tr.TRAssignedToId);
-        this.originalStatus = this.state.tr.TRStatus;
-        this.state.childTRs = [];
-        this.setState(this.state);
+        //this.state.tr = parentTR;
+        this.originalAssignees = _.clone(parentTR.TRAssignedToId);
+        this.originalStatus = parentTR.TRStatus;
+        //this.state.childTRs = [];
+        this.setState({ ...this.state, tr: parentTR, childTRs: [] });
         this.updateCKEditorText(this.state.tr);
         this.props.fetchChildTr(parentId).then((subTRs) => {
-          this.state.childTRs = subTRs;
-          this.setState(this.state);
+          //this.state.childTRs = subTRs;
+          this.setState({ ...this.state, childTRs: subTRs });
         });
       });
     }
@@ -860,18 +863,18 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       if (!url || url === "") {
         url = trdocument.serverRalativeUrl;
       }
-      this.state.documentCalloutIframeUrl = url;
-      this.state.documentCalloutTarget = e.target;
-      this.state.documentCalloutVisible = true;
-      this.setState(this.state);
+      // this.state.documentCalloutIframeUrl = url;
+      // this.state.documentCalloutTarget = e.target;
+      // this.state.documentCalloutVisible = true;
+      this.setState({ ...this.state, documentCalloutIframeUrl: url, documentCalloutTarget: e.target, documentCalloutVisible: true });
 
     });
   }
   public documentRowMouseOut(item: TRDocument, e: any) {
 
-    this.state.documentCalloutTarget = null;
-    this.state.documentCalloutVisible = false;
-    this.setState(this.state);
+    // this.state.documentCalloutTarget = null;
+    // this.state.documentCalloutVisible = false;
+    this.setState({ ...this.state, documentCalloutTarget: null, documentCalloutVisible: false });
     console.log("mouse exit for " + item.title);
   }
 
@@ -880,7 +883,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
   public setDirty(isDirty: boolean) {
-    
+
     if (!this.state.isDirty && isDirty) { //wasnt dirty now it is 
       window.onbeforeunload = function (e) {
         var dialogText = "You have unsaved changes, are you sure you want to leave?";
@@ -891,7 +894,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (this.state.isDirty && !isDirty) { //was dirty now it is not
       window.onbeforeunload = null;
     }
-    this.state.isDirty = isDirty;
+    //this.state.isDirty = isDirty;
+    this.setState({ ...this.state, isDirty: isDirty });
   }
   public render(): React.ReactElement<ITrFormProps> {
 
@@ -927,9 +931,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           };
         });
 
-    let customerSelectOptions = _.map(this.props.customers, (c) => {
+    let customerSelectOptions:IComboBoxOption[] = _.map(this.props.customers, (c) => {
       return {
-        value: c.id, label: c.title
+        key: c.id, text: c.title
       };
     });
     return (
@@ -989,7 +993,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 </Label>
                 <i onClick={this.editParentTR}
                   className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
-                <i onClick={(e) => { this.state.showTRSearch = true; this.setState(this.state); }}
+                <i onClick={(e) => {
+                  //this.state.showTRSearch = true;
+                  this.setState({ ...this.state, showTRSearch: true });
+                }}
                   className="ms-Icon ms-Icon--Search" aria-hidden="true"></i>
 
               </div>
@@ -1060,7 +1067,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label>Customer</Label>
             </td>
             <td>
-              <Select
+              <ComboBox  options={customerSelectOptions} />
+              {/* <Select
                 simpleValue
                 placeholder="+ Add a Customer"
                 options={customerSelectOptions}
@@ -1071,7 +1079,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   this.setDirty(true);
                   this.setState(this.state);
                 }}
-              />
+              /> */}
               {/* <TagPicker ref="customerPicker"
                 onResolveSuggestions={this.onCustomerResolveSuggestions.bind(this)}
                 onChange={this.onCustomerChanged.bind(this)}
@@ -1103,7 +1111,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
               <DatePicker
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
-                
+
                 onSelectDate={e => {
                   this.setDirty(true);
                   this.state.tr.RequestDate = moment(e).toISOString();
@@ -1203,12 +1211,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label >Actual Hours</Label>
             </td>
             <TextField datatype="number"
-                value={(this.state.tr.ActualManHours) ? this.state.tr.ActualManHours.toString() : null}
-                onChanged={e => {
-                  this.setDirty(true);
-                  this.state.tr.ActualManHours = parseInt(e);
-                  this.setState(this.state);
-                }} />
+              value={(this.state.tr.ActualManHours) ? this.state.tr.ActualManHours.toString() : null}
+              onChanged={e => {
+                this.setDirty(true);
+                this.state.tr.ActualManHours = parseInt(e);
+                this.setState(this.state);
+              }} />
 
             <td>
               <Label ></Label>
@@ -1310,12 +1318,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DetailsList
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
-               
+
                   var expandedGroup = _.find(dl.props.groups, (group) => {
                     return !(group.isCollapsed) && group.key !== this.state.expandedPigmentManufacturer;// its an expanded group that want expanded before
                   });
                   if (expandedGroup) {
-                    this.state.expandedPigmentManufacturer = expandedGroup.key;
+                    //this.state.expandedPigmentManufacturer = expandedGroup.key;
+                    this.setState({...this.state, expandedPigmentManufacturer:expandedGroup.key})
                   }
                 }}
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1363,12 +1372,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DetailsList
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
-               
+
                   var expandedGroup = _.find(dl.props.groups, (group) => {
                     return !(group.isCollapsed) && group.key !== this.state.expandedProperty; // its an expanded group that want expanded before
                   });
                   if (expandedGroup) {
-                    this.state.expandedProperty = expandedGroup.key;
+                    //this.state.expandedProperty = expandedGroup.key;
+                    this.setState({...this.state, expandedProperty:expandedGroup.key})
                   }
                 }}
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1467,15 +1477,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                         className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
                     </div>
                   },
-                  { key: "title", name: "Request #", fieldName: "title", minWidth: 1,maxWidth:300 },
+                  { key: "title", name: "Request #", fieldName: "title", minWidth: 1, maxWidth: 300 },
 
                 ]}
               />
               <input type='file' id='uploadfile' onChange={e => { this.uploadFile(e); }} />
             </div>
             <div style={{ float: "right" }}>
-              <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight} 
-              width={this.props.documentIframeWidth}/>
+              <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight}
+                width={this.props.documentIframeWidth} />
             </div>
             <div style={{ clear: "both" }}></div>
 

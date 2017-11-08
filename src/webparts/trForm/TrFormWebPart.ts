@@ -566,14 +566,20 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error.message);
         });
       batch2.execute().then(() => {
-        //  formComponent.props = formProps; this did not work
-        formComponent.props.customers = formProps.customers;
-        formComponent.props.pigments = formProps.pigments;
-        formComponent.props.tests = formProps.tests;
-        formComponent.props.propertyTests = formProps.propertyTests;
-        formComponent.props.techSpecs = formProps.techSpecs;
-        formComponent.props.requestors = formProps.requestors;
-        formComponent.props.workTypes = formProps.workTypes;
+        debugger;
+         formComponent.props = formProps; //this did not work
+
+        // formComponent.props.customers = formProps.customers;
+        // formComponent.props.pigments = formProps.pigments;
+        // formComponent.props.tests = formProps.tests;
+        // formComponent.props.propertyTests = formProps.propertyTests;
+        // formComponent.props.techSpecs = formProps.techSpecs;
+        // formComponent.props.requestors = formProps.requestors;
+        // formComponent.props.workTypes = formProps.workTypes;
+        
+        
+
+
         formComponent.forceUpdate();
       });
     }

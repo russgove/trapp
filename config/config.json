@@ -1,19 +1,27 @@
 {
-  "entries": [
-    {
-      "entry": "./lib/webparts/trForm/TrFormWebPart.js",
-      "manifest": "./src/webparts/trForm/TrFormWebPart.manifest.json",
-      "outputPath": "./dist/tr-form.bundle.js"
+  "$schema": "https://dev.office.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "tr-form-bundle": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/trForm/TrFormWebPart.js",
+          "manifest": "./src/webparts/trForm/TrFormWebPart.manifest.json"
+        }
+      ]
     },
-    {
-      "entry": "./lib/webparts/trTimeCard/TrTimeCardWebPart.js",
-      "manifest": "./src/webparts/trTimeCard/TrTimeCardWebPart.manifest.json",
-      "outputPath": "./dist/tr-time-card.bundle.js"
+    "tr-time-card-bundle": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/trTimeCard/TrTimeCardWebPart.js",
+          "manifest": "./src/webparts/trTimeCard/TrTimeCardWebPart.manifest.json"
+        }
+      ]
     }
-  ],
-  "externals": {},
+  },
   "localizedResources": {
-    "trFormStrings": "webparts/trForm/loc/{locale}.js",
-    "trTimeCardStrings": "webparts/trTimeCard/loc/{locale}.js"
-  }
+    "trFormStrings": "lib/webparts/trForm/loc/{locale}.js",
+    "trTimeCardStrings": "lib/webparts/trTimeCard/loc/{locale}.js"
+  },
+  "externals": {}
 }
