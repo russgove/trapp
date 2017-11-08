@@ -17,7 +17,7 @@ import {
 import { TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 //import * as lodash from 'lodash';
-import {findIndex,unionWith,map,find,orderBy,clone} from 'lodash';
+import { findIndex, unionWith, map, find, orderBy, clone } from 'lodash';
 import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITRFormState } from './components/ITRFormState';
@@ -39,7 +39,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
   public onInit(): Promise<void> {
     return super.onInit().then(_ => {
-    
+
       pnp.setup({
         spfxContext: this.context,
       });
@@ -67,7 +67,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.RequiredDate = item.RequiredDate;
 
     tr.EstManHours = item.EstManHours;
-    tr.ActualManHours=item.ActualManHours;
+    tr.ActualManHours = item.ActualManHours;
     tr.RequestDate = item.RequestDate;
     tr.TRPriority = item.TRPriority;
     tr.RequestorId = item.RequestorId;
@@ -93,14 +93,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     tr.PigmentsId = item.PigmentsId;
     tr.TestsId = item.TestsId;
   }
- /**
- * Method to extract Personas from the STAfcc fields on a TR
- * 
- * @param {item} a tr getch throuh the rest api expanding the staffcc fields
- * @returns {Promise<TR>}  A Promise for the TR record
- * 
- * @memberof TrFormWebPart
- */
+  /**
+  * Method to extract Personas from the STAfcc fields on a TR
+  * 
+  * @param {item} a tr getch throuh the rest api expanding the staffcc fields
+  * @returns {Promise<TR>}  A Promise for the TR record
+  * 
+  * @memberof TrFormWebPart
+  */
   public getStaffCCFromTR(item: any): Array<IPersonaProps> {
 
     let personas: Array<IPersonaProps> = [];
@@ -250,7 +250,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   public render(): void {
     // hide the ribbon
     //if (!this.inDesignMode())
- 
+
     if (document.getElementById("s4-ribbonrow")) {
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
@@ -298,10 +298,21 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutIframeUrl: null
     };
     let batch = pnp.sp.createBatch();
+    // get tr list field titles
+    pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).fields.select("Title, InternalName,Description")
+      .inBatch(batch).getAs<TRFieldDefinition[]>()
+      .then((fieldDefinitions) => {
+        debugger
+        formProps.fieldDefinitions = fieldDefinitions;
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching TR Field D3efinitions " + this.properties.setupListName);
+        console.log(error.message);
 
+      });
     pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.filter("Title eq 'ckeditorConfig'").inBatch(batch).getAs<SetupItem[]>()
       .then((setupItems) => {
-      
+
         formProps.ckeditorConfig = JSON.parse(setupItems[0].PlainText);
       })
       .catch((error) => {
@@ -397,7 +408,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       }
     }
     else {
-     
+
       formState.tr.Site = this.properties.defaultSite;
       formState.tr.RequestDate = moment().startOf("day").toISOString();
       formState.tr.TRStatus = "Pending";
@@ -535,7 +546,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
         console.log(error.message);
       });
-    
+
     /* END OF STUFF THAT USED TO EXECUTE AFTER INITIAL RENDER */
 
     batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
@@ -663,7 +674,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       // batch2.execute().then(() => {
       //   debugger;
       //   // formComponent.props = formProps; //this did not work
-        
+
       //   // formComponent.props.customers = formProps.customers;
       //   // formComponent.props.pigments = formProps.pigments;
       //   // formComponent.props.tests = formProps.tests;
@@ -671,8 +682,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       //   // formComponent.props.techSpecs = formProps.techSpecs;
       //   // formComponent.props.requestors = formProps.requestors;
       //   // formComponent.props.workTypes = formProps.workTypes;
-        
-        
+
+
 
 
       //   formComponent.forceUpdate();
