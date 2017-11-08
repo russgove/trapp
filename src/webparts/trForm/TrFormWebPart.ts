@@ -14,9 +14,10 @@ import {
   Environment,
   EnvironmentType
 } from '@microsoft/sp-core-library';
-import {TRFieldDefinition, TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import { TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
-import * as _ from 'lodash';
+//import * as lodash from 'lodash';
+import {findIndex,unionWith,map,find,orderBy,clone} from 'lodash';
 import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITRFormState } from './components/ITRFormState';
@@ -277,7 +278,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       pigments: [],
       tests: [],
       propertyTests: [],
-      fieldDefinitions:[],
       ckeditorUrl: this.properties.ckeditorUrl,
       delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor,
       ckeditorConfig: {},
@@ -298,17 +298,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutIframeUrl: null
     };
     let batch = pnp.sp.createBatch();
-    // get tr list field titles
-    pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).fields.select("Title, InternalName,Description").inBatch(batch).getAs<TRFieldDefinition[]>()
-    .then((fieldDefinitions) => {
-    debugger
-      formProps.fieldDefinitions = fieldDefinitions;
-    })
-    .catch((error) => {
-      console.log("ERROR, An error occured fetching TR Field D3efinitions " + this.properties.setupListName);
-      console.log(error.message);
 
-    });
     pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.filter("Title eq 'ckeditorConfig'").inBatch(batch).getAs<SetupItem[]>()
       .then((setupItems) => {
       
@@ -321,7 +311,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
     pnp.sp.web.lists.getByTitle(this.properties.endUseListName).items.inBatch(batch).get()
       .then((items) => {
-        formProps.endUses = _.map(items, (item) => {
+        formProps.endUses = map(items, (item) => {
           return new EndUse(item["Id"], item["Title"], item["ApplicationTypeId"]);
         });
       })
@@ -334,7 +324,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     pnp.sp.web.lists.getByTitle(this.properties.applicationTYpeListName).items.inBatch(batch).get()
       .then((items) => {
 
-        formProps.applicationTypes = _.map(items, (item) => {
+        formProps.applicationTypes = map(items, (item) => {
           return new ApplicationType(item["Id"], item["Title"], item["WorkTypesId"]);
         });
 
@@ -441,7 +431,112 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log("next number not increment to");
         });
     }
+    /**  THESE USED TO EXECUTE AFTER INITIAL RENDER in BATCH2*/
+    const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
+    pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch).get()
+      .then((items) => {
+        let requestors: Array<User> = map(items, (item) => {
+          return new User(item["Id"], item["Title"]);
+        });
+        formProps.requestors = unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//lodash.union
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
+        console.log(error.message);
+      });
+    const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
+    pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch).get()
+      .then((items) => {
+        let techSpecs: Array<User> = map(items, (item) => {
+          return new User(item["Id"], item["Title"]);
+        });
+        formProps.techSpecs = unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//lodash.union
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
+        console.log(error.message);
+      });
+    let customerFields = "Id,Title";
+    pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
+      .then((items) => {
+        let customers: Array<Customer> = map(items, (item) => {
+          return new Customer(item["Id"], item["Title"]);
+        });
+        // add the one from the tr if not present
+        if (formProps.customers.length > 0 &&
+          find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
+          customers.push(formProps.customers[0]);
+        }
+        formProps.customers = customers;
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
+        console.log(error.message);
+      });
 
+    let workTypesFields = "Id,Title";
+    pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch).get()
+      .then((items) => {
+        let workTypes: Array<WorkType> = map(items, (item) => {
+          return new WorkType(item["Id"], item["Title"]);
+        });
+        // add the one from the tr if not present
+        if (formProps.workTypes.length > 0 &&
+          find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
+          workTypes.push(formProps.workTypes[0]);
+        }
+        formProps.workTypes = workTypes;
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
+        console.log(error.message);
+      });
+    let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
+    let pigmentExpands = "Manufacturer";
+    pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch).get()// get the lookup info
+      .then((items) => {
+        formProps.pigments = map(items, (item) => {
+          let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
+          if (item["Manufacturer"]) {
+            p.manufacturer = item["Manufacturer"]["Title"];
+          }
+          return p;
+        });
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+        console.log(error.message);
+      });
+    let testFields = "Id,Title";
+    pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch).get()// get the lookup info
+      .then((items) => {
+        formProps.tests = map(items, (item) => {
+          let t: Test = new Test(item["Id"], item["Title"]);
+          return t;
+        });
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+        console.log(error.message);
+      });
+    let propertyTestFields = "*,Property/Title";
+    let propertyTestExpands = "Property";
+    pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch).get()// get the lookup info
+      .then((items) => {
+        formProps.propertyTests = map(items, (item) => {
+          let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
+          if (item["Property"]) {
+            pt.property = item["Property"]["Title"];
+          }
+          return pt;
+        });
+      })
+      .catch((error) => {
+        console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
+        console.log(error.message);
+      });
+    
+    /* END OF STUFF THAT USED TO EXECUTE AFTER INITIAL RENDER */
 
     batch.execute().then((value) => {// execute the batch to get the item being edited and info REQUIRED for initial display
       formProps.initialState = formState;
@@ -461,132 +556,127 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           }
         }
       }
-      let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
-      const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
-      pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch2).get()
-        .then((items) => {
-          let requestors: Array<User> = _.map(items, (item) => {
-            return new User(item["Id"], item["Title"]);
-          });
-          formProps.requestors = _.unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//_.union
+      // let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
+      // const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
+      // pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch2).get()
+      //   .then((items) => {
+      //     let requestors: Array<User> = lodash.map(items, (item) => {
+      //       return new User(item["Id"], item["Title"]);
+      //     });
+      //     formProps.requestors = lodash.unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//lodash.union
+      //   })
+      //   .catch((error) => {
+      //     console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
+      //     console.log(error.message);
+      //   });
+      // const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
+      // pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch2).get()
+      //   .then((items) => {
+      //     let techSpecs: Array<User> = lodash.map(items, (item) => {
+      //       return new User(item["Id"], item["Title"]);
+      //     });
+      //     formProps.techSpecs = lodash.unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//lodash.union
+      //   })
+      //   .catch((error) => {
+      //     console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
+      //     console.log(error.message);
+      //   });
+      // let customerFields = "Id,Title";
+      // pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
+      //   .then((items) => {
+      //     let customers: Array<Customer> = lodash.map(items, (item) => {
+      //       return new Customer(item["Id"], item["Title"]);
+      //     });
+      //     // add the one from the tr if not present
+      //     if (formProps.customers.length > 0 &&
+      //       lodash.find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
+      //       customers.push(formProps.customers[0]);
+      //     }
+      //     formProps.customers = customers;
+      //   })
+      //   .catch((error) => {
+      //     console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
+      //     console.log(error.message);
+      //   });
 
-        })
-        .catch((error) => {
-          console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
-          console.log(error.message);
+      // let workTypesFields = "Id,Title";
+      // pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch2).get()
+      //   .then((items) => {
+      //     let workTypes: Array<WorkType> = lodash.map(items, (item) => {
+      //       return new WorkType(item["Id"], item["Title"]);
+      //     });
+      //     // add the one from the tr if not present
+      //     if (formProps.workTypes.length > 0 &&
+      //       lodash.find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
+      //       workTypes.push(formProps.workTypes[0]);
+      //     }
+      //     formProps.workTypes = workTypes;
+      //   })
+      //   .catch((error) => {
+      //     console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
+      //     console.log(error.message);
+      //   });
+      // let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
+      // let pigmentExpands = "Manufacturer";
+      // pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
+      //   .then((items) => {
+      //     formProps.pigments = lodash.map(items, (item) => {
+      //       let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
+      //       if (item["Manufacturer"]) {
+      //         p.manufacturer = item["Manufacturer"]["Title"];
+      //       }
+      //       return p;
+      //     });
+      //   })
+      //   .catch((error) => {
+      //     console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+      //     console.log(error.message);
+      //   });
+      // let testFields = "Id,Title";
+      // pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch2).get()// get the lookup info
+      //   .then((items) => {
+      //     formProps.tests = lodash.map(items, (item) => {
+      //       let t: Test = new Test(item["Id"], item["Title"]);
+      //       return t;
+      //     });
+      //   })
+      //   .catch((error) => {
+      //     console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+      //     console.log(error.message);
+      //   });
+      // let propertyTestFields = "*,Property/Title";
+      // let propertyTestExpands = "Property";
+      // pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
+      //   .then((items) => {
+      //     formProps.propertyTests = lodash.map(items, (item) => {
+      //       let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
+      //       if (item["Property"]) {
+      //         pt.property = item["Property"]["Title"];
+      //       }
+      //       return pt;
+      //     });
+      //   })
+      //   .catch((error) => {
+      //     console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
+      //     console.log(error.message);
+      //   });
+      // batch2.execute().then(() => {
+      //   debugger;
+      //   // formComponent.props = formProps; //this did not work
+        
+      //   // formComponent.props.customers = formProps.customers;
+      //   // formComponent.props.pigments = formProps.pigments;
+      //   // formComponent.props.tests = formProps.tests;
+      //   // formComponent.props.propertyTests = formProps.propertyTests;
+      //   // formComponent.props.techSpecs = formProps.techSpecs;
+      //   // formComponent.props.requestors = formProps.requestors;
+      //   // formComponent.props.workTypes = formProps.workTypes;
+        
+        
 
-        });
 
-      const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
-      pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch2).get()
-
-
-
-        .then((items) => {
-          let techSpecs: Array<User> = _.map(items, (item) => {
-            return new User(item["Id"], item["Title"]);
-          });
-          formProps.techSpecs = _.unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//_.union
-
-        })
-        .catch((error) => {
-          console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
-          console.log(error.message);
-
-        });
-      let customerFields = "Id,Title";
-      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
-        .then((items) => {
-          let customers: Array<Customer> = _.map(items, (item) => {
-            return new Customer(item["Id"], item["Title"]);
-          });
-          // add the one from the tr if not present
-          if (formProps.customers.length > 0 &&
-            _.find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
-
-            customers.push(formProps.customers[0]);
-          }
-          formProps.customers = customers;
-        })
-        .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
-          console.log(error.message);
-        });
-
-      let workTypesFields = "Id,Title";
-      pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch2).get()
-        .then((items) => {
-          let workTypes: Array<WorkType> = _.map(items, (item) => {
-            return new WorkType(item["Id"], item["Title"]);
-          });
-          // add the one from the tr if not present
-          if (formProps.workTypes.length > 0 &&
-            _.find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
-            workTypes.push(formProps.workTypes[0]);
-          }
-          formProps.workTypes = workTypes;
-        })
-        .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
-          console.log(error.message);
-
-        });
-      let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
-      let pigmentExpands = "Manufacturer";
-      pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
-        .then((items) => {
-          formProps.pigments = _.map(items, (item) => {
-            let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
-            if (item["Manufacturer"]) {
-              p.manufacturer = item["Manufacturer"]["Title"];
-            }
-            return p;
-          });
-
-        })
-        .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
-          console.log(error.message);
-        });
-      let testFields = "Id,Title";
-      pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch2).get()// get the lookup info
-        .then((items) => {
-          formProps.tests = _.map(items, (item) => {
-            let t: Test = new Test(item["Id"], item["Title"]);
-            return t;
-          });
-        })
-        .catch((error) => {
-          console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
-          console.log(error.message);
-        });
-      let propertyTestFields = "*,Property/Title";
-      let propertyTestExpands = "Property";
-      pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
-        .then((items) => {
-          formProps.propertyTests = _.map(items, (item) => {
-            let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
-            if (item["Property"]) {
-              pt.property = item["Property"]["Title"];
-            }
-            return pt;
-          });
-        })
-        .catch((error) => {
-          console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
-          console.log(error.message);
-        });
-      batch2.execute().then(() => {
-        //  formComponent.props = formProps; this did not work
-        formComponent.props.customers = formProps.customers;
-        formComponent.props.pigments = formProps.pigments;
-        formComponent.props.tests = formProps.tests;
-        formComponent.props.propertyTests = formProps.propertyTests;
-        formComponent.props.techSpecs = formProps.techSpecs;
-        formComponent.props.requestors = formProps.requestors;
-        formComponent.props.workTypes = formProps.workTypes;
-        formComponent.forceUpdate();
-      });
+      //   formComponent.forceUpdate();
+      // });
     }
     );
 
@@ -765,7 +855,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       for (const result of results.PrimarySearchResults) {
         const email: string = result["WorkEmail"];
 
-        if (_.findIndex(selectedItems, (si) => { return si.optionalText === result["WorkEmail"]; }) === -1 &&
+        if (findIndex(selectedItems, (si) => { return si.optionalText === result["WorkEmail"]; }) === -1 &&
           email != null &&
           email.toUpperCase().substr(-suffix.length) === suffix // endsWith
         ) {
@@ -831,7 +921,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         tr.Description = temp["Description"];
         returnValue.push(tr);
       }
-      return _.sortBy(returnValue, "Title");
+      return orderBy(returnValue, "Title");
     });
   }
 
@@ -872,7 +962,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    */
   private save(tr: TR, orginalAssignees: Array<number>, originalStatus: string): Promise<any> {
     // remove lookups
-    let copy = _.clone(tr) as any;
+    let copy = clone(tr) as any;
     delete copy.RequestorName;
     delete copy.ParentTR;
 
@@ -886,7 +976,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     // staffcc is an array of IPersonaProps where the id field is the users ID in the user infomation list.
     // We need to convert this to StaffCCId/resulsts/ids to post back
     copy["StaffCCId"] = {};
-    copy["StaffCCId"]["results"] = _.map(copy.StaffCC, (cc: IPersonaProps) => {
+    copy["StaffCCId"]["results"] = map(copy.StaffCC, (cc: IPersonaProps) => {
 
       return parseInt(cc.id);
     });
@@ -991,11 +1081,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       console.log("fetching email text in emailStaffCC");
       var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         console.log("fetched email text in emailStaffCC, extracting text");
-        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText
+        let subject: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
-        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body"; }).RichText
+        let body: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body"; }).RichText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
@@ -1066,11 +1156,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       console.log("fetching email text in emailNewAssignees");
       var x = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         console.log("fetched email text in emailNewAssignees, extracting it now");
-        let subject: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject"; }).PlainText
+        let subject: string = find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject"; }).PlainText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
-        let body: string = _.find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body"; }).RichText
+        let body: string = find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body"; }).RichText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);

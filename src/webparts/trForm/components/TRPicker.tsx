@@ -71,8 +71,8 @@ export default class TRPicker extends React.Component<iTrPickerProps, iTrPickerS
     public doSearch(newValue: any): void {
         debugger;
         this.props.callSearch(newValue).then((results) => {
-            this.state.searchRusults = results;
-            this.setState(this.state);
+           // this.state.searchRusults = results;
+            this.setState({ ...this.state, searchRusults: results });
         });
     }
     public render(): React.ReactElement<iTrPickerProps> {

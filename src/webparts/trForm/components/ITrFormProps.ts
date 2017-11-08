@@ -1,6 +1,6 @@
 import {TRFieldDefinition, TRDocument, Test, PropertyTest, Pigment, Customer, TR, ApplicationType, WorkType, EndUse, modes, User } from "../dataModel";
 import { ITRFormState } from "./ITRFormState";
-  import { IPersonaProps } from 'office-ui-fabric-react/lib/Persona';
+import { IPersonaProps } from 'office-ui-fabric-react/lib/Persona';
 
 export interface ITrFormProps {
 
@@ -14,7 +14,7 @@ export interface ITrFormProps {
   fetchTR: (id: number) => Promise<TR>; // methid to call to cget child TRs if a user swicthes to a new TR
   uploadFile: (file: any, trId: number) => Promise<any>;
   getDocuments: (trId: number) => Promise<Array<TRDocument>>;
-   ensureUsersInPersonas: (items?: Array<IPersonaProps>) => void;
+  ensureUsersInPersonas: (items?: Array<IPersonaProps>) => void;
   //data
   initialState: ITRFormState;
   mode: modes; // display , edit, new
@@ -28,6 +28,7 @@ export interface ITrFormProps {
   tests: Array<Test>;
   propertyTests: Array<PropertyTest>;
   delayPriorToSettingCKEditor: number;
+
   ckeditorUrl:string;
   ckeditorConfig:any;
   documentIframeHeight:number;
