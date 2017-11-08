@@ -20,6 +20,7 @@
     "@types/react-tabs": "^0.5.22",
     "@types/webpack-env": ">=1.12.1 <1.14.0",
     "ckeditor": "^4.6.2",
+    "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "office-ui-fabric-react": "^4.21.2",
     "react": "15.4.2",

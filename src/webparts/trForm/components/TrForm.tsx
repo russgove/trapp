@@ -26,11 +26,12 @@ import { SPComponentLoader } from '@microsoft/sp-loader';
 /** SPFX Stuff */
 import * as React from 'react';
 //import styles from './TrForm.module.scss';
-import { escape } from '@microsoft/sp-lodash-subset';
+import { escape} from '@microsoft/sp-lodash-subset';
 
 /** Other utilities */
 import * as moment from 'moment';
-import * as _ from "lodash";
+//import * as lodash from "lodash";
+import {find,clone,remove,filter,map,orderBy,countBy,findIndex} from "lodash";
 // switch to fabric pivot on text update
 import * as tabs from "react-tabs";
 
@@ -60,7 +61,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   constructor(props: ITrFormProps) {
     super(props);
     this.state = props.initialState;
-    this.originalAssignees = _.clone(this.state.tr.TRAssignedToId);// sasve original so we can email new assignees
+    this.originalAssignees = clone(this.state.tr.TRAssignedToId);// sasve original so we can email new assignees
     this.originalStatus = this.state.tr.TRStatus;// sasve original so we can email if it gets closed
     this.SaveButton = this.SaveButton.bind(this);
     this.save = this.save.bind(this);
@@ -339,7 +340,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public removeMessage(messageList: Array<md.Message>, messageId: string) {
-    _.remove(messageList, {
+    remove(messageList, {
       Id: messageId
     });
     this.setState(this.state);
@@ -405,10 +406,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getAvailablePigments(): Array<Pigment> {
-    var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
+    var tempPigments = filter(this.props.pigments, (pigment: Pigment) => {
       return !this.trContainsPigment(this.state.tr, pigment.id);
     });
-    var pigments = _.map(tempPigments, (pigment) => {
+    var pigments = map(tempPigments, (pigment) => {
       return {
         title: pigment.title,
         manufacturer: (pigment.manufacturer) ? pigment.manufacturer : "(none)",
@@ -416,7 +417,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         isActive: pigment.isActive
       };
     }).filter((p) => { return p.isActive === "Yes"; });
-    return _.sortBy(pigments, ["manufacturer"], ["asc"]);
+    return orderBy(pigments, ["manufacturer"], ["asc"]);
   }
 
 
@@ -431,8 +432,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
  */
   public getAvailablePigmentGroups(): Array<IGroup> {
     var pigs: Array<Pigment> = this.getAvailablePigments();
-    //var pigmentTypes=_.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
-    var pigmentManufactureres = _.countBy(pigs, (p1: Pigment) => { return p1.manufacturer; });
+    //var pigmentTypes=lodash.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
+    var pigmentManufactureres = countBy(pigs, (p1: Pigment) => { return p1.manufacturer; });
     var groups: Array<IGroup> = [];
 
     for (const pm in pigmentManufactureres) {
@@ -440,7 +441,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         isCollapsed: (pm !== this.state.expandedPigmentManufacturer),
         name: pm,
         key: pm,
-        startIndex: _.findIndex(pigs, (pig) => { return pig.manufacturer === pm; }),
+        startIndex: findIndex(pigs, (pig) => { return pig.manufacturer === pm; }),
         count: pigmentManufactureres[pm],
 
       });
@@ -456,10 +457,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getSelectedPigments(): Array<Pigment> {
-    var tempPigments = _.filter(this.props.pigments, (pigment: Pigment) => {
+    var tempPigments = filter(this.props.pigments, (pigment: Pigment) => {
       return this.trContainsPigment(this.state.tr, pigment.id);
     });
-    var selectedPigments = _.map(tempPigments, (pigment) => {
+    var selectedPigments = map(tempPigments, (pigment) => {
       return {
         title: pigment.title,
         manufacturer: (pigment.manufacturer) ? pigment.manufacturer : "(none)",
@@ -467,7 +468,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         isActive: pigment.isActive
       };
     });
-    return _.sortBy(selectedPigments, ["title"], ["asc"]);
+    return orderBy(selectedPigments, ["title"], ["asc"]);
   }
 
 
@@ -481,7 +482,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public getAvailableTests(): Array<DisplayPropertyTest> {
     // select the propertyTest available based on the applicationType and EndUse of the tr
-    var temppropertyTest: Array<PropertyTest> = _.filter(this.props.propertyTests, (pt: PropertyTest) => {
+    var temppropertyTest: Array<PropertyTest> = filter(this.props.propertyTests, (pt: PropertyTest) => {
       return (pt.applicationTypeid === this.state.tr.ApplicationTypeId
         && pt.endUseIds.indexOf(this.state.tr.EndUseId) != -1
       );
@@ -492,7 +493,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       console.log(`checking PropertyTest ${pt.id} with property ${pt.property} which has ${pt.testIds.length} tests`);
       for (const testid of pt.testIds) {
         console.log(`Looking for  testid ${testid}`);
-        const test: Test = _.find(this.props.tests, (t) => { return t.id === testid; });
+        const test: Test = find(this.props.tests, (t) => { return t.id === testid; });
         if (test) {
           console.log(`adding test ${test.title}`);
           tempDisplayTests.push({
@@ -508,9 +509,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       }
     }
     // now remove those that are already on the tr
-    const displayTests = _.filter(tempDisplayTests, (dt) => { return !this.trContainsTest(this.state.tr, dt.testid); });
+    const displayTests = filter(tempDisplayTests, (dt) => { return !this.trContainsTest(this.state.tr, dt.testid); });
     debugger;
-    return _.sortBy(displayTests, ["property", "test"], ["asc", "asc"]);
+    return orderBy(displayTests, ["property", "test"], ["asc", "asc"]);
 
 
   }
@@ -526,14 +527,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public getAvailableTestGroups(): Array<IGroup> {
     var displayPropertyTests: Array<DisplayPropertyTest> = this.getAvailableTests(); // all the avalable tests with their Property
-    var properties = _.countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => { return dpt.property; });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
+    var properties = countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => { return dpt.property; });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
     var groups: Array<IGroup> = [];
     for (const property in properties) {
       groups.push({
         isCollapsed: (property !== this.state.expandedProperty),
         name: property,
         key: property,
-        startIndex: _.findIndex(displayPropertyTests, (dpt) => { return dpt.property === property; }),
+        startIndex: findIndex(displayPropertyTests, (dpt) => { return dpt.property === property; }),
         count: properties[property],
 
       });
@@ -546,7 +547,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
      * Find the proprty for the  selected enduse, application  type amd test
      */
 
-    var property = _.find(this.props.propertyTests, (pt) => {
+    var property = find(this.props.propertyTests, (pt) => {
       return (
         pt.applicationTypeid === applicationTypeid
         &&
@@ -566,17 +567,17 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getSelectedTests(): Array<Test> {
-    var tempTests = _.filter(this.props.tests, (test: Test) => {
+    var tempTests = filter(this.props.tests, (test: Test) => {
       return this.trContainsTest(this.state.tr, test.id);
     });
-    var selectedTests = _.map(tempTests, (test) => {
+    var selectedTests = map(tempTests, (test) => {
       return {
         title: test.title,
         id: test.id,
         propertyName: this.getPropertyName(test.id, this.state.tr.ApplicationTypeId, this.state.tr.EndUseId)
       };
     });
-    return _.sortBy(selectedTests, ["propertyName", "title"], ["asc", "asc"]);
+    return orderBy(selectedTests, ["propertyName", "title"], ["asc", "asc"]);
   }
 
 
@@ -593,14 +594,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getTechSpecs() {
-    var techSpecs = _.map(this.props.techSpecs, (techSpec) => {
+    var techSpecs = map(this.props.techSpecs, (techSpec) => {
       return {
         title: techSpec.title,
         selected: ((this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.indexOf(techSpec.id) != -1 : null),
         id: techSpec.id
       };
     });
-    return _.sortBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
+    return orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
   }
 
   /**
@@ -611,14 +612,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   // public getStaffCC() {
-  //   var staffCC = _.map(this.props.techSpecs, (techSpec) => {
+  //   var staffCC = lodash.map(this.props.techSpecs, (techSpec) => {
   //     return {
   //       title: techSpec.title,
   //       selected: ((this.state.tr.StaffCCId) ? this.state.tr.StaffCCId.indexOf(techSpec.id) != -1 : null),
   //       id: techSpec.id
   //     };
   //   });
-  //   return _.orderBy(staffCC, ["selected", "title"], ["desc", "asc"]);
+  //   return lodash.orderBy(staffCC, ["selected", "title"], ["desc", "asc"]);
   // }
   public staffCCChanged(items?: Array<IPersonaProps>): void {
     this.state.tr.StaffCC = items;
@@ -644,7 +645,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       }
     }
     else {
-      this.state.tr.TRAssignedToId = _.filter(this.state.tr.TRAssignedToId, (x) => { return x != id; });//remove it
+      this.state.tr.TRAssignedToId = filter(this.state.tr.TRAssignedToId, (x) => { return x != id; });//remove it
     }
     this.setState(this.state);
   }
@@ -670,7 +671,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   //     }
   //   }
   //   else {
-  //     this.state.tr.StaffCCId = _.filter(this.state.tr.StaffCCId, (x) => { return x != id; });//remove it
+  //     this.state.tr.StaffCCId = lodash.filter(this.state.tr.StaffCCId, (x) => { return x != id; });//remove it
   //   }
   //   this.setState(this.state);
   // }
@@ -689,7 +690,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public removeTest(id: number) {
     this.setDirty(true);
     if (this.state.tr.TestsId) {
-      this.state.tr.TestsId = _.filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
+      this.state.tr.TestsId = filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
     }
     this.setState(this.state);
   }
@@ -723,7 +724,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public removePigment(id: number) {
     this.setDirty(true);
     if (this.state.tr.PigmentsId) {
-      this.state.tr.PigmentsId = _.filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
+      this.state.tr.PigmentsId = filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
     }
     this.setState(this.state);
   }
@@ -768,13 +769,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public selectChildTR(trId: number): any {
-    const childTr = _.find(this.state.childTRs, (tr) => { return tr.Id === trId; });
+    const childTr = find(this.state.childTRs, (tr) => { return tr.Id === trId; });
 
     if (childTr) {
       console.log("switching to tr " + trId);
       // delete this.state.tr;
       //this.state.tr = childTr;
-      this.originalAssignees = _.clone(childTr.TRAssignedToId);
+      this.originalAssignees = clone(childTr.TRAssignedToId);
       this.originalStatus = childTr.TRStatus;
       this.updateCKEditorText(this.state.tr);
       // this.state.childTRs = [];
@@ -842,7 +843,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.props.fetchTR(parentId).then((parentTR) => {
 
         //this.state.tr = parentTR;
-        this.originalAssignees = _.clone(parentTR.TRAssignedToId);
+        this.originalAssignees = clone(parentTR.TRAssignedToId);
         this.originalStatus = parentTR.TRStatus;
         //this.state.childTRs = [];
         this.setState({ ...this.state, tr: parentTR, childTRs: [] });
@@ -899,14 +900,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public render(): React.ReactElement<ITrFormProps> {
 
-    let worktypeDropDoownoptions = _.map(this.props.workTypes, (wt) => {
+    let worktypeDropDoownoptions = map(this.props.workTypes, (wt) => {
       return {
         key: wt.id, text: wt.workType
       };
     });
 
     let applicationtypeDropDoownoptions =
-      _.filter(this.props.applicationTypes, (at) => {
+      filter(this.props.applicationTypes, (at) => {
         // show if its valid for the selected Worktype, OR if its already on the tr
         return (at.workTypeIds.indexOf(this.state.tr.WorkTypeId) !== -1
           || at.id === this.state.tr.ApplicationTypeId);
@@ -920,7 +921,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
     let enduseDropDoownoptions =
-      _.filter(this.props.endUses, (eu) => {
+      filter(this.props.endUses, (eu) => {
         // show if its valid for the selected ApplicationType, OR if its already on the tr
         return (eu.applicationTypeId === this.state.tr.ApplicationTypeId
           || eu.id === this.state.tr.EndUseId);
@@ -931,7 +932,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           };
         });
 
-    let customerSelectOptions:IComboBoxOption[] = _.map(this.props.customers, (c) => {
+    let customerSelectOptions:IComboBoxOption[] = map(this.props.customers, (c) => {
       return {
         key: c.id, text: c.title
       };
@@ -1067,7 +1068,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label>Customer</Label>
             </td>
             <td>
-              <ComboBox  options={customerSelectOptions} />
+              <ComboBox options={customerSelectOptions}
+                autoComplete="on"
+                autoCorrect="on"
+                allowFreeform/>
               {/* <Select
                 simpleValue
                 placeholder="+ Add a Customer"
@@ -1319,7 +1323,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
 
-                  var expandedGroup = _.find(dl.props.groups, (group) => {
+                  var expandedGroup = find(dl.props.groups, (group) => {
                     return !(group.isCollapsed) && group.key !== this.state.expandedPigmentManufacturer;// its an expanded group that want expanded before
                   });
                   if (expandedGroup) {
@@ -1373,7 +1377,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
 
-                  var expandedGroup = _.find(dl.props.groups, (group) => {
+                  var expandedGroup = find(dl.props.groups, (group) => {
                     return !(group.isCollapsed) && group.key !== this.state.expandedProperty; // its an expanded group that want expanded before
                   });
                   if (expandedGroup) {
