@@ -14,7 +14,7 @@ import {
   Environment,
   EnvironmentType
 } from '@microsoft/sp-core-library';
-import { TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import {TRFieldDefinition, TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 //import * as lodash from 'lodash';
 import { findIndex, unionWith, map, find, orderBy, clone } from 'lodash';
@@ -282,7 +282,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       delayPriorToSettingCKEditor: this.properties.delayPriorToSettingCKEditor,
       ckeditorConfig: {},
       documentIframeHeight: this.properties.documentIframeHeight,
-      documentIframeWidth: this.properties.documentIframeWidth
+      documentIframeWidth: this.properties.documentIframeWidth,
+      fieldDefinitions:[]
 
 
     };
@@ -302,7 +303,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).fields.select("Title, InternalName,Description")
       .inBatch(batch).getAs<TRFieldDefinition[]>()
       .then((fieldDefinitions) => {
-        debugger
+    
         formProps.fieldDefinitions = fieldDefinitions;
       })
       .catch((error) => {

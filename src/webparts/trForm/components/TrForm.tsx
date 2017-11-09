@@ -1,44 +1,43 @@
 
 import {
-  NormalPeoplePicker,
-} from 'office-ui-fabric-react/lib/Pickers';
-import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
-import { PrimaryButton, ButtonType } from 'office-ui-fabric-react/lib/Button';
-import { Link } from 'office-ui-fabric-react/lib/Link';
-import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
-import { Checkbox } from 'office-ui-fabric-react/lib/Checkbox';
-import { Label } from 'office-ui-fabric-react/lib/Label';
-import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
-import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
-import { ComboBox, IComboBoxOption,IComboBoxProps } from 'office-ui-fabric-react/lib/ComboBox';
+  NormalPeoplePicker, TagPicker, ITag, ITagPickerProps
+} from "office-ui-fabric-react/lib/Pickers";
+import { Fabric } from "office-ui-fabric-react/lib/Fabric";
+import { PrimaryButton, ButtonType } from "office-ui-fabric-react/lib/Button";
+import { TextField } from "office-ui-fabric-react/lib/TextField";
+
+import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
+import { Label } from "office-ui-fabric-react/lib/Label";
+
+import { Dropdown, IDropdownProps, } from "office-ui-fabric-react/lib/Dropdown";
+import { ComboBox, IComboBoxOption, IComboBoxProps } from "office-ui-fabric-react/lib/ComboBox";
 // switch to fabric  ComboBox on next upgrade
 //let Select = require("react-select") as any;
-import 'react-select/dist/react-select.css';
-import { TagItem } from 'office-ui-fabric-react/lib/components/pickers/TagPicker/TagItem';
-import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from 'office-ui-fabric-react/lib/DetailsList';
-import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
-import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
-import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
-import { SPComponentLoader } from '@microsoft/sp-loader';
+import "react-select/dist/react-select.css";
+import { TagItem } from "office-ui-fabric-react/lib/components/pickers/TagPicker/TagItem";
+import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from "office-ui-fabric-react/lib/DetailsList";
+import { DatePicker, } from "office-ui-fabric-react/lib/DatePicker";
+import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from "office-ui-fabric-react/lib/Persona";
+import { IPersonaWithMenu } from "office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props";
+import { SPComponentLoader } from "@microsoft/sp-loader";
 
 
 /** SPFX Stuff */
-import * as React from 'react';
-//import styles from './TrForm.module.scss';
-import { escape} from '@microsoft/sp-lodash-subset';
+import * as React from "react";
+//import styles from "./TrForm.module.scss";
+import { escape } from "@microsoft/sp-lodash-subset";
 
 /** Other utilities */
-import * as moment from 'moment';
+import * as moment from "moment";
 //import * as lodash from "lodash";
-import {find,clone,remove,filter,map,orderBy,countBy,findIndex} from "lodash";
+import { find, clone, remove, filter, map, orderBy, countBy, findIndex, startsWith } from "lodash";
 // switch to fabric pivot on text update
 import * as tabs from "react-tabs";
 
 /**  Custom Stuff */
 import { DocumentIframe } from "./DocumentIframe";
 import { TRDocument, TR, modes, Pigment, Test, PropertyTest, DisplayPropertyTest, Customer } from "../dataModel";
-import { ITrFormProps } from './ITrFormProps';
+import { ITrFormProps } from "./ITrFormProps";
 import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
 import TRPicker from "./TRPicker";
@@ -72,6 +71,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.parentTRSelected = this.parentTRSelected.bind(this);
     this.editParentTR = this.editParentTR.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
+    this.resolveCustomerSuggestions = this.resolveCustomerSuggestions.bind(this);
 
   }
 
@@ -87,9 +87,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public componentDidMount() {
     //see https://github.com/SharePoint/sp-de//cdn.ckeditor.com/4.6.2/full/ckeditor.jsv-docs/issues/374
-    //var ckEditorCdn: string = '//cdn.ckeditor.com/4.6.2/full/ckeditor.js';
+    //var ckEditorCdn: string = "//cdn.ckeditor.com/4.6.2/full/ckeditor.js";
     var ckEditorCdn: string = this.props.ckeditorUrl;
-    SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: 'CKEDITOR' }).then((CKEDITOR: any): void => {
+    SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: "CKEDITOR" }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
       this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
 
@@ -165,77 +165,57 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * 
    * @memberof TrForm
    */
-  public isValid(): boolean {
+  public getErrors(): md.Message[] {
 
-    //this.state.errorMessages = [];
-    this.setState({ ...this.state, errorMessages: [] })
-    let errorsFound = false;
+    let errorMessages: md.Message[] = [];
     if (!this.state.tr.Title) {
-      this.state.errorMessages.push(new md.Message("Request #  is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Request #  is required"));
     }
     if (!this.state.tr.WorkTypeId) {
-      this.state.errorMessages.push(new md.Message("Work Type is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Work Type is required"));
     }
     if (!this.state.tr.ApplicationTypeId) {
-      this.state.errorMessages.push(new md.Message("Application Type is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Application Type is required"));
     }
     if (!this.state.tr.RequestDate) {
-      this.state.errorMessages.push(new md.Message("Initiation Date   is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Initiation Date   is required"));
     }
     if (!this.state.tr.RequiredDate) {
-      this.state.errorMessages.push(new md.Message("Due Date  is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Due Date  is required"));
     }
-
-    if (this.state.tr.RequestDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate < this.state.tr.RequestDate) {
-      this.state.errorMessages.push(new md.Message("Actual Start Date must be on or after Initiation Date"));
-      errorsFound = true;
+    if (this.state.tr.RequestDate && this.state.tr.ActualStartDate &&
+      moment(this.state.tr.ActualStartDate).format("YYYYMMDD") < moment(this.state.tr.RequestDate).format("YYYYMMDD")) {
+      errorMessages.push(new md.Message("Actual Start Date must be on or after Initiation Date"));
     }
-    if (this.state.tr.ActualCompletionDate && this.state.tr.ActualStartDate && this.state.tr.ActualStartDate > this.state.tr.ActualCompletionDate) {
-      this.state.errorMessages.push(new md.Message("Actual Completion Date must be on or after Actual Start Date"));
-      errorsFound = true;
+    if (this.state.tr.ActualCompletionDate && this.state.tr.ActualStartDate &&
+      moment(this.state.tr.ActualStartDate).format("YYYYMMDD") > moment(this.state.tr.ActualCompletionDate).format("YYYYMMDD")) {
+      errorMessages.push(new md.Message("Actual Completion Date must be on or after Actual Start Date"));
     }
     if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualStartDate) {
-      this.state.errorMessages.push(new md.Message("Actual Start Date is required to complete a request"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Actual Start Date is required to complete a request"));
     }
     if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualCompletionDate) {
-      this.state.errorMessages.push(new md.Message("Actual Completion Date is required to complete a request"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Actual Completion Date is required to complete a request"));
     }
     if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualManHours) {
-      this.state.errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
     }
-
     if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
-      this.state.errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
-      errorsFound = true;
-
+      errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
     }
     if (!this.state.tr.Site) {
-      this.state.errorMessages.push(new md.Message("Site is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Site is required"));
     }
     if (!this.state.tr.TRPriority) {
-      this.state.errorMessages.push(new md.Message("Proiority  is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Proiority  is required"));
     }
     if (!this.state.tr.TRStatus) {
-      this.state.errorMessages.push(new md.Message("Status  is required"));
-      errorsFound = true;
+      errorMessages.push(new md.Message("Status  is required"));
     }
-    if (!this.state.tr.RequestorId) {
-      this.state.errorMessages.push(new md.Message("Requestor is required"));
-      errorsFound = true;
-    }
-
-
-    return !errorsFound;
+    // if (!this.state.tr.RequestorId) {
+    //   errorMessages.push(new md.Message("Requestor is required"));
+    // }
+    return errorMessages;
   }
 
   /**
@@ -247,45 +227,47 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public save() {
-
-    for (let instanceName in this.ckeditor.instances) {
-
+    debugger;
+    let tr: TR = { ...this.state.tr };
+    for (const instanceName in this.ckeditor.instances) {
+      debugger;
       let instance = this.ckeditor.instances[instanceName];
       let data = instance.getData();
       switch (instanceName) {
         case "tronoxtrtextarea-title":
-          this.state.tr.RequestTitle = data;
+          tr.RequestTitle = data;
           break;
         case "tronoxtrtextarea-description":
-          this.state.tr.Description = data;
+          tr.Description = data;
           break;
         case "tronoxtrtextarea-summary":
-          this.state.tr.SummaryNew = data; // summaryNew gets appended to summary when we save
+          tr.SummaryNew = data; // summaryNew gets appended to summary when we save
           break;
         case "tronoxtrtextarea-testparams":
-          this.state.tr.TestingParameters = data;
+          tr.TestingParameters = data;
           break;
         case "tronoxtrtextarea-formulae":
-          this.state.tr.Formulae = data;
+          tr.Formulae = data;
           break;
         default:
-          alert("Text area missing in save");
+          console.log("Text area missing in save " + instanceName);
 
       }
     }
-    if (this.isValid()) {
-      this.props.save(this.state.tr, this.originalAssignees, this.originalStatus)
+    const errors = this.getErrors();
+    if (errors.length === 0) {
+      this.props.save(tr, this.originalAssignees, this.originalStatus)
         .then((result: TR) => {
-          this.state.tr.Id = result.Id;
-          this.setDirty(false);
-          this.setState(this.state);
+          tr.Id = result.Id;
+          this.setState((current) => ({ ...current, errorMessages: [], isDirty: false, tr: tr }));
         })
         .catch((response) => {
-          this.state.errorMessages.push(new md.Message(response.data.responseBody['odata.error'].message.value));
-          this.setState(this.state);
+          let errormessages = this.state.errorMessages;
+          errormessages.push(new md.Message(response.data.responseBody["odata.error"].message.value));
+          this.setState((current) => ({ ...current, errorMessages: errormessages, tr: tr }));
         });
     } else {
-      this.setState(this.state); // show errors
+      this.setState((current) => ({ ...current, errorMessages: errors, tr: tr })); // show errors
     }
     return false; // stop postback
   }
@@ -311,7 +293,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public updateCKEditorText(tr: TR) {
     for (const instanceName of this.ckeditor.instances) {
-      let instance:any = this.ckeditor.instances[instanceName];
+      let instance: any = this.ckeditor.instances[instanceName];
       switch (instanceName) {
         case "tronoxtrtextarea-title":
           instance.setData(tr.RequestTitle);
@@ -343,7 +325,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     remove(messageList, {
       Id: messageId
     });
-    this.setState(this.state);
+    this.setState((current) => ({ ...current }));
   }
 
   /**
@@ -356,13 +338,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public SaveButton(): JSX.Element {
     if (this.props.mode === modes.DISPLAY) {
       return <div />;
-    } else return (
-      <PrimaryButton buttonType={ButtonType.primary} onClick={this.save} icon="ms-Icon--Save">
-        <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
-        Save
+    } else {
+      return (
+        <PrimaryButton buttonType={ButtonType.primary} onClick={this.save} icon="ms-Icon--Save">
+          <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
+          Save
       </PrimaryButton>
 
-    );
+      );
+    }
   }
 
   /**
@@ -377,8 +361,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public trContainsPigment(tr: TR, PigmentId: number): boolean {
     if (tr.PigmentsId) {
       return (tr.PigmentsId.indexOf(PigmentId) != -1);
+    } else {
+      return false;
     }
-    else return false;
   }
   /**
    * Determines if the TR contains the selected Test
@@ -421,7 +406,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
 
-  /**
+  /*
  * Gets the Groups used to display the available pigments.
  * (See https://dev.office.com/fabric#/components/groupedlist)
  * The group contains the starting index of the group and the number of elements
@@ -457,6 +442,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getSelectedPigments(): Array<Pigment> {
+    debugger;
     var tempPigments = filter(this.props.pigments, (pigment: Pigment) => {
       return this.trContainsPigment(this.state.tr, pigment.id);
     });
@@ -490,12 +476,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     // get all the the tests in those propertyTests and output them as DisplayPropertyTest
     var tempDisplayTests: Array<DisplayPropertyTest> = [];
     for (const pt of temppropertyTest) {
-      console.log(`checking PropertyTest ${pt.id} with property ${pt.property} which has ${pt.testIds.length} tests`);
       for (const testid of pt.testIds) {
-        console.log(`Looking for  testid ${testid}`);
         const test: Test = find(this.props.tests, (t) => { return t.id === testid; });
         if (test) {
-          console.log(`adding test ${test.title}`);
           tempDisplayTests.push({
             property: pt.property,
             testid: testid,
@@ -510,7 +493,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     // now remove those that are already on the tr
     const displayTests = filter(tempDisplayTests, (dt) => { return !this.trContainsTest(this.state.tr, dt.testid); });
-    debugger;
+
     return orderBy(displayTests, ["property", "test"], ["asc", "asc"]);
 
 
@@ -557,7 +540,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
       );
     });
-    return (property) ? property.property : '';
+    return (property) ? property.property : "";
   }
   /**
    * return Tests on the tr being edited
@@ -635,19 +618,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public toggleTechSpec(isSelected: boolean, id: number) {
-    this.setDirty(true);
     if (isSelected) {
       if (this.state.tr.TRAssignedToId) {
-        this.state.tr.TRAssignedToId.push(id);//addit
-      }
-      else {
+        this.state.tr.TRAssignedToId.push(id);// addit
+      } else {
         this.state.tr.TRAssignedToId = [id];
       }
+    } else {
+      this.state.tr.TRAssignedToId = filter(this.state.tr.TRAssignedToId, (x) => { return x !== id; });// remove it
     }
-    else {
-      this.state.tr.TRAssignedToId = filter(this.state.tr.TRAssignedToId, (x) => { return x != id; });//remove it
-    }
-    this.setState(this.state);
+    this.setState((current) => ({ ...current, isDirty: true }));
   }
 
 
@@ -678,21 +658,21 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number) {
-    this.setDirty(true);
-    if (this.state.tr.TestsId) {
-      this.state.tr.TestsId.push(id);//addit
+    debugger;
+    let tr = this.state.tr;
+    if (tr.TestsId) {
+      tr.TestsId.push(id);// addit
+    } else {
+      tr.TestsId = [id];
     }
-    else {
-      this.state.tr.TestsId = [id];
-    }
-    this.setState(this.state);
+    this.setState((current) => ({ ...current, isDirty: true, tr: tr }));
   }
   public removeTest(id: number) {
-    this.setDirty(true);
+    //   this.setDirty(true);
     if (this.state.tr.TestsId) {
       this.state.tr.TestsId = filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
     }
-    this.setState(this.state);
+    this.setState((current) => ({ ...current, isDirty: true }));
   }
 
   /**
@@ -704,14 +684,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public addPigment(id: number) {
-    this.setDirty(true);
+    //  this.setDirty(true);
     if (this.state.tr.PigmentsId) {
       this.state.tr.PigmentsId.push(id);//addit
     }
     else {
       this.state.tr.PigmentsId = [id];
     }
-    this.setState(this.state);
+    //  this.setState(this.state);
+    this.setState((current) => ({ ...current, isDirty: true }));
   }
   /**
   * Removes  the selected Pigment to the TR being edited
@@ -722,11 +703,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   * @memberof TrForm
   */
   public removePigment(id: number) {
-    this.setDirty(true);
+    // this.setDirty(true);
     if (this.state.tr.PigmentsId) {
       this.state.tr.PigmentsId = filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
     }
-    this.setState(this.state);
+    // this.setState(this.state);
+    this.setState((current) => ({ ...current, isDirty: true }));
   }
 
 
@@ -779,12 +761,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.originalStatus = childTr.TRStatus;
       this.updateCKEditorText(this.state.tr);
       // this.state.childTRs = [];
-      this.setState({ ...this.state, tr: childTr, childTRs: [] })
-      this.setState(this.state);
+      this.setState((current) => ({ ...current, tr: childTr, childTRs: [] }));
+      //this.setState(this.state);
       // now get its children, need to move children to state
       this.props.fetchChildTr(this.state.tr.Id).then((trs) => {
         // this.state.childTRs = trs;
-        this.setState({ ... this.state, childTRs: trs });
+        this.setState((current) => ({ ...current, childTRs: trs }));
       });
     }
     return false;
@@ -803,10 +785,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 1).then(url => {
 
       if (!url || url === "") {
-        window.open(trdocument.serverRalativeUrl, '_blank');
+        window.open(trdocument.serverRalativeUrl, "_blank");
       }
       else {
-        window.open(url, '_blank');
+        window.open(url, "_blank");
       }
       //    this.state.wopiFrameUrl=url;
       //  this.setState(this.state);
@@ -817,23 +799,25 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
 
   public parentTRSelected(id: number, title: string) {
-    this.state.tr.ParentTR = title;
-    this.state.tr.ParentTRId = id;
-    this.setDirty(true);
+    // this.state.tr.ParentTR = title;
+    // this.state.tr.ParentTRId = id;
+    // this.setDirty(true);
+    const tr: TR = { ...this.state.tr, ParentTR: title, ParentTRId: id };
+    this.setState((current) => ({ ...current, isDirty: true, tr: tr }));
     this.cancelTrSearch();
   }
   public uploadFile(e: any) {
 
-    let target: any = e.target as any;
     let file = e.target["files"][0];
     this.props.uploadFile(file, this.state.tr.Id).then((response) => {
       this.props.getDocuments(this.state.tr.Id).then((dox) => {
-        //this.state.documents = dox;
-        this.setState({ ...this.state, documents: dox });
+        // this.state.documents = dox;
+        this.setState((current) => ({ ...current, documents: dox }));
       });
 
     }).catch((error) => {
-
+      console.log("an error occurred uploading the file");
+      console.log(error);
     });
   }
   public editParentTR() {
@@ -846,11 +830,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         this.originalAssignees = clone(parentTR.TRAssignedToId);
         this.originalStatus = parentTR.TRStatus;
         //this.state.childTRs = [];
-        this.setState({ ...this.state, tr: parentTR, childTRs: [] });
+        this.setState((current) => ({ ...current, tr: parentTR, childTRs: [] }));
         this.updateCKEditorText(this.state.tr);
         this.props.fetchChildTr(parentId).then((subTRs) => {
           //this.state.childTRs = subTRs;
-          this.setState({ ...this.state, childTRs: subTRs });
+          this.setState((current) => ({ ...current, childTRs: subTRs }));
         });
       });
     }
@@ -867,7 +851,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       // this.state.documentCalloutIframeUrl = url;
       // this.state.documentCalloutTarget = e.target;
       // this.state.documentCalloutVisible = true;
-      this.setState({ ...this.state, documentCalloutIframeUrl: url, documentCalloutTarget: e.target, documentCalloutVisible: true });
+      this.setState((current) => ({
+        ...current,
+        documentCalloutIframeUrl: url,
+        documentCalloutTarget: e.target,
+        documentCalloutVisible: true
+      }));
 
     });
   }
@@ -875,7 +864,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
     // this.state.documentCalloutTarget = null;
     // this.state.documentCalloutVisible = false;
-    this.setState({ ...this.state, documentCalloutTarget: null, documentCalloutVisible: false });
+    this.setState((current) => ({ ...current, documentCalloutTarget: null, documentCalloutVisible: false }));
     console.log("mouse exit for " + item.title);
   }
 
@@ -883,23 +872,34 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     return { __html: tr.Summary };
   }
 
-  public setDirty(isDirty: boolean) {
 
-    if (!this.state.isDirty && isDirty) { //wasnt dirty now it is 
-      window.onbeforeunload = function (e) {
-        var dialogText = "You have unsaved changes, are you sure you want to leave?";
-        e.returnValue = dialogText;
-        return dialogText;
-      };
-    }
-    if (this.state.isDirty && !isDirty) { //was dirty now it is not
-      window.onbeforeunload = null;
-    }
-    //this.state.isDirty = isDirty;
-    this.setState({ ...this.state, isDirty: isDirty });
+  private resolveCustomerSuggestions(filterString: string, slectedItems?: ITag[]): ITag[] {
+    debugger;
+    const upperfilter = filterString.toUpperCase();
+    const matches: Customer[] = filter(this.props.customers, (c) => { return startsWith(c.title.toUpperCase(), upperfilter); });
+    const results: ITag[] = map(matches, (c) => {
+      return { key: c.id.toString(), name: c.title };
+    });
+    return results;
+
   }
-  public render(): React.ReactElement<ITrFormProps> {
+  // public setDirty(isDirty: boolean) {
 
+  //   if (!this.state.isDirty && isDirty) { //wasnt dirty now it is 
+  //     window.onbeforeunload = function (e) {
+  //       var dialogText = "You have unsaved changes, are you sure you want to leave?";
+  //       e.returnValue = dialogText;
+  //       return dialogText;
+  //     };
+  //   }
+  //   if (this.state.isDirty && !isDirty) { //was dirty now it is not
+  //     window.onbeforeunload = null;
+  //   }
+  //   //this.state.isDirty = isDirty;
+  //   this.setState((this.state)=>{ ...this.state, isDirty: isDirty });
+  // }
+  public render(): React.ReactElement<ITrFormProps> {
+    debugger;
     let worktypeDropDoownoptions = map(this.props.workTypes, (wt) => {
       return {
         key: wt.id, text: wt.workType
@@ -931,14 +931,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             key: eu.id, text: eu.endUse
           };
         });
-
-    let customerSelectOptions:IComboBoxOption[] = map(this.props.customers, (c) => {
-      return {
-        key: c.id, text: c.title
-      };
-    });
+    let selectedCustomer: ITag[] = [];
+    if (this.state.tr.CustomerId) {
+      let cust: Customer = find(this.props.customers, (c) => { return c.id === this.state.tr.CustomerId; });
+      selectedCustomer.push({
+        key: cust.id.toString(),
+        name: cust.title
+      });
+    }
     return (
-      <div >
+      <div>
 
         <MessageDisplay messages={this.state.errorMessages}
           hideMessage={this.removeMessage.bind(this)} />
@@ -953,21 +955,24 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.Title} onChanged={e => {
-                this.setDirty(true);
-                this.state.tr.Title = e; this.setState(this.state);
+                // this.setDirty(true);
+                this.state.tr.Title = e;
+                // this.setState(this.state);
+                this.setState((current) => ({ ...current, isDirty: true }));
               }} />
             </td>
             <td>
               <Label >Work Type</Label>
             </td>
             <td>
-              <Dropdown label=''
+              <Dropdown label=""
                 selectedKey={this.state.tr.WorkTypeId}
                 options={worktypeDropDoownoptions}
                 onChanged={e => {
-                  this.setDirty(true);
+                  // this.setDirty(true);
                   this.state.tr.WorkTypeId = e.key as number;
-                  this.setState(this.state);
+                  //  this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
 
@@ -976,9 +981,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.Site} onChanged={e => {
-                this.setDirty(true);
+                //  this.setDirty(true);
                 this.state.tr.Site = e;
-                this.setState(this.state);
+                //  this.setState(this.state);
+                this.setState((current) => ({ ...current, isDirty: true }));
               }} />
             </td>
 
@@ -995,8 +1001,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 <i onClick={this.editParentTR}
                   className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
                 <i onClick={(e) => {
-                  //this.state.showTRSearch = true;
-                  this.setState({ ...this.state, showTRSearch: true });
+                  // this.state.showTRSearch = true;
+                  // this.setState({ ...this.state, showTRSearch: true });
+                  this.setState((current) => ({ ...current, showTRSearch: true }));
                 }}
                   className="ms-Icon ms-Icon--Search" aria-hidden="true"></i>
 
@@ -1007,13 +1014,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label >Application Type</Label>
             </td>
             <td>
-              <Dropdown label=''
+              <Dropdown label=""
                 selectedKey={this.state.tr.ApplicationTypeId}
                 options={applicationtypeDropDoownoptions}
                 onChanged={e => {
-                  this.setDirty(true);
+                  //  this.setDirty(true);
                   this.state.tr.ApplicationTypeId = e.key as number;
-                  this.setState(this.state);
+                  // this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
+
                 }}
               />
             </td>
@@ -1024,15 +1033,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Dropdown
                 label=""
                 options={[
-                  { key: 'High', text: 'High' },
-                  { key: 'Normal', text: 'Normal' },
-                  { key: 'Routine', text: 'Routine' },
+                  { key: "High", text: "High" },
+                  { key: "Normal", text: "Normal" },
+                  { key: "Routine", text: "Routine" },
 
                 ]}
                 onChanged={e => {
-                  this.setDirty(true);
+                  //  this.setDirty(true);
                   this.state.tr.TRPriority = e.text;
-                  this.setState(this.state);
+                  //  this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }}
                 selectedKey={this.state.tr.TRPriority} />
             </td>
@@ -1044,8 +1054,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.CER} onChanged={e => {
-                this.setDirty(true);
+                //this.setDirty(true);
                 this.state.tr.CER = e;
+                this.setState((current) => ({ ...current, isDirty: true }));
               }} />
             </td>
             <td>
@@ -1068,10 +1079,20 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label>Customer</Label>
             </td>
             <td>
-              <ComboBox options={customerSelectOptions}
+              {/* <ComboBox options={customerSelectOptions}
                 autoComplete="on"
                 autoCorrect="on"
-                allowFreeform/>
+                value={find(this.props.customers, (c) => { return c.id === this.state.tr.CustomerId; }).title}
+                onChanged={(newValue: IComboBoxOption) => {
+                  const custId: number = newValue.key as number;
+                  const tr: TR = { ...this.state.tr, CustomerId: custId };
+                  //   this.setState({ ...this.state, tr: tr, isDirty: true });
+                  this.setState((current) => ({ ...current, tr: tr, isDirty: true }));
+                  // this.state.tr.CustomerId = newValue.key;
+                  // this.setDirty(true);
+                  // this.setState(this.state);
+                }}
+              /> */}
               {/* <Select
                 simpleValue
                 placeholder="+ Add a Customer"
@@ -1083,16 +1104,22 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   this.setDirty(true);
                   this.setState(this.state);
                 }}
+                    onResolveSuggestions: (filter: string, selectedItems?: T[]) => T[] | PromiseLike<T[]>;
               /> */}
-              {/* <TagPicker ref="customerPicker"
-                onResolveSuggestions={this.onCustomerResolveSuggestions.bind(this)}
-                onChange={this.onCustomerChanged.bind(this)}
-                pickerSuggestionsProps={
-                  {
-                    noResultsFoundText: 'No Matches found'
+              <TagPicker
+                onResolveSuggestions={this.resolveCustomerSuggestions}
+                itemLimit={1}
+                onChange={(newValue) => {
+                  debugger;
+                  let custId: number = null;
+                  if (newValue.length !== 0) {
+                    custId = parseInt(newValue[0].key, 10);
                   }
-                }
-              /> */}
+                  const tr: TR = { ...this.state.tr, CustomerId: custId };
+                  this.setState((current) => ({ ...current, tr: tr, isDirty: true }));
+                }}
+                defaultSelectedItems={selectedCustomer}
+              />
               {/* <Dropdown
                 label=""
                 options={this.props.customers.map((r) => { return { key: r.id, text: r.title }; })}
@@ -1117,22 +1144,24 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 value={(this.state.tr.RequestDate) ? moment(this.state.tr.RequestDate).toDate() : null}
 
                 onSelectDate={e => {
-                  this.setDirty(true);
+                  //                  this.setDirty(true);
                   this.state.tr.RequestDate = moment(e).toISOString();
-                  this.setState(this.state);
+                  //                this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
             <td>
               <Label >End Use</Label>
             </td>
             <td>
-              <Dropdown label=''
+              <Dropdown label=""
                 selectedKey={this.state.tr.EndUseId}
                 options={enduseDropDoownoptions}
                 onChanged={e => {
-                  this.setDirty(true);
+                  //     this.setDirty(true);
                   this.state.tr.EndUseId = e.key as number;
-                  this.setState(this.state);
+                  //    this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
             <td>
@@ -1142,15 +1171,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Dropdown
                 label=""
                 options={[
-                  { key: 'Pending', text: 'Pending' },
-                  { key: 'In Progress', text: 'In Progress' },
-                  { key: 'Completed', text: 'Completed' },
-                  { key: 'Canceled', text: 'Canceled' },
+                  { key: "Pending", text: "Pending" },
+                  { key: "In Progress", text: "In Progress" },
+                  { key: "Completed", text: "Completed" },
+                  { key: "Canceled", text: "Canceled" },
                 ]}
                 onChanged={e => {
-                  this.setDirty(true);
+                  //       this.setDirty(true);
                   this.state.tr.TRStatus = e.text;
-                  this.setState(this.state);
+                  //       this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }}
                 selectedKey={this.state.tr.TRStatus} />
 
@@ -1166,9 +1196,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DatePicker
                 value={(this.state.tr.RequiredDate) ? moment(this.state.tr.RequiredDate).toDate() : null}
                 onSelectDate={e => {
-                  this.setDirty(true);
+                  //    this.setDirty(true);
                   this.state.tr.RequiredDate = moment(e).toISOString();
-                  this.setState(this.state);
+                  //   this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
             <td>
@@ -1178,9 +1209,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DatePicker
                 value={(this.state.tr.ActualStartDate) ? moment(this.state.tr.ActualStartDate).toDate() : null}
                 onSelectDate={e => {
-                  this.setDirty(true);
+                  //       this.setDirty(true);
                   this.state.tr.ActualStartDate = moment(e).toISOString();
-                  this.setState(this.state);
+                  //      this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
             <td>
@@ -1190,9 +1222,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DatePicker
                 value={(this.state.tr.ActualCompletionDate) ? moment(this.state.tr.ActualCompletionDate).toDate() : null}
                 onSelectDate={e => {
-                  this.setDirty(true);
+                  //      this.setDirty(true);
                   this.state.tr.ActualCompletionDate = moment(e).toISOString();
-                  this.setState(this.state);
+                  //       this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
 
@@ -1206,9 +1239,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <TextField datatype="number"
                 value={(this.state.tr.EstManHours) ? this.state.tr.EstManHours.toString() : null}
                 onChanged={e => {
-                  this.setDirty(true);
+                  //        this.setDirty(true);
                   this.state.tr.EstManHours = parseInt(e);
-                  this.setState(this.state);
+                  //        this.setState(this.state);
+                  this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
             <td>
@@ -1217,9 +1251,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <TextField datatype="number"
               value={(this.state.tr.ActualManHours) ? this.state.tr.ActualManHours.toString() : null}
               onChanged={e => {
-                this.setDirty(true);
-                this.state.tr.ActualManHours = parseInt(e);
-                this.setState(this.state);
+                //      this.setDirty(true);
+                this.state.tr.ActualManHours = parseInt(e, 10);
+                //    this.setState(this.state);
+                this.setState((current) => ({ ...current, isDirty: true }));
               }} />
 
             <td>
@@ -1266,7 +1301,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})
              </tabs.Tab>
             <tabs.Tab>
-              Documents
+              Documents({(this.state.documents) ? this.state.documents.length : 0})
              </tabs.Tab>
           </tabs.TabList>
           <tabs.TabPanel >
@@ -1300,10 +1335,16 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               columns={[
                 { key: "title", name: "Technical Specialist", fieldName: "title", minWidth: 20, maxWidth: 200 },
                 {
-                  key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: (item) => <Checkbox
-                    checked={item.selected}
-                    onChange={(element, value) => { this.toggleTechSpec(value, item.id); }}
-                  />
+                  key: "selected", name: "Assigned?", fieldName: "selected", minWidth: 200, onRender: (item) =>
+                    <Checkbox
+
+                      checked={item.selected}
+                      autoFocus={true}
+                      onChange={(element, value) => {
+                        this.toggleTechSpec(value, item.id);
+                      }}
+
+                    />
                 }
               ]}
             />
@@ -1322,13 +1363,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DetailsList
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
-
+                  debugger;
                   var expandedGroup = find(dl.props.groups, (group) => {
                     return !(group.isCollapsed) && group.key !== this.state.expandedPigmentManufacturer;// its an expanded group that want expanded before
                   });
                   if (expandedGroup) {
                     //this.state.expandedPigmentManufacturer = expandedGroup.key;
-                    this.setState({...this.state, expandedPigmentManufacturer:expandedGroup.key})
+                    this.setState((current) => ({ ...current, expandedPigmentManufacturer: expandedGroup.key }));
                   }
                 }}
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1339,10 +1380,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 columns={[
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
                   {
-                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
-                      checked={false}
-                      onChange={(element, value) => { this.addPigment(item.id); }}
-                    />
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) =>
+                      <Checkbox
+
+                        checked={false}
+                        onChange={(element, value) => {
+                          debugger;
+                          this.addPigment(item.id);
+                        }}
+                      />
                   }
                 ]}
               />
@@ -1360,10 +1406,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   { key: "title", name: "Pigment Name", fieldName: "title", minWidth: 20, maxWidth: 100 },
                   { key: "manufacturer", name: "Manufacturer", fieldName: "manufacturer", minWidth: 20, maxWidth: 100 },
                   {
-                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) => <Checkbox
-                      checked={true}
-                      onChange={(element, value) => { this.removePigment(item.id); }}
-                    />
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 80, onRender: (item) =>
+                      <Checkbox autoFocus={true}
+                        checked={true}
+                        onChange={(element, value) => {
+                          debugger;
+                          this.removePigment(item.id);
+                        }}
+                      />
                   }
                 ]}
               />
@@ -1382,7 +1432,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   });
                   if (expandedGroup) {
                     //this.state.expandedProperty = expandedGroup.key;
-                    this.setState({...this.state, expandedProperty:expandedGroup.key})
+                    this.setState((current) => ({ ...current, expandedProperty: expandedGroup.key }));
                   }
                 }}
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1394,11 +1444,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 columns={[
                   { key: "title", name: "test", fieldName: "test", minWidth: 20, maxWidth: 150 },
                   {
-                    key: "select", name: "Select", fieldName: "selected", minWidth: 70, onRender: (item) => <Checkbox
-                      checked={false}
-
-                      onChange={(element, value) => { this.addTest(item.testid); }}
-                    />
+                    key: "select", name: "Select", fieldName: "selected", minWidth: 70, onRender: (item) =>
+                      <Checkbox
+                        checked={false}
+                        autoFocus={true}
+                        onChange={(element, value) => { this.addTest(item.testid); }}
+                      />
                   }
                 ]}
               />
@@ -1415,10 +1466,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   { key: "propertyName", name: "Property", fieldName: "propertyName", minWidth: 20, maxWidth: 80 },
                   { key: "title", name: "Test Name", fieldName: "title", minWidth: 20, maxWidth: 150 },
                   {
-                    key: "selected", name: "Selected?", fieldName: "selected", minWidth: 70, onRender: (item) => <Checkbox
-                      checked={true}
-                      onChange={(element, value) => { this.removeTest(item.id); }}
-                    />
+                    key: "selected", name: "Selected?", fieldName: "selected", minWidth: 70, onRender: (item) =>
+                      <Checkbox
+                        autoFocus={true}
+                        checked={true}
+                        onChange={(element, value) => { this.removeTest(item.id); }}
+                      />
                   }
                 ]}
               />
@@ -1485,7 +1538,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
                 ]}
               />
-              <input type='file' id='uploadfile' onChange={e => { this.uploadFile(e); }} />
+              <input type="file" id="uploadfile" onChange={e => { this.uploadFile(e); }} />
             </div>
             <div style={{ float: "right" }}>
               <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight}
@@ -1505,14 +1558,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         </PrimaryButton>
         </span>
         <br />
-        version 2
+        version 3
       < TRPicker
           isOpen={this.state.showTRSearch}
           callSearch={this.props.TRsearch}
           cancel={this.cancelTrSearch}
           select={this.parentTRSelected}
         />
-      </div >
+      </div>
     );
   }
 }

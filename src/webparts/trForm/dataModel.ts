@@ -107,7 +107,7 @@ export class SetupItem { // just used in the display to show tests grouped by pr
 export class TRFieldDefinition{
     public Title:string;
     public InternalName:string;
-    public Description:string
+    public Description:string;
 }
 export class DisplayPropertyTest { // just used in the display to show tests grouped by property
     public property: string;

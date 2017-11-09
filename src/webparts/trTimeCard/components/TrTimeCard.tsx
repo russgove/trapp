@@ -1,21 +1,21 @@
-import * as React from 'react';
-import { ITrTimeCardProps } from './ITrTimeCardProps';
-import { ITrTimeCardState } from './ITrTimeCardState';
-//import { escape } from '@microsoft/sp-lodash-subset';
+import * as React from "react";
+import { ITrTimeCardProps } from "./ITrTimeCardProps";
+import { ITrTimeCardState } from "./ITrTimeCardState";
+//import { escape } from "@microsoft/sp-lodash-subset";
 import {
-} from 'office-ui-fabric-react/lib/Pickers';
-import { PrimaryButton, ButtonType } from 'office-ui-fabric-react/lib/Button';
-import { Link } from 'office-ui-fabric-react/lib/Link';
-import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
-import { Label } from 'office-ui-fabric-react/lib/Label';
-import { MessageBar, MessageBarType, } from 'office-ui-fabric-react/lib/MessageBar';
-import { Dropdown, IDropdownProps, } from 'office-ui-fabric-react/lib/Dropdown';
-import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from 'office-ui-fabric-react/lib/DetailsList';
-import { DatePicker, } from 'office-ui-fabric-react/lib/DatePicker';
-import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from 'office-ui-fabric-react/lib/Persona';
-import { IPersonaWithMenu } from 'office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props';
-import * as moment from 'moment';
+} from "office-ui-fabric-react/lib/Pickers";
+import { PrimaryButton, ButtonType } from "office-ui-fabric-react/lib/Button";
+import { Link } from "office-ui-fabric-react/lib/Link";
+import { TextField } from "office-ui-fabric-react/lib/TextField";
+import { Toggle } from "office-ui-fabric-react/lib/Toggle";
+import { Label } from "office-ui-fabric-react/lib/Label";
+import { MessageBar, MessageBarType, } from "office-ui-fabric-react/lib/MessageBar";
+import { Dropdown, IDropdownProps, } from "office-ui-fabric-react/lib/Dropdown";
+import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from "office-ui-fabric-react/lib/DetailsList";
+import { DatePicker, } from "office-ui-fabric-react/lib/DatePicker";
+import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from "office-ui-fabric-react/lib/Persona";
+import { IPersonaWithMenu } from "office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props";
+import * as moment from "moment";
 import * as _ from "lodash";
 import { TimeSpent } from "../dataModel";
 export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTimeCardState> {
@@ -122,7 +122,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
         <DatePicker
           value={moment(this.state.weekEndingDate).toDate()}
           onSelectDate={e => {
-            const weekEndingDate = moment(e).utc().endOf('isoWeek').startOf('day').toDate();
+            const weekEndingDate = moment(e).utc().endOf("isoWeek").startOf("day").toDate();
             this.props.getTimeSpent(weekEndingDate).then((timeSpents) => {
               // this.state.weekEndingDate = weekEndingDate;
               // this.state.timeSpents = timeSpents;
