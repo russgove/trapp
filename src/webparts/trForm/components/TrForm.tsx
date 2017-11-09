@@ -1,36 +1,31 @@
 
 import {
-  NormalPeoplePicker, TagPicker, ITag, ITagPickerProps
+  NormalPeoplePicker, TagPicker, ITag
 } from "office-ui-fabric-react/lib/Pickers";
-import { Fabric } from "office-ui-fabric-react/lib/Fabric";
+
 import { PrimaryButton, ButtonType } from "office-ui-fabric-react/lib/Button";
 import { TextField } from "office-ui-fabric-react/lib/TextField";
 
 import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
 import { Label } from "office-ui-fabric-react/lib/Label";
 
-import { Dropdown, IDropdownProps, } from "office-ui-fabric-react/lib/Dropdown";
-import { ComboBox, IComboBoxOption, IComboBoxProps } from "office-ui-fabric-react/lib/ComboBox";
+import { Dropdown } from "office-ui-fabric-react/lib/Dropdown";
 // switch to fabric  ComboBox on next upgrade
-//let Select = require("react-select") as any;
+// let Select = require("react-select") as any;
 import "react-select/dist/react-select.css";
-import { TagItem } from "office-ui-fabric-react/lib/components/pickers/TagPicker/TagItem";
-import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from "office-ui-fabric-react/lib/DetailsList";
+import { DetailsList, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from "office-ui-fabric-react/lib/DetailsList";
 import { DatePicker, } from "office-ui-fabric-react/lib/DatePicker";
-import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from "office-ui-fabric-react/lib/Persona";
-import { IPersonaWithMenu } from "office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props";
+import { IPersonaProps } from "office-ui-fabric-react/lib/Persona";
 import { SPComponentLoader } from "@microsoft/sp-loader";
 
 
 /** SPFX Stuff */
 import * as React from "react";
-//import styles from "./TrForm.module.scss";
-import { escape } from "@microsoft/sp-lodash-subset";
 
 /** Other utilities */
 import * as moment from "moment";
-//import * as lodash from "lodash";
 import { find, clone, remove, filter, map, orderBy, countBy, findIndex, startsWith } from "lodash";
+
 // switch to fabric pivot on text update
 import * as tabs from "react-tabs";
 
@@ -55,7 +50,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   private ckeditor: any;
   private originalAssignees: Array<number> = [];
   private originalStatus: string = "";
-  private resultsPersonas: Array<IPersonaProps> = new Array<IPersonaProps>();
 
   constructor(props: ITrFormProps) {
     super(props);
@@ -86,12 +80,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public componentDidMount() {
-    //see https://github.com/SharePoint/sp-de//cdn.ckeditor.com/4.6.2/full/ckeditor.jsv-docs/issues/374
-    //var ckEditorCdn: string = "//cdn.ckeditor.com/4.6.2/full/ckeditor.js";
+    // see https://github.com/SharePoint/sp-de//cdn.ckeditor.com/4.6.2/full/ckeditor.jsv-docs/issues/374
+    // var ckEditorCdn: string = "//cdn.ckeditor.com/4.6.2/full/ckeditor.js";
     var ckEditorCdn: string = this.props.ckeditorUrl;
     SPComponentLoader.loadScript(ckEditorCdn, { globalExportsName: "CKEDITOR" }).then((CKEDITOR: any): void => {
       this.ckeditor = CKEDITOR;
-      this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig); // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
+      // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
+      this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig);
 
     });
 
@@ -227,10 +222,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public save() {
-    debugger;
+
     let tr: TR = { ...this.state.tr };
+    // tslint:disable-next-line:forin
     for (const instanceName in this.ckeditor.instances) {
-      debugger;
+
       let instance = this.ckeditor.instances[instanceName];
       let data = instance.getData();
       switch (instanceName) {
@@ -254,7 +250,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
       }
     }
-    const errors = this.getErrors();
+    const errors: md.Message[] = this.getErrors();
     if (errors.length === 0) {
       this.props.save(tr, this.originalAssignees, this.originalStatus)
         .then((result: TR) => {
@@ -376,9 +372,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public trContainsTest(tr: TR, TestId: number): boolean {
     if (tr.TestsId) {
-      return (tr.TestsId.indexOf(TestId) != -1);
-    }
-    else {
+      return (tr.TestsId.indexOf(TestId) !== -1);
+    } else {
       return false;
     }
   }
@@ -417,10 +412,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
  */
   public getAvailablePigmentGroups(): Array<IGroup> {
     var pigs: Array<Pigment> = this.getAvailablePigments();
-    //var pigmentTypes=lodash.uniqWith(pigs,(p1:Pigment,p2:Pigment)=>{return p1.type === p2.type});
     var pigmentManufactureres = countBy(pigs, (p1: Pigment) => { return p1.manufacturer; });
     var groups: Array<IGroup> = [];
 
+    // tslint:disable-next-line:forin
     for (const pm in pigmentManufactureres) {
       groups.push({
         isCollapsed: (pm !== this.state.expandedPigmentManufacturer),
@@ -442,7 +437,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getSelectedPigments(): Array<Pigment> {
-    debugger;
+
     var tempPigments = filter(this.props.pigments, (pigment: Pigment) => {
       return this.trContainsPigment(this.state.tr, pigment.id);
     });
@@ -470,7 +465,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     // select the propertyTest available based on the applicationType and EndUse of the tr
     var temppropertyTest: Array<PropertyTest> = filter(this.props.propertyTests, (pt: PropertyTest) => {
       return (pt.applicationTypeid === this.state.tr.ApplicationTypeId
-        && pt.endUseIds.indexOf(this.state.tr.EndUseId) != -1
+        && pt.endUseIds.indexOf(this.state.tr.EndUseId) !== -1
       );
     });
     // get all the the tests in those propertyTests and output them as DisplayPropertyTest
@@ -484,8 +479,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             testid: testid,
             test: test.title
           });
-        }
-        else {
+        } else {
           console.log(` test ${testid} NOT FOUND`);
         }
 
@@ -510,8 +504,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public getAvailableTestGroups(): Array<IGroup> {
     var displayPropertyTests: Array<DisplayPropertyTest> = this.getAvailableTests(); // all the avalable tests with their Property
-    var properties = countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => { return dpt.property; });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
+    var properties = countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => {
+      return dpt.property;
+    });// an object with an element for each propert, the value of the elemnt is the count of tsts with that property
     var groups: Array<IGroup> = [];
+    // tslint:disable-next-line:forin
     for (const property in properties) {
       groups.push({
         isCollapsed: (property !== this.state.expandedProperty),
@@ -530,7 +527,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
      * Find the proprty for the  selected enduse, application  type amd test
      */
 
-    var property = find(this.props.propertyTests, (pt) => {
+    var property: PropertyTest = find(this.props.propertyTests, (pt) => {
       return (
         pt.applicationTypeid === applicationTypeid
         &&
@@ -587,23 +584,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     return orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
   }
 
-  /**
-   *  Gets the Staff CC (Same group as technical Specialists), including an indicator if they are selected or not
-   * 
-   * @returns 
-   * 
-   * @memberof TrForm
-   */
-  // public getStaffCC() {
-  //   var staffCC = lodash.map(this.props.techSpecs, (techSpec) => {
-  //     return {
-  //       title: techSpec.title,
-  //       selected: ((this.state.tr.StaffCCId) ? this.state.tr.StaffCCId.indexOf(techSpec.id) != -1 : null),
-  //       id: techSpec.id
-  //     };
-  //   });
-  //   return lodash.orderBy(staffCC, ["selected", "title"], ["desc", "asc"]);
-  // }
+
   public staffCCChanged(items?: Array<IPersonaProps>): void {
     this.state.tr.StaffCC = items;
     this.props.ensureUsersInPersonas(this.state.tr.StaffCC);
@@ -632,34 +613,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
 
-  /**
-   * Adds or removes a preson from the StaffCC on the TR being edited
-   * 
-   * @param {boolean} isSelected 
-   * @param {number} id 
-   * 
-   * @memberof TrForm
-   */
-  // public toggleStaffCC(isSelected: boolean, id: number) {
-  //   this.setDirty(true);
-  //   if (isSelected) {
-  //     if (this.state.tr.StaffCCId) {
-  //       this.state.tr.StaffCCId.push(id);//addit
-  //     }
-  //     else {
-  //       this.state.tr.StaffCCId = [id];
-  //     }
-  //   }
-  //   else {
-  //     this.state.tr.StaffCCId = lodash.filter(this.state.tr.StaffCCId, (x) => { return x != id; });//remove it
-  //   }
-  //   this.setState(this.state);
-  // }
+
 
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
-  public addTest(id: number) {
-    debugger;
-    let tr = this.state.tr;
+  public addTest(id: number): void {
+    let tr: TR = this.state.tr;
     if (tr.TestsId) {
       tr.TestsId.push(id);// addit
     } else {
@@ -670,7 +628,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public removeTest(id: number) {
     //   this.setDirty(true);
     if (this.state.tr.TestsId) {
-      this.state.tr.TestsId = filter(this.state.tr.TestsId, (x) => { return x != id; });//remove it
+      this.state.tr.TestsId = filter(this.state.tr.TestsId, (x) => { return x !== id; });// remove it
     }
     this.setState((current) => ({ ...current, isDirty: true }));
   }
@@ -686,15 +644,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public addPigment(id: number) {
     //  this.setDirty(true);
     if (this.state.tr.PigmentsId) {
-      this.state.tr.PigmentsId.push(id);//addit
-    }
-    else {
+      this.state.tr.PigmentsId.push(id);// add it
+    } else {
       this.state.tr.PigmentsId = [id];
     }
     //  this.setState(this.state);
     this.setState((current) => ({ ...current, isDirty: true }));
   }
-  /**
+  /*
   * Removes  the selected Pigment to the TR being edited
   * In the UI Pigmemts is two lists (selected and unselected pigments, toggling adds from one , removes from the other
   * 
@@ -705,7 +662,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public removePigment(id: number) {
     // this.setDirty(true);
     if (this.state.tr.PigmentsId) {
-      this.state.tr.PigmentsId = filter(this.state.tr.PigmentsId, (x) => { return x != id; });//remove it
+      this.state.tr.PigmentsId = filter(this.state.tr.PigmentsId, (x) => { return x !== id; });// remove it
     }
     // this.setState(this.state);
     this.setState((current) => ({ ...current, isDirty: true }));
@@ -736,11 +693,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public cancelTrSearch(): void {
-    //this.state.showTRSearch = false;
+
     this.setState({ ...this.state, showTRSearch: false });
   }
-  //make the child tr the currently selected tr
-
 
   /**
    * Makes the selected Child TR the current TR. Called when the user clicks the edit icon in the child TR List.
@@ -756,13 +711,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (childTr) {
       console.log("switching to tr " + trId);
       // delete this.state.tr;
-      //this.state.tr = childTr;
+      // this.state.tr = childTr;
       this.originalAssignees = clone(childTr.TRAssignedToId);
       this.originalStatus = childTr.TRStatus;
       this.updateCKEditorText(this.state.tr);
       // this.state.childTRs = [];
       this.setState((current) => ({ ...current, tr: childTr, childTRs: [] }));
-      //this.setState(this.state);
+      // this.setState(this.state);
       // now get its children, need to move children to state
       this.props.fetchChildTr(this.state.tr.Id).then((trs) => {
         // this.state.childTRs = trs;
@@ -781,13 +736,12 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public editDocument(trdocument: TRDocument): void {
 
-    //mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
+    // mode: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 1).then(url => {
 
       if (!url || url === "") {
         window.open(trdocument.serverRalativeUrl, "_blank");
-      }
-      else {
+      } else {
         window.open(url, "_blank");
       }
       //    this.state.wopiFrameUrl=url;
@@ -808,7 +762,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public uploadFile(e: any) {
 
-    let file = e.target["files"][0];
+    let file: any = e.target["files"][0];
     this.props.uploadFile(file, this.state.tr.Id).then((response) => {
       this.props.getDocuments(this.state.tr.Id).then((dox) => {
         // this.state.documents = dox;
@@ -820,20 +774,20 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       console.log(error);
     });
   }
-  public editParentTR() {
+  public editParentTR(): void {
 
     if (this.state.tr.ParentTRId) {
       const parentId = this.state.tr.ParentTRId;
       this.props.fetchTR(parentId).then((parentTR) => {
 
-        //this.state.tr = parentTR;
+        // this.state.tr = parentTR;
         this.originalAssignees = clone(parentTR.TRAssignedToId);
         this.originalStatus = parentTR.TRStatus;
-        //this.state.childTRs = [];
+        // this.state.childTRs = [];
         this.setState((current) => ({ ...current, tr: parentTR, childTRs: [] }));
         this.updateCKEditorText(this.state.tr);
         this.props.fetchChildTr(parentId).then((subTRs) => {
-          //this.state.childTRs = subTRs;
+          // this.state.childTRs = subTRs;
           this.setState((current) => ({ ...current, childTRs: subTRs }));
         });
       });
@@ -843,7 +797,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   }
   public documentRowMouseEnter(trdocument: TRDocument, e: any) {
 
-    //mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
+    // mode passed to fetchDocumentWopiFrameURL: 0: view, 1: edit, 2: mobileView, 3: interactivePreview
     this.props.fetchDocumentWopiFrameURL(trdocument.id, 3).then(url => {
       if (!url || url === "") {
         url = trdocument.serverRalativeUrl;
@@ -874,7 +828,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
   private resolveCustomerSuggestions(filterString: string, slectedItems?: ITag[]): ITag[] {
-    debugger;
+
     const upperfilter = filterString.toUpperCase();
     const matches: Customer[] = filter(this.props.customers, (c) => { return startsWith(c.title.toUpperCase(), upperfilter); });
     const results: ITag[] = map(matches, (c) => {
@@ -899,7 +853,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   //   this.setState((this.state)=>{ ...this.state, isDirty: isDirty });
   // }
   public render(): React.ReactElement<ITrFormProps> {
-    debugger;
+
     let worktypeDropDoownoptions = map(this.props.workTypes, (wt) => {
       return {
         key: wt.id, text: wt.workType
@@ -1054,7 +1008,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </td>
             <td>
               <TextField value={this.state.tr.CER} onChanged={e => {
-                //this.setDirty(true);
+                // this.setDirty(true);
                 this.state.tr.CER = e;
                 this.setState((current) => ({ ...current, isDirty: true }));
               }} />
@@ -1110,7 +1064,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 onResolveSuggestions={this.resolveCustomerSuggestions}
                 itemLimit={1}
                 onChange={(newValue) => {
-                  debugger;
                   let custId: number = null;
                   if (newValue.length !== 0) {
                     custId = parseInt(newValue[0].key, 10);
@@ -1240,7 +1193,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 value={(this.state.tr.EstManHours) ? this.state.tr.EstManHours.toString() : null}
                 onChanged={e => {
                   //        this.setDirty(true);
-                  this.state.tr.EstManHours = parseInt(e);
+                  this.state.tr.EstManHours = parseInt(e, 10);
                   //        this.setState(this.state);
                   this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
@@ -1363,12 +1316,13 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <DetailsList
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
-                  debugger;
-                  var expandedGroup = find(dl.props.groups, (group) => {
-                    return !(group.isCollapsed) && group.key !== this.state.expandedPigmentManufacturer;// its an expanded group that want expanded before
+
+                  var expandedGroup: IGroup = find(dl.props.groups, (group) => {
+                    // its an expanded group that want expanded before
+                    return !(group.isCollapsed) && group.key !== this.state.expandedPigmentManufacturer;
                   });
                   if (expandedGroup) {
-                    //this.state.expandedPigmentManufacturer = expandedGroup.key;
+                    // this.state.expandedPigmentManufacturer = expandedGroup.key;
                     this.setState((current) => ({ ...current, expandedPigmentManufacturer: expandedGroup.key }));
                   }
                 }}
@@ -1385,7 +1339,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
                         checked={false}
                         onChange={(element, value) => {
-                          debugger;
                           this.addPigment(item.id);
                         }}
                       />
@@ -1410,7 +1363,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                       <Checkbox autoFocus={true}
                         checked={true}
                         onChange={(element, value) => {
-                          debugger;
                           this.removePigment(item.id);
                         }}
                       />
@@ -1428,10 +1380,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   // save expanded group in state;
 
                   var expandedGroup = find(dl.props.groups, (group) => {
-                    return !(group.isCollapsed) && group.key !== this.state.expandedProperty; // its an expanded group that want expanded before
+                    // its an expanded group that want expanded before
+                    return !(group.isCollapsed) && group.key !== this.state.expandedProperty;
                   });
                   if (expandedGroup) {
-                    //this.state.expandedProperty = expandedGroup.key;
+                    // this.state.expandedProperty = expandedGroup.key;
                     this.setState((current) => ({ ...current, expandedProperty: expandedGroup.key }));
                   }
                 }}

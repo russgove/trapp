@@ -351,7 +351,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (this.properties.mode !== modes.NEW) {
       if (queryParameters.getValue("Id")) {
         const id: number = parseInt(queryParameters.getValue("Id"));
-        let fields = "*,WorkType/Title,ParentTR/Title,Requestor/Title,Customer/Title,TRAssignedTo/Title,TRAssignedTo/Id,StaffCC/EMail,StaffCC/Title,StaffCC/Name,StaffCC/JobTitle,StaffCC/Department,StaffCC/Id";
+        let fields = "*,WorkType/Title,ParentTR/Title,Requestor/Title,Customer/Title,TRAssignedTo/Title,TRAssignedTo/Id,StaffCC/EMail,StaffCC/Title,StaffCC/Name,StaffCC/Id";
         let expands = "ParentTR,Requestor,Customer,TRAssignedTo,WorkType,StaffCC";
         // get the requested tr
         pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand(expands).select(fields).inBatch(batch).get()
@@ -377,6 +377,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           .catch((error) => {
             console.log("ERROR, An error occured fetching the listitem  from list named " + this.properties.technicalRequestListName);
             console.log(error.message);
+            alert(error.data.responseBody["odata.error"].message.value);
 
           });
         // get the Child trs
