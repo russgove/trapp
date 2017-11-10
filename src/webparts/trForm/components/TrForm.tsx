@@ -693,8 +693,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public cancelTrSearch(): void {
-
-    this.setState({ ...this.state, showTRSearch: false });
+    this.setState((current) => ({ ...current, showTRSearch: false }));
   }
 
   /**
