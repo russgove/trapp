@@ -907,7 +907,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               <Label >Request #</Label>
             </td>
             <td>
-              <TextField value={this.state.tr.Title} onChanged={e => {
+              <TextField disabled={true} value={this.state.tr.Title} onChanged={e => {
                 // this.setDirty(true);
                 this.state.tr.Title = e;
                 // this.setState(this.state);
