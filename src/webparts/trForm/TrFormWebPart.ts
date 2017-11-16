@@ -14,7 +14,7 @@ import {
   Environment,
   EnvironmentType
 } from '@microsoft/sp-core-library';
-import {TRFieldDefinition, TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
+import { TRFieldDefinition, TRDocument, SetupItem, Test, PropertyTest, Pigment, TR, WorkType, ApplicationType, EndUse, modes, User, Customer } from "./dataModel";
 import * as strings from 'trFormStrings';
 //import * as lodash from 'lodash';
 import { findIndex, unionWith, map, find, orderBy, clone } from 'lodash';
@@ -283,7 +283,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       ckeditorConfig: {},
       documentIframeHeight: this.properties.documentIframeHeight,
       documentIframeWidth: this.properties.documentIframeWidth,
-      fieldDefinitions:[]
+      fieldDefinitions: []
 
 
     };
@@ -303,7 +303,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).fields.select("Title, InternalName,Description")
       .inBatch(batch).getAs<TRFieldDefinition[]>()
       .then((fieldDefinitions) => {
-    
+
         formProps.fieldDefinitions = fieldDefinitions;
       })
       .catch((error) => {
@@ -1206,8 +1206,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
               console.log("Error Fetching user with id " + assignee);
             });
             promises.push(promise);
-          }
-          else {
+          } else {
             console.log("asignee is not new");
           }
         }
@@ -1245,38 +1244,62 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * @memberof TrFormWebPart
    */
   private uploadFile(file, trId): Promise<any> {
+    debugger;
     if (file.size <= 10485760) {
       // small upload
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
         .then((results) => {
+          debugger;
           //return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
-          return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem().then((item) => {
-
-            const itemID = parseInt(item["Id"]);
-            return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(itemID).update({ "TRId": trId, Title: file.name })
-              .then((response) => {
-
-                return;
-              }).catch((error) => {
-
-              });
-          }).catch((error) => {
-            console.log(error);
+          return results.file.getItem().then(item => {
+            return item.update({ "TRId": trId, Title: file.name }).then((r) => {
+              debugger;
+              return;
+            }).catch((err) => {
+              debugger;
+              console.log(err);
+            });
           });
+          // return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem().then((item) => {
+          //   debugger;
+          //   const itemID = parseInt(item["Id"]);
+          //   return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(itemID).
+          //     update({ "TRId": trId, Title: file.name })
+          //     .then((response) => {
+
+          //       return;
+          //     }).catch((error) => {
+
+          //     });
+          // }).catch((error) => {
+          //   debugger;
+          //   console.log(error);
+          // });
 
         }).catch((error) => {
           console.log(error);
         });
     } else {
       // large upload// not tested yet
-      alert("large file support  not impletemented");
+      //  alert("large file support  not impletemented");
+      debugger;
 
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
         .addChunked(file.name, file, data => {
           console.log({ data: data, message: "progress" });
         }, true)
         .then((results) => {
-          console.log("done!");
+          debugger;
+          return results.file.getItem().then(item => {
+            return item.update({ "TRId": trId, Title: file.name }).then((r) => {
+              debugger;
+              return;
+            }).catch((err) => {
+              debugger;
+              console.log(err);
+            });
+          });
+
         })
         .catch((error) => {
 
