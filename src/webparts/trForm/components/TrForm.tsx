@@ -28,7 +28,7 @@ import { find, clone, remove, filter, map, orderBy, countBy, findIndex, startsWi
 
 // switch to fabric pivot on text update
 //import * as tabs from "react-tabs";
-import { Pivot, PivotItem } from "office-ui-fabric-react/lib/Pivot";
+import { Pivot, PivotItem ,PivotLinkFormat,PivotLinkSize} from "office-ui-fabric-react/lib/Pivot";
 
 /**  Custom Stuff */
 import { DocumentIframe } from "./DocumentIframe";
@@ -1224,7 +1224,9 @@ debugger;
 
 
         </table>
-        <Pivot onLinkClick={this.tabChanged.bind(this)} >
+        <Pivot onLinkClick={this.tabChanged.bind(this)}
+         linkFormat={PivotLinkFormat.tabs} 
+         linkSize={PivotLinkSize.normal}>
 
 
 
