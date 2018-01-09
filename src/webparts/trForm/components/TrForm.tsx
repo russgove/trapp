@@ -3,7 +3,7 @@ import {
   NormalPeoplePicker, TagPicker, ITag
 } from "office-ui-fabric-react/lib/Pickers";
 
-import { PrimaryButton, ButtonType } from "office-ui-fabric-react/lib/Button";
+import { PrimaryButton, ButtonType, Button,DefaultButton,ActionButton } from "office-ui-fabric-react/lib/Button";
 import { TextField } from "office-ui-fabric-react/lib/TextField";
 
 import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
@@ -1285,7 +1285,7 @@ debugger;
             >
             </NormalPeoplePicker>
           </PivotItem>
-          <PivotItem linkText=' Pigments({(this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.length : 0})' >
+          <PivotItem linkText={`Pigments(${(this.state.tr.PigmentsId===null) ?"0": this.state.tr.PigmentsId.length })`} >
 
             <div style={{ float: "left" }}>
               <Label> Available Pigments</Label>
@@ -1348,7 +1348,7 @@ debugger;
             </div>
             <div style={{ clear: "both" }}></div>
           </PivotItem>
-          <PivotItem linkText=' Tests({(this.state.tr.TestsId) ? this.state.tr.TestsId.length : 0})' >
+          <PivotItem linkText={`Tests(${(this.state.tr.TestsId===null) ?"0": this.state.tr.TestsId.length })`} >
 
             <div style={{ float: "left" }}>
               <Label> Available Tests</Label>
@@ -1412,13 +1412,13 @@ debugger;
 
 
           </PivotItem>
-          <PivotItem linkText=' Formulae' >
+          <PivotItem linkText='Formulae' >
 
             <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" style={{ display: "none" }}>
               {this.state.tr.Formulae}
             </textarea>
           </PivotItem>
-          <PivotItem linkText='   Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})' >
+          <PivotItem linkText={`Child TRs(${(this.state.childTRs===null) ?"0": this.state.childTRs.length })`} >
 
 
             <DetailsList
@@ -1446,7 +1446,7 @@ debugger;
               ]}
             />
           </PivotItem>
-          <PivotItem linkText='  Documents({(this.state.documents) ? this.state.documents.length : 0})' >
+          <PivotItem linkText={`Documents(${(this.state.documents===null) ?"0": this.state.documents.length })`} >
             <div style={{ float: "left" }}>
               <DetailsList
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1484,10 +1484,10 @@ debugger;
 
         <this.SaveButton />
         <span style={{ margin: 20 }}>
-          <PrimaryButton href="#" onClick={this.cancel} icon="ms-Icon--Cancel">
+          <DefaultButton href="#" onClick={this.cancel} icon="ms-Icon--Cancel" >
             <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
             Cancel
-        </PrimaryButton>
+        </DefaultButton>
         </span>
         <br />
         version 3
