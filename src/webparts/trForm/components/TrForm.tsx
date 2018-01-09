@@ -12,7 +12,7 @@ import { Label } from "office-ui-fabric-react/lib/Label";
 import { Dropdown } from "office-ui-fabric-react/lib/Dropdown";
 // switch to fabric  ComboBox on next upgrade
 // let Select = require("react-select") as any;
-import "react-select/dist/react-select.css";
+//import "react-select/dist/react-select.css";
 import { DetailsList, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from "office-ui-fabric-react/lib/DetailsList";
 import { DatePicker, } from "office-ui-fabric-react/lib/DatePicker";
 import { IPersonaProps } from "office-ui-fabric-react/lib/Persona";
@@ -27,7 +27,8 @@ import * as moment from "moment";
 import { find, clone, remove, filter, map, orderBy, countBy, findIndex, startsWith } from "lodash";
 
 // switch to fabric pivot on text update
-import * as tabs from "react-tabs";
+//import * as tabs from "react-tabs";
+import { Pivot, PivotItem } from "office-ui-fabric-react/lib/Pivot";
 
 /**  Custom Stuff */
 import { DocumentIframe } from "./DocumentIframe";
@@ -892,6 +893,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         name: cust.title
       });
     }
+    debugger;
+    let test =`Assigned To(${((this.state.tr.TRAssignedToId===null)?"0":this.state.tr.TRAssignedToId.length.toString())})`
+    debugger;
     return (
       <div>
 
@@ -1220,65 +1224,35 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
         </table>
-        <tabs.Tabs onSelect={this.tabChanged.bind(this)}>
-          <tabs.TabList>
-            <tabs.Tab>
-              Title
-             </tabs.Tab>
-            <tabs.Tab>
-              Description
-             </tabs.Tab>
-            <tabs.Tab>
-              Summary
-             </tabs.Tab>
-            <tabs.Tab>
-              Test Params
-             </tabs.Tab>
-            <tabs.Tab>
-              Assigned To({(this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.length : 0})
-             </tabs.Tab>
-            <tabs.Tab>
-              Staff cc({(this.state.tr.StaffCC) ? this.state.tr.StaffCC.length : 0})
-             </tabs.Tab>
-            <tabs.Tab>
-              Pigments({(this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.length : 0})
-             </tabs.Tab>
-            <tabs.Tab>
-              Tests({(this.state.tr.TestsId) ? this.state.tr.TestsId.length : 0})
-             </tabs.Tab>
-            <tabs.Tab>
-              Formulae
-             </tabs.Tab>
-            <tabs.Tab>
-              Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})
-             </tabs.Tab>
-            <tabs.Tab>
-              Documents({(this.state.documents) ? this.state.documents.length : 0})
-             </tabs.Tab>
-          </tabs.TabList>
-          <tabs.TabPanel >
+        <Pivot >
+
+
+
+          <PivotItem linkText='Title' >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
               {this.state.tr.RequestTitle}
             </textarea>
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText='Description' >
             <textarea name="tronoxtrtextarea-description" id="tronoxtrtextarea-description" style={{ display: "none" }}>
               {this.state.tr.Description}
             </textarea>
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText='Summary' >
             <div dangerouslySetInnerHTML={this.createSummaryMarkup(this.state.tr)} />
             <textarea name="tronoxtrtextarea-summary" id="tronoxtrtextarea-summary" style={{ display: "none" }}>
               {this.state.tr.SummaryNew}
             </textarea>
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText='Test Params' >
             <textarea name="tronoxtrtextarea-testparams" id="tronoxtrtextarea-testparams" style={{ display: "none" }}>
               {this.state.tr.TestingParameters}
             </textarea>
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          
+          <PivotItem linkText={`Assigned To(${((this.state.tr.TRAssignedToId===null)?"0":this.state.tr.TRAssignedToId.length.toString())})`}>
+          
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
               selectionMode={SelectionMode.none}
@@ -1300,16 +1274,17 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 }
               ]}
             />
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText={`Staff cc(${(this.state.tr.StaffCC===null) ? "0": this.state.tr.StaffCC.length})`} >
             <NormalPeoplePicker
               defaultSelectedItems={this.state.tr.StaffCC}
               onChange={this.staffCCChanged.bind(this)}
               onResolveSuggestions={this.props.peopleSearch}
             >
             </NormalPeoplePicker>
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText=' Pigments({(this.state.tr.PigmentsId) ? this.state.tr.PigmentsId.length : 0})' >
+
             <div style={{ float: "left" }}>
               <Label> Available Pigments</Label>
               <DetailsList
@@ -1370,8 +1345,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               />
             </div>
             <div style={{ clear: "both" }}></div>
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText=' Tests({(this.state.tr.TestsId) ? this.state.tr.TestsId.length : 0})' >
+
             <div style={{ float: "left" }}>
               <Label> Available Tests</Label>
               <DetailsList
@@ -1433,13 +1409,15 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
 
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText=' Formulae' >
+
             <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" style={{ display: "none" }}>
               {this.state.tr.Formulae}
             </textarea>
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText='   Child TRs({(this.state.childTRs) ? this.state.childTRs.length : 0})' >
+
 
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1465,8 +1443,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 { key: "ActualCompetionDate", onRender: this.renderDate, name: "Actual Competion<br />Date", fieldName: "ActualCompetionDate", minWidth: 80 },
               ]}
             />
-          </tabs.TabPanel>
-          <tabs.TabPanel>
+          </PivotItem>
+          <PivotItem linkText='  Documents({(this.state.documents) ? this.state.documents.length : 0})' >
             <div style={{ float: "left" }}>
               <DetailsList
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1499,8 +1477,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <div style={{ clear: "both" }}></div>
 
 
-          </tabs.TabPanel>
-        </tabs.Tabs>
+          </PivotItem>
+        </Pivot>
 
         <this.SaveButton />
         <span style={{ margin: 20 }}>

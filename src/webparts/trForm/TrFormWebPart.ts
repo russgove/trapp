@@ -22,6 +22,11 @@ import TrForm from './components/TrForm';
 import { ITrFormProps } from './components/ITrFormProps';
 import { ITRFormState } from './components/ITRFormState';
 import { ITrFormWebPartProps } from './ITrFormWebPartProps';
+require('sp-init');
+require('microsoft-ajax');
+require('sp-runtime');
+require('sharepoint');
+require("sp-workflow");
 
 
 /**
@@ -955,10 +960,95 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     else {
       console.log("no  source staying on page");
-
     }
   }
+  private getListId(listname): Promise<string> {
+    return pnp.sp.web.lists.getByTitle(listname).get().then(list => {
+      return list.Id;
+    });
+  }
+  private getWorkFlowByName(workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService, workFlowName: string): Promise<SP.WorkflowServices.WorkflowDefinition> {
+    let p: Promise<any> = new Promise(async (resolve, reject) => {
+      let context = workflowDeploymentService.get_context();
+      let wfDefinitions = workflowDeploymentService.enumerateDefinitions(true);
+      context.load(wfDefinitions);
+      context.executeQueryAsync(
+        function (sender, args) {
+          let foundDefinition: SP.WorkflowServices.WorkflowDefinition;
+          let defEnum = wfDefinitions.getEnumerator();
+          while (defEnum.moveNext()) {
+            const wfDefinition = defEnum.get_current();
+            if (wfDefinition.get_displayName() === workFlowName) {
+              foundDefinition = wfDefinition;
+              break;
+            }
+          }
+          resolve(foundDefinition);
+        },
+        function (sender, args: SP.ClientRequestFailedEventArgs) {
+          console.error("an error occured gettin workflow definitions");
+          console.error(args.get_errorDetails());
+        }
+      );
+    });
+    return p;
+  }
+  private async cancelRunningWorkflows(ItemId: number, workflowName: string): Promise<any> {
+    let p: Promise<any> = new Promise(async (resolve, reject) => {
+      let listId = await this.getListId(this.properties.technicalRequestListName);
+      var context = SP.ClientContext.get_current();
+      var workflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
+      var workflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
+      var workflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
+      //Get all the definitions from the Deployment Service, or get a specific definition using the GetDefinition method.
+      let subscriptionId: string = (await this.getWorkFlowByName(workflowDeploymentService, workflowName)).get_id();
+      let wfInstances = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
+      context.load(wfInstances);
+      context.executeQueryAsync(
+        function (sender, args) {
+          var instancesEnum = wfInstances.getEnumerator();
+          let runningInstance;
+          while (instancesEnum.moveNext()) {
+            var instance = instancesEnum.get_current();
+            let instanceSubscriptionId = instance.get_workflowSubscriptionId().toString();
+            let instanceStatus = instance.get_status();
+            if (instanceSubscriptionId.toUpperCase() === subscriptionId && instanceStatus === 1) {
+              runningInstance = instance;
+            }
+          }
+          if (runningInstance) {
+            workflowInstanceService.terminateWorkflow(runningInstance);
+            context.executeQueryAsync(
+              function (sender, args) {
+                debugger;
+                console.log("Workflow Termination Successful");
+                resolve();
+              },
+              function (sender, args) {
+                debugger;
+                console.error("Failed to terminate workflow.");
+                console.error("Error: " + args.get_message() + "\n" + args.get_stackTrace());
+                resolve();
+              }
+            );
+          }
+          else {
+            console.log("No Running workflow found to terminate");
+            resolve();
+          }
 
+        },
+        function (sender, args) {
+          debugger;
+          console.error("Failed to load Workflow instances.");
+          console.error("Error: " + args.get_message() + "\n" + args.get_stackTrace());
+          reject();
+        }
+      );
+    });
+    return p;
+
+  }
   /**
    * Saves an updated TR back to Sharepoint , or adds a new one if no TR id is present,.
    * 
@@ -1026,26 +1116,31 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     if (copy.Id !== null) {
       console.log("id is mot null will update");
-      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
-        console.log("Item sucessfully added, emailing asignnes");
-        let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
-        console.log("emailling staff cc");
-        var staffccPromise = this.emailStaffCC(tr, originalStatus);
-        console.log("awaiting promises from emails");
-        return Promise.all([newAssigneesPromise, staffccPromise])
-          .then((a) => {
+      debugger;
+      return this.cancelRunningWorkflows(copy.Id, "Send TR Norifications").then((x) => {
+        debugger;
+        return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
+          console.log("Item sucessfully added, emailing asignnes");
+          let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
+          console.log("emailling staff cc");
+          var staffccPromise = this.emailStaffCC(tr, originalStatus);
+          console.log("awaiting promises from emails");
+          return Promise.all([newAssigneesPromise, staffccPromise])
+            .then((a) => {
 
-            console.log("emails sent continuing");
-            let x = newAssigneesPromise;
-            let y = staffccPromise;
-            this.navigateToSource();// should stop here when on a form page  
-            return tr;
-          })
-          .catch((err) => {
+              console.log("emails sent continuing");
+              let x = newAssigneesPromise;
+              let y = staffccPromise;
+              this.navigateToSource();// should stop here when on a form page  
+              return tr;
+            })
+            .catch((err) => {
 
-            console.log("error sending emails " + err);
-          });
+              console.log("error sending emails " + err);
+            });
+        });
       });
+
     }
     else {
       console.log("id is  null will add");
