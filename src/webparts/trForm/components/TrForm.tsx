@@ -101,11 +101,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * 
    * @memberof TrForm
    */
-  public tabChanged(newTabID, oldTabID) {
+  public tabChanged(item?: PivotItem, ev?: React.MouseEvent<HTMLElement>) {
+debugger;
 
-
-    switch (newTabID) {
-      case 0:
+    switch (item.props.linkText) {
+      case "Title":
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig);
@@ -113,7 +113,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           });
         }
         break;
-      case 1:
+      case "Description":
         if (this.ckeditor.instances["tronoxtrtextarea-description"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-description", this.props.ckeditorConfig);
@@ -121,7 +121,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           });
         }
         break;
-      case 2:
+      case "Summary":
 
         if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
@@ -130,7 +130,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           });
         }
         break;
-      case 3:
+      case "Test Params":
         if (this.ckeditor.instances["tronoxtrtextarea-testparams"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-testparams", this.props.ckeditorConfig);
@@ -138,7 +138,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           });
         }
         break;
-      case 8:
+      case "Formulae":
         if (this.ckeditor.instances["tronoxtrtextarea-formulae"] === undefined) {
           new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
             this.ckeditor.replace("tronoxtrtextarea-formulae", this.props.ckeditorConfig);
@@ -1224,11 +1224,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
         </table>
-        <Pivot >
+        <Pivot onLinkClick={this.tabChanged.bind(this)} >
 
 
 
-          <PivotItem linkText='Title' >
+          <PivotItem linkText='Title' onClick={(e)=>{debugger}}  >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
               {this.state.tr.RequestTitle}
