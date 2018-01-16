@@ -92,8 +92,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public tabChanged(item?: PivotItem, ev?: React.MouseEvent<HTMLElement>) {
-    debugger;
-
     switch (item.props.linkText) {
       case "Title":
         if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
@@ -605,7 +603,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.state.tr.TRPrimaryAssignedToId = id;// addit
     }
     if (!(this.state.tr.TRAssignedToId) || this.state.tr.TRAssignedToId.indexOf(id) === -1) { // if i dont have tech specs yet, or this one is not selected
-      this.toggleTechSpec(true, id)
+      this.toggleTechSpec(true, id);
     }
     this.setState((current) => ({ ...current, isDirty: true }));
   }
@@ -893,9 +891,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         name: cust.title
       });
     }
-    debugger;
-    let test = `Assigned To(${((this.state.tr.TRAssignedToId === null) ? "0" : this.state.tr.TRAssignedToId.length.toString())})`
-    debugger;
     return (
       <div>
 
@@ -1230,7 +1225,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
 
-          <PivotItem linkText='Title' onClick={(e) => { debugger }}  >
+          <PivotItem linkText='Title' onClick={(e) => { debugger; }}  >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
               {this.state.tr.RequestTitle}

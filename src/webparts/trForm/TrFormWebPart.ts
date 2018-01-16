@@ -94,7 +94,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       tr.ParentTR = item.ParentTR.Title;
     }
     tr.TRAssignedToId = item.TRAssignedToId;
-    debugger;
     tr.TRPrimaryAssignedToId = item.TRPrimaryAssignedToId;
     tr.StaffCC = this.getStaffCCFromTR(item);
     tr.PigmentsId = item.PigmentsId;
@@ -975,7 +974,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       let wfDefinitions = workflowDeploymentService.enumerateDefinitions(true);
       context.load(wfDefinitions);
       context.executeQueryAsync(
-        function (sender, args) {
+        (sender, args) => {
           let foundDefinition: SP.WorkflowServices.WorkflowDefinition;
           let defEnum = wfDefinitions.getEnumerator();
           while (defEnum.moveNext()) {
@@ -987,9 +986,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           }
           resolve(foundDefinition);
         },
-        function (sender, args: SP.ClientRequestFailedEventArgs) {
+        (sender, args2: SP.ClientRequestFailedEventArgs) => {
           console.error("an error occured gettin workflow definitions");
-          console.error(args.get_errorDetails());
+          console.error(args2.get_errorDetails());
         }
       );
     });
@@ -1007,7 +1006,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       let wfInstances = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
       context.load(wfInstances);
       context.executeQueryAsync(
-        function (sender, args) {
+        (sender, args) => {
           var instancesEnum = wfInstances.getEnumerator();
           let runningInstance;
           while (instancesEnum.moveNext()) {
@@ -1021,15 +1020,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           if (runningInstance) {
             workflowInstanceService.terminateWorkflow(runningInstance);
             context.executeQueryAsync(
-              function (sender, args) {
+              (sender2, args2) => {
                 debugger;
                 console.log("Workflow Termination Successful");
                 resolve();
               },
-              function (sender, args) {
+              (sender2, args2) => {
                 debugger;
                 console.error("Failed to terminate workflow.");
-                console.error("Error: " + args.get_message() + "\n" + args.get_stackTrace());
+                console.error("Error: " + args2.get_message() + "\n" + args2.get_stackTrace());
                 resolve();
               }
             );
@@ -1040,7 +1039,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           }
 
         },
-        function (sender, args) {
+        (sender, args) => {
           debugger;
           console.error("Failed to load Workflow instances.");
           console.error("Error: " + args.get_message() + "\n" + args.get_stackTrace());
@@ -1118,21 +1117,18 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     if (copy.Id !== null) {
       console.log("id is mot null will update");
-      debugger;
+
       return this.cancelRunningWorkflows(copy.Id, "Send TR Norifications").then((x) => {
-        debugger;
+
         return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
           console.log("Item sucessfully added, emailing asignnes");
           let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
           console.log("emailling staff cc");
-          var staffccPromise = this.emailStaffCC(tr, originalStatus);
+          var staffccPromise = this.emailStaffCCOnClose(tr, originalStatus);
           console.log("awaiting promises from emails");
           return Promise.all([newAssigneesPromise, staffccPromise])
             .then((a) => {
-
               console.log("emails sent continuing");
-              let x = newAssigneesPromise;
-              let y = staffccPromise;
               this.navigateToSource();// should stop here when on a form page  
               return tr;
             })
@@ -1145,6 +1141,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     }
     else {
+
       console.log("id is  null will add");
       delete copy.Id;
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
@@ -1152,31 +1149,35 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
         newTR.Id = item.data.Id; // will be passed back toi component and component will set this to th eID NOT REALLY NEEDED
         newTR.TRAssignedToId = copy.TRAssignedToId.results;//used to email new assignees
+        newTR.StaffCC = copy.StaffCC;//used to email new assignees
         newTR.Title = copy.Title;
         // just makes debugging easier
         var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
         // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
         return newAssigneesPromise.then(() => {
-          this.navigateToSource();// should stop here when on a form page// will navigate back to listview 
-          return newTR;
+          tr.Id=item.data.Id; // need this to send the email (tr is the raw data prior tp save.)
+          return this.emailStaffCCOnCreate(tr).then(() => {
+            this.navigateToSource();// should stop here when on a form page// will navigate back to listview 
+            return newTR;// this is just used for testing on the workbench
+          });
+
         });
 
       });
     }
   }
-
   /**
-   * Emails the StaffCC if the TR has just been completed
-   * 
-   * @private
-   * @param {TR} tr The TR we saved.
-   * @param {string} originalStatus The status of the TR Prior to us saving it,.
-   * @returns {Promise<any>} 
-   * 
-   * @memberof TrFormWebPart
-   */
-  private emailStaffCC(tr: TR, originalStatus: string): Promise<any> {
-
+    * Emails the StaffCC if the TR has just been completed
+    * 
+    * @private
+    * @param {TR} tr The TR we saved.
+    * @param {string} originalStatus The status of the TR Prior to us saving it,.
+    * @returns {Promise<any>} 
+    * 
+    * @memberof TrFormWebPart
+    */
+  private emailStaffCCOnClose(tr: TR, originalStatus: string): Promise<any> {
+    
     return new Promise((resolve, reject) => {
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCC === null || tr.StaffCC.length === 0) {
         console.log("staffcc emails wil lnot be processed");
@@ -1196,6 +1197,70 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
         let body: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body"; }).RichText
+          .replace("~technicalRequestNumber", tr.Title)
+          .replace("~technicalRequestEditUrl", editFormUrl)
+          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        console.log("extracted text in emailStaffCC, looping users");
+        for (let staffCC of tr.StaffCC) {
+          console.log("in emailStaffCC, fetching user " + staffCC);
+          //*******          TODO , O a;ready have the email address in the persona
+
+
+          let promise = pnp.sp.web.getUserById(parseInt(staffCC.id)).get().then((user) => {
+            console.log("in emailStaffCC, fetched user " + staffCC);
+            let emailProperties: EmailProperties = {
+              From: this.context.pageContext.user.email,
+              To: [user.Email],
+              Subject: subject,
+              Body: body
+            };
+            console.log("in emailStaffCC, emailing user " + user.Email);
+            return pnp.sp.utility.sendEmail(emailProperties)
+              .then((x) => {
+                console.log("email sent to " + emailProperties.To);
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+
+          }).catch((error) => {
+            console.log("Error Fetching user with id " + staffCC);
+          });
+          promises.push(promise);
+        }
+        Promise.all(promises).then((x) => {
+          resolve();
+        });
+      });
+    });
+  }
+  /**
+   * Emails the StaffCC if the TR has just been completed
+   * 
+   * @private
+   * @param {TR} tr The TR we saved.
+   * @param {string} originalStatus The status of the TR Prior to us saving it,.
+   * @returns {Promise<any>} 
+   * 
+   * @memberof TrFormWebPart
+   */
+  private emailStaffCCOnCreate(tr: TR): Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      debugger;
+      let promises: Array<Promise<any>> = [];
+      let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
+      editFormUrl = editFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
+      let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
+      displayFormUrl = displayFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
+      console.log("fetching email text in emailStaffCC");
+      var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        console.log("fetched email text in emailStaffCC, extracting text");
+        let subject: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject onCreated"; }).PlainText
+          .replace("~technicalRequestNumber", tr.Title)
+          .replace("~technicalRequestEditUrl", editFormUrl)
+          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        let body: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body onCreate"; }).RichText
           .replace("~technicalRequestNumber", tr.Title)
           .replace("~technicalRequestEditUrl", editFormUrl)
           .replace("~technicalRequestDisplayUrl", displayFormUrl);
@@ -1341,7 +1406,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * @memberof TrFormWebPart
    */
   private uploadFile(file, trId): Promise<any> {
-    debugger;
+
     if (file.size <= 10485760) {
       // small upload
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)

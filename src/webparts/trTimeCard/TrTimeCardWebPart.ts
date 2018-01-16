@@ -20,7 +20,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
 
   private reactElement: React.ReactElement<ITrTimeCardProps>;
   public onInit(): Promise<void> {
-    return super.onInit().then(_ => {
+    return super.onInit().then(() => {
       pnp.setup({
         spfxContext: this.context,
       });
