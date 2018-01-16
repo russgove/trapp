@@ -1,25 +1,15 @@
-
-import {
-  NormalPeoplePicker, TagPicker, ITag
-} from "office-ui-fabric-react/lib/Pickers";
-
-import { PrimaryButton, ButtonType, Button,DefaultButton,ActionButton } from "office-ui-fabric-react/lib/Button";
+/** Fanric */
+import { NormalPeoplePicker, TagPicker, ITag } from "office-ui-fabric-react/lib/Pickers";
+import { PrimaryButton, ButtonType, Button, DefaultButton, ActionButton } from "office-ui-fabric-react/lib/Button";
 import { TextField } from "office-ui-fabric-react/lib/TextField";
-
 import { Checkbox } from "office-ui-fabric-react/lib/Checkbox";
 import { Label } from "office-ui-fabric-react/lib/Label";
-
 import { Dropdown } from "office-ui-fabric-react/lib/Dropdown";
-// switch to fabric  ComboBox on next upgrade
-// let Select = require("react-select") as any;
-//import "react-select/dist/react-select.css";
 import { DetailsList, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from "office-ui-fabric-react/lib/DetailsList";
 import { DatePicker, } from "office-ui-fabric-react/lib/DatePicker";
 import { IPersonaProps } from "office-ui-fabric-react/lib/Persona";
-import { SPComponentLoader } from "@microsoft/sp-loader";
-
-
 /** SPFX Stuff */
+import { SPComponentLoader } from "@microsoft/sp-loader";
 import * as React from "react";
 
 /** Other utilities */
@@ -28,7 +18,7 @@ import { find, clone, remove, filter, map, orderBy, countBy, findIndex, startsWi
 
 // switch to fabric pivot on text update
 //import * as tabs from "react-tabs";
-import { Pivot, PivotItem ,PivotLinkFormat,PivotLinkSize} from "office-ui-fabric-react/lib/Pivot";
+import { Pivot, PivotItem, PivotLinkFormat, PivotLinkSize } from "office-ui-fabric-react/lib/Pivot";
 
 /**  Custom Stuff */
 import { DocumentIframe } from "./DocumentIframe";
@@ -38,7 +28,7 @@ import * as md from "./MessageDisplay";
 import MessageDisplay from "./MessageDisplay";
 import TRPicker from "./TRPicker";
 import { ITRFormState } from "./ITRFormState";
-
+import styles from "./TrForm.module.scss";
 
 /**
  * Renders the new and edit form for technical requests
@@ -102,7 +92,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public tabChanged(item?: PivotItem, ev?: React.MouseEvent<HTMLElement>) {
-debugger;
+    debugger;
 
     switch (item.props.linkText) {
       case "Title":
@@ -560,15 +550,8 @@ debugger;
     });
     return orderBy(selectedTests, ["propertyName", "title"], ["asc", "asc"]);
   }
-
-
-
-
-
-
-
   /**
-   * Gets the technical Specialists, including an indicator if they are selected or not
+   * Gets the technical Specialists, including an indicator if they are selected or not and if its the Primary Tech Spec
    * 
    * @returns 
    * 
@@ -579,16 +562,11 @@ debugger;
       return {
         title: techSpec.title,
         selected: ((this.state.tr.TRAssignedToId) ? this.state.tr.TRAssignedToId.indexOf(techSpec.id) != -1 : null),
-        id: techSpec.id
+        id: techSpec.id,
+        primary: (techSpec.id === this.state.tr.TRPrimaryAssignedToId)
       };
     });
     return orderBy(techSpecs, ["selected", "title"], ["desc", "asc"]);
-  }
-
-
-  public staffCCChanged(items?: Array<IPersonaProps>): void {
-    this.state.tr.StaffCC = items;
-    this.props.ensureUsersInPersonas(this.state.tr.StaffCC);
   }
 
   /**
@@ -607,14 +585,36 @@ debugger;
         this.state.tr.TRAssignedToId = [id];
       }
     } else {
-      this.state.tr.TRAssignedToId = filter(this.state.tr.TRAssignedToId, (x) => { return x !== id; });// remove it
+      // only remove if its not the primary
+      if (this.state.tr.TRPrimaryAssignedToId !== id) {
+        this.state.tr.TRAssignedToId = filter(this.state.tr.TRAssignedToId, (x) => { return x !== id; });// remove it
+      }
+    }
+    this.setState((current) => ({ ...current, isDirty: true }));
+  }
+  /**
+   * Flags the selected techSpec as the PrimaryTechspec. A TR can have many tech specs . Only one primary.
+   * 
+   * @param {boolean} isPrimary 
+   * @param {number} id 
+   * 
+   * @memberof TrForm
+   */
+  public togglePrimaryTechSpec(isPrimary: boolean, id: number) {
+    if (isPrimary) {
+      this.state.tr.TRPrimaryAssignedToId = id;// addit
+    }
+    if (!(this.state.tr.TRAssignedToId) || this.state.tr.TRAssignedToId.indexOf(id) === -1) { // if i dont have tech specs yet, or this one is not selected
+      this.toggleTechSpec(true, id)
     }
     this.setState((current) => ({ ...current, isDirty: true }));
   }
 
 
-
-
+  public staffCCChanged(items?: Array<IPersonaProps>): void {
+    this.state.tr.StaffCC = items;
+    this.props.ensureUsersInPersonas(this.state.tr.StaffCC);
+  }
 
   /******** TEST Toggles , this is two lists, toggling adds from one , removes from the other*/
   public addTest(id: number): void {
@@ -894,14 +894,14 @@ debugger;
       });
     }
     debugger;
-    let test =`Assigned To(${((this.state.tr.TRAssignedToId===null)?"0":this.state.tr.TRAssignedToId.length.toString())})`
+    let test = `Assigned To(${((this.state.tr.TRAssignedToId === null) ? "0" : this.state.tr.TRAssignedToId.length.toString())})`
     debugger;
     return (
       <div>
 
         <MessageDisplay messages={this.state.errorMessages}
           hideMessage={this.removeMessage.bind(this)} />
-        <div style={{ float: "left" }}> <Label>MODE : {modes[this.props.mode]}</Label></div>
+        <div style={{ float: "left" }} className={styles.secondarybuttonrwg}> <Label className={styles.secondarybuttonrwg}>MODE : {modes[this.props.mode]}</Label></div>
         <div style={{ float: "right" }}>  <Label>Status : {(this.state.isDirty) ? "Unsaved" : "Saved"}</Label></div>
         <div style={{ clear: "both" }}></div>
         <table>
@@ -1225,12 +1225,12 @@ debugger;
 
         </table>
         <Pivot onLinkClick={this.tabChanged.bind(this)}
-         linkFormat={PivotLinkFormat.tabs} 
-         linkSize={PivotLinkSize.normal}>
+          linkFormat={PivotLinkFormat.tabs}
+          linkSize={PivotLinkSize.normal}>
 
 
 
-          <PivotItem linkText='Title' onClick={(e)=>{debugger}}  >
+          <PivotItem linkText='Title' onClick={(e) => { debugger }}  >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
               {this.state.tr.RequestTitle}
@@ -1252,9 +1252,9 @@ debugger;
               {this.state.tr.TestingParameters}
             </textarea>
           </PivotItem>
-          
-          <PivotItem linkText={`Assigned To(${((this.state.tr.TRAssignedToId===null)?"0":this.state.tr.TRAssignedToId.length.toString())})`}>
-          
+
+          <PivotItem linkText={`Assigned To(${((this.state.tr.TRAssignedToId === null) ? "0" : this.state.tr.TRAssignedToId.length.toString())})`}>
+
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
               selectionMode={SelectionMode.none}
@@ -1273,11 +1273,23 @@ debugger;
                       }}
 
                     />
+                },
+                {
+                  key: "primary", name: "Primary?", fieldName: "primary", minWidth: 200, onRender: (item) =>
+                    <Checkbox
+
+                      checked={item.primary}
+                      autoFocus={true}
+                      onChange={(element, value) => {
+                        this.togglePrimaryTechSpec(value, item.id);
+                      }}
+
+                    />
                 }
               ]}
             />
           </PivotItem>
-          <PivotItem linkText={`Staff cc(${(this.state.tr.StaffCC===null) ? "0": this.state.tr.StaffCC.length})`} >
+          <PivotItem linkText={`Staff cc(${(this.state.tr.StaffCC === null) ? "0" : this.state.tr.StaffCC.length})`} >
             <NormalPeoplePicker
               defaultSelectedItems={this.state.tr.StaffCC}
               onChange={this.staffCCChanged.bind(this)}
@@ -1285,7 +1297,7 @@ debugger;
             >
             </NormalPeoplePicker>
           </PivotItem>
-          <PivotItem linkText={`Pigments(${(this.state.tr.PigmentsId===null) ?"0": this.state.tr.PigmentsId.length })`} >
+          <PivotItem linkText={`Pigments(${(this.state.tr.PigmentsId === null) ? "0" : this.state.tr.PigmentsId.length})`} >
 
             <div style={{ float: "left" }}>
               <Label> Available Pigments</Label>
@@ -1348,7 +1360,7 @@ debugger;
             </div>
             <div style={{ clear: "both" }}></div>
           </PivotItem>
-          <PivotItem linkText={`Tests(${(this.state.tr.TestsId===null) ?"0": this.state.tr.TestsId.length })`} >
+          <PivotItem linkText={`Tests(${(this.state.tr.TestsId === null) ? "0" : this.state.tr.TestsId.length})`} >
 
             <div style={{ float: "left" }}>
               <Label> Available Tests</Label>
@@ -1418,7 +1430,7 @@ debugger;
               {this.state.tr.Formulae}
             </textarea>
           </PivotItem>
-          <PivotItem linkText={`Child TRs(${(this.state.childTRs===null) ?"0": this.state.childTRs.length })`} >
+          <PivotItem linkText={`Child TRs(${(this.state.childTRs === null) ? "0" : this.state.childTRs.length})`} >
 
 
             <DetailsList
@@ -1446,7 +1458,7 @@ debugger;
               ]}
             />
           </PivotItem>
-          <PivotItem linkText={`Documents(${(this.state.documents===null) ?"0": this.state.documents.length })`} >
+          <PivotItem linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`} >
             <div style={{ float: "left" }}>
               <DetailsList
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1484,8 +1496,8 @@ debugger;
 
         <this.SaveButton />
         <span style={{ margin: 20 }}>
-          <DefaultButton href="#" onClick={this.cancel} icon="ms-Icon--Cancel" >
-            <i className="ms-Icon ms-Icon--Cancel" aria-hidden="true"></i>
+          <DefaultButton href="#" onClick={this.cancel} icon="ms-Icon--Cancel" className={styles.primarybutton} >
+            <i className={`ms-Icon ms-Icon--Cancel ${styles.primarybutton}`} aria-hidden="true"></i>
             Cancel
         </DefaultButton>
         </span>

@@ -94,6 +94,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       tr.ParentTR = item.ParentTR.Title;
     }
     tr.TRAssignedToId = item.TRAssignedToId;
+    debugger;
+    tr.TRPrimaryAssignedToId = item.TRPrimaryAssignedToId;
     tr.StaffCC = this.getStaffCCFromTR(item);
     tr.PigmentsId = item.PigmentsId;
     tr.TestsId = item.TestsId;

@@ -56,6 +56,7 @@ export class TR {
         this.Formulae = null;
         this.WorkTypeId = null;
         this.TRAssignedToId = null;
+        this.TRPrimaryAssignedToId = null;
         this.StaffCC = null;
         this.PigmentsId = null;
         this.TestsId = null;
@@ -91,6 +92,7 @@ export class TR {
     public TestingParameters: string;//TestParamsArea
     public WorkTypeId: number;
     public TRAssignedToId: Array<number>;
+    public TRPrimaryAssignedToId: number;
     public StaffCC: Array<IPersonaProps>;
     public PigmentsId: Array<number>;
     public TestsId: Array<number>;
