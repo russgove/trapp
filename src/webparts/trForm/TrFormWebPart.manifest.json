@@ -42,7 +42,8 @@
         "visitorsGoupdName":"US Visitors",
         "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
         "documentIframeWidth":500,
-        "documentIframeHeight":500
+        "documentIframeHeight":500,
+        "workflowToTerminateOnChange":"Send TR Norifications"
       }
     },
     {

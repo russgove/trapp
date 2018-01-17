@@ -26,4 +26,5 @@ export interface ITrFormWebPartProps {
   ckeditorUrl:string; //path to load ckeditor from  (//cdn.ckeditor.com/4.6.2/full/ckeditor.js  OR our  cdn)
   documentIframeHeight:number; // heighht of the iframe that shows the document in the Documents Tab
   documentIframeWidth:number; // width of the iframe that shows the document in the Documents Tab
+  workflowToTerminateOnChange:string; // the name of the workflow to terminate when an item changes ("Send TR Norifications")
 }

@@ -757,6 +757,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   label: "Url used to load CKEditor",
                   description: "CKEditor is the Roch text editor used oin the forms. It can be loaded from the public url(//cdn.ckeditor.com/4.6.2/full/ckeditor.js) or our cdn"
                 }),
+                PropertyPaneTextField('workflowToTerminateOnChange', {
+                  label: "Workflow to terminate on change",
+                  description: "The name of the workdlow to terminate when a TR is changed. Terminating the workflow before save causes the workflow to restart with the new date."
+                }),
                 PropertyPaneSlider('documentIframeHeight', {
                   label: "Hight of Iframe used to show Documents",
                   min: 100,
@@ -1025,20 +1029,37 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   private async cancelRunningWorkflows(ItemId: number, workflowName: string): Promise<any> {
     debugger;
     let p: Promise<any> = new Promise(async (resolve, reject) => {
+      if (!workflowName) {
+        resolve();
+        return;
+
+      }
       let listId = await this.getListId(this.properties.technicalRequestListName);
       var context = SP.ClientContext.get_current();
       var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
       var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
-      var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService()
+      var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService();
       var workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
       //Get all the definitions from the Deployment Service, or get a specific definition using the GetDefinition method.
       let wfDefinition: SP.WorkflowServices.WorkflowDefinition = (await this.getWorkFlowDefinitionByName(workflowDeploymentService, workflowName));
+      if (!wfDefinition) {
+        console.error("Coold not find workflow Definition for workflow named : " + workflowName);
+        alert("Coold not find workflow Definition for workflow named : " + workflowName);
+        resolve();
+        return;
+      }
       let wfDefinitionId: string = wfDefinition.get_id();
-      // get the subscriptions for the list
 
-      let wfSubscription:SP.WorkflowServices.WorkflowSubscription = 
-      await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService,wfDefinitionId,listId);
-      let wfSubscriptionId:string= wfSubscription.get_id().toString().toUpperCase();;
+      // get the subscription for the list
+      let wfSubscription: SP.WorkflowServices.WorkflowSubscription =
+        await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService, wfDefinitionId, listId);
+      if (!wfSubscription) {
+        console.error("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+        alert("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+        resolve();
+        return;
+      }
+      let wfSubscriptionId: string = wfSubscription.get_id().toString().toUpperCase();
       let wfInstances: SP.WorkflowServices.WorkflowInstanceCollection = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
       context.load(wfInstances);
       context.executeQueryAsync(
@@ -1077,7 +1098,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         },
         (sender, args) => {
           debugger;
-          alert("Failed to load workflow instances. Running workflows were not cancelled. This can happen if the Office 365 workflow service is unavailable.")
+          alert("Failed to load workflow instances. Running workflows were not cancelled. This can happen if the Office 365 workflow service is unavailable.");
           console.error("Failed to load Workflow instances.");
           console.error("Error: " + args.get_message() + "\n" + args.get_stackTrace());
           resolve();
@@ -1154,8 +1175,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     if (copy.Id !== null) {
       console.log("id is mot null will update");
-
-      return this.cancelRunningWorkflows(copy.Id, "Send TR Norifications").then((x) => {
+      debugger;
+      return this.cancelRunningWorkflows(copy.Id, this.properties.workflowToTerminateOnChange).then((x) => {
 
         return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
           console.log("Item sucessfully added, emailing asignnes");
