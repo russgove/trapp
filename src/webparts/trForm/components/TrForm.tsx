@@ -41,12 +41,14 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   private ckeditor: any;
   private originalAssignees: Array<number> = [];
   private originalStatus: string = "";
+  private originalRequiredDate: string = "";
 
   constructor(props: ITrFormProps) {
     super(props);
     this.state = props.initialState;
     this.originalAssignees = clone(this.state.tr.TRAssignedToId);// sasve original so we can email new assignees
     this.originalStatus = this.state.tr.TRStatus;// sasve original so we can email if it gets closed
+    this.originalRequiredDate = this.state.tr.RequiredDate;// sasve original so we can email if it gets closed
     this.SaveButton = this.SaveButton.bind(this);
     this.save = this.save.bind(this);
     this.cancel = this.cancel.bind(this);
@@ -241,7 +243,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     const errors: md.Message[] = this.getErrors();
     if (errors.length === 0) {
-      this.props.save(tr, this.originalAssignees, this.originalStatus)
+      this.props.save(tr, this.originalAssignees, this.originalStatus,this.originalRequiredDate)
         .then((result: TR) => {
           tr.Id = result.Id;
           this.setState((current) => ({ ...current, errorMessages: [], isDirty: false, tr: tr }));
@@ -712,6 +714,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       // this.state.tr = childTr;
       this.originalAssignees = clone(childTr.TRAssignedToId);
       this.originalStatus = childTr.TRStatus;
+      this.originalRequiredDate = childTr.RequiredDate;
+      
       this.updateCKEditorText(this.state.tr);
       // this.state.childTRs = [];
       this.setState((current) => ({ ...current, tr: childTr, childTRs: [] }));
@@ -781,6 +785,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         // this.state.tr = parentTR;
         this.originalAssignees = clone(parentTR.TRAssignedToId);
         this.originalStatus = parentTR.TRStatus;
+        this.originalRequiredDate = parentTR.RequiredDate
         // this.state.childTRs = [];
         this.setState((current) => ({ ...current, tr: parentTR, childTRs: [] }));
         this.updateCKEditorText(this.state.tr);

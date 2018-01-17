@@ -6,7 +6,7 @@ export interface ITrFormProps {
 
   //callbacks
   fetchDocumentWopiFrameURL: (id: number, mode: number) => Promise<string>;
-  save: (tr: TR, originalAssignees: Array<number>, originalStatus: string) => Promise<any>; //make this return promise // method to call to save tr
+  save: (tr: TR, originalAssignees: Array<number>, originalStatus: string,originalRequiredDate:string) => Promise<any>; //make this return promise // method to call to save tr
   cancel: () => any; // method to call to save tr
   TRsearch: (searchText: string) => Promise<TR[]>; // method tyo call to searcgh gpr parenttr
   peopleSearch: (filter: string, selectedItems?: IPersonaProps[]) => IPersonaProps[] | PromiseLike<IPersonaProps[]>;

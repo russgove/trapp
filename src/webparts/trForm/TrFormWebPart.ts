@@ -1055,7 +1055,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService, wfDefinitionId, listId);
       if (!wfSubscription) {
         console.error("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
-        alert("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+        alert("Could not find a subscription for  workflow named : " + workflowName + " ib the TR List");
         resolve();
         return;
       }
@@ -1078,7 +1078,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             workflowInstanceService.terminateWorkflow(runningInstance);
             context.executeQueryAsync(
               (sender2, args2) => {
-                debugger;
                 console.log("Workflow Termination Successful");
                 resolve();
               },
@@ -1118,11 +1117,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * saying they have been added.
    * @param {string} originalStatus The Status of the TR before we started editing. If the New Status is completed and 
    * the old status was not completed , we email everyone in the StafCC list that the TR is now completed
+   * @param {string} originalRequiredDate The RequiredDate of the TR before we started editing. If the the reuired date 
+   * has changed, we will cancel the running notification workflow before saving so othat a new  Workflow will get started
+   * with the new Required Date.
    * @returns {Promise<any>} 
    * 
    * @memberof TrFormWebPart
    */
-  private save(tr: TR, orginalAssignees: Array<number>, originalStatus: string): Promise<any> {
+  private async save(tr: TR, orginalAssignees: Array<number>, originalStatus: string, originalReuiredDate: string): Promise<any> {
     // remove lookups
     let copy = clone(tr) as any;
     delete copy.RequestorName;
@@ -1176,30 +1178,32 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (copy.Id !== null) {
       console.log("id is mot null will update");
       debugger;
-      return this.cancelRunningWorkflows(copy.Id, this.properties.workflowToTerminateOnChange).then((x) => {
-
-        return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
-          console.log("Item sucessfully added, emailing asignnes");
-          let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
-          console.log("emailling staff cc");
-          var staffccPromise = this.emailStaffCCOnClose(tr, originalStatus);
-          console.log("awaiting promises from emails");
-          return Promise.all([newAssigneesPromise, staffccPromise])
-            .then((a) => {
-              console.log("emails sent continuing");
-              this.navigateToSource();// should stop here when on a form page  
-              return tr;
-            })
-            .catch((err) => {
-
-              console.log("error sending emails " + err);
-            });
+      if (originalReuiredDate != tr.RequiredDate) {
+        await this.cancelRunningWorkflows(copy.Id, this.properties.workflowToTerminateOnChange).then((x) => {
+          console.log("Workflow has been terminated");
         });
+      }
+
+      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
+        console.log("Item sucessfully added, emailing asignnes");
+        let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
+        console.log("emailling staff cc");
+        var staffccPromise = this.emailStaffCCOnClose(tr, originalStatus);
+        console.log("awaiting promises from emails");
+        return Promise.all([newAssigneesPromise, staffccPromise])
+          .then((a) => {
+            console.log("emails sent continuing");
+            this.navigateToSource();// should stop here when on a form page  
+            return tr;
+          })
+          .catch((err) => {
+            console.log("error sending emails " + err);
+          });
       });
+
 
     }
     else {
-
       console.log("id is  null will add");
       delete copy.Id;
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
