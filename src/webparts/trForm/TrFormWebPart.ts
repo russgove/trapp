@@ -1155,7 +1155,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
         // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
         return newAssigneesPromise.then(() => {
-          tr.Id=item.data.Id; // need this to send the email (tr is the raw data prior tp save.)
+          tr.Id = item.data.Id; // need this to send the email (tr is the raw data prior tp save.)
           return this.emailStaffCCOnCreate(tr).then(() => {
             this.navigateToSource();// should stop here when on a form page// will navigate back to listview 
             return newTR;// this is just used for testing on the workbench
@@ -1177,7 +1177,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     * @memberof TrFormWebPart
     */
   private emailStaffCCOnClose(tr: TR, originalStatus: string): Promise<any> {
-    
+
     return new Promise((resolve, reject) => {
       if (!this.properties.enableEmail || tr.TRStatus != "Completed" || originalStatus === "Completed" || tr.StaffCC === null || tr.StaffCC.length === 0) {
         console.log("staffcc emails wil lnot be processed");
@@ -1192,14 +1192,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       console.log("fetching email text in emailStaffCC");
       var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         console.log("fetched email text in emailStaffCC, extracting text");
-        let subject: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText
-          .replace("~technicalRequestNumber", tr.Title)
-          .replace("~technicalRequestEditUrl", editFormUrl)
-          .replace("~technicalRequestDisplayUrl", displayFormUrl);
-        let body: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body"; }).RichText
-          .replace("~technicalRequestNumber", tr.Title)
-          .replace("~technicalRequestEditUrl", editFormUrl)
-          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        let subjectFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject"; }).PlainText;
+        let subject: string = this.replaceEmailTokens(subjectFormat, tr, editFormUrl, displayFormUrl)
+        let bodyFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body"; }).PlainText;
+        let body: string = this.replaceEmailTokens(bodyFormat, tr, editFormUrl, displayFormUrl)
+
         console.log("extracted text in emailStaffCC, looping users");
         for (let staffCC of tr.StaffCC) {
           console.log("in emailStaffCC, fetching user " + staffCC);
@@ -1234,6 +1231,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
     });
   }
+  private replaceEmailTokens(emailFormat: string, tr: TR, editFormUrl, displayFormUrl): string {
+
+    let newBody = emailFormat.split("~technicalRequestNumber").join(tr.Title)
+      .split("~technicalRequestTitle").join(tr.RequestTitle)
+      .split("~technicalRequestEditUrl").join(editFormUrl)
+      .split("~technicalRequestDisplayUrl").join(displayFormUrl);
+    return newBody;
+
+  }
   /**
    * Emails the StaffCC if the TR has just been completed
    * 
@@ -1256,14 +1262,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       console.log("fetching email text in emailStaffCC");
       var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         console.log("fetched email text in emailStaffCC, extracting text");
-        let subject: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject onCreated"; }).PlainText
-          .replace("~technicalRequestNumber", tr.Title)
-          .replace("~technicalRequestEditUrl", editFormUrl)
-          .replace("~technicalRequestDisplayUrl", displayFormUrl);
-        let body: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body onCreate"; }).RichText
-          .replace("~technicalRequestNumber", tr.Title)
-          .replace("~technicalRequestEditUrl", editFormUrl)
-          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        let subjectFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject onCreated"; }).PlainText;
+        let subject: string = this.replaceEmailTokens(subjectFormat, tr, editFormUrl, displayFormUrl)
+        let bodyFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body onCreate"; }).PlainText;
+        let body: string = this.replaceEmailTokens(bodyFormat, tr, editFormUrl, displayFormUrl)
+
         console.log("extracted text in emailStaffCC, looping users");
         for (let staffCC of tr.StaffCC) {
           console.log("in emailStaffCC, fetching user " + staffCC);
@@ -1331,14 +1334,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       console.log("fetching email text in emailNewAssignees");
       var x = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
         console.log("fetched email text in emailNewAssignees, extracting it now");
-        let subject: string = find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject"; }).PlainText
-          .replace("~technicalRequestNumber", tr.Title)
-          .replace("~technicalRequestEditUrl", editFormUrl)
-          .replace("~technicalRequestDisplayUrl", displayFormUrl);
-        let body: string = find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body"; }).RichText
-          .replace("~technicalRequestNumber", tr.Title)
-          .replace("~technicalRequestEditUrl", editFormUrl)
-          .replace("~technicalRequestDisplayUrl", displayFormUrl);
+        let subjectFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Subject"; }).PlainText;
+        let subject: string = this.replaceEmailTokens(subjectFormat, tr, editFormUrl, displayFormUrl)
+        let bodyFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "Assignee Email Body"; }).PlainText;
+        let body: string = this.replaceEmailTokens(bodyFormat, tr, editFormUrl, displayFormUrl)
+
         console.log("extracted email text in emailNewAssignees,looping assignees");
         console.log("cuurnt assignees are:" + currentAssignees);
 
