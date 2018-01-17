@@ -968,7 +968,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       return list.Id;
     });
   }
-  private getWorkFlowByName(workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService, workFlowName: string): Promise<SP.WorkflowServices.WorkflowDefinition> {
+  private getWorkFlowDefinitionByName(workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService, workFlowName: string): Promise<SP.WorkflowServices.WorkflowDefinition> {
     let p: Promise<any> = new Promise(async (resolve, reject) => {
       let context = workflowDeploymentService.get_context();
       let wfDefinitions = workflowDeploymentService.enumerateDefinitions(true);
@@ -994,16 +994,52 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     });
     return p;
   }
+  private getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService, workFlowDefinitionId: string, listId): Promise<SP.WorkflowServices.WorkflowSubscription> {
+    let p: Promise<any> = new Promise(async (resolve, reject) => {
+      let context: SP.ClientRuntimeContext = workflowSubscriptionService.get_context();
+      let wfSubscriptions: SP.WorkflowServices.WorkflowSubscriptionCollection =
+        workflowSubscriptionService.enumerateSubscriptionsByList(listId);
+      context.load(wfSubscriptions);
+      context.executeQueryAsync(
+        (sender, args) => {
+          let foundSubscription: SP.WorkflowServices.WorkflowSubscription;
+          let subscriptionEnum = wfSubscriptions.getEnumerator();
+          while (subscriptionEnum.moveNext()) {
+            const wfSubscription: SP.WorkflowServices.WorkflowSubscription = subscriptionEnum.get_current();
+            debugger;
+            if (wfSubscription.get_definitionId().toString().toUpperCase() === workFlowDefinitionId.toString().toUpperCase()) {
+              foundSubscription = wfSubscription;
+              break;
+            }
+          }
+          resolve(foundSubscription);
+        },
+        (sender, args2: SP.ClientRequestFailedEventArgs) => {
+          console.error("an error occured gettin workflow subscriptions");
+          console.error(args2.get_errorDetails());
+        }
+      );
+    });
+    return p;
+  }
   private async cancelRunningWorkflows(ItemId: number, workflowName: string): Promise<any> {
+    debugger;
     let p: Promise<any> = new Promise(async (resolve, reject) => {
       let listId = await this.getListId(this.properties.technicalRequestListName);
       var context = SP.ClientContext.get_current();
-      var workflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
-      var workflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
-      var workflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
+      var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
+      var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
+      var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService()
+      var workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
       //Get all the definitions from the Deployment Service, or get a specific definition using the GetDefinition method.
-      let subscriptionId: string = (await this.getWorkFlowByName(workflowDeploymentService, workflowName)).get_id();
-      let wfInstances = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
+      let wfDefinition: SP.WorkflowServices.WorkflowDefinition = (await this.getWorkFlowDefinitionByName(workflowDeploymentService, workflowName));
+      let wfDefinitionId: string = wfDefinition.get_id();
+      // get the subscriptions for the list
+
+      let wfSubscription:SP.WorkflowServices.WorkflowSubscription = 
+      await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService,wfDefinitionId,listId);
+      let wfSubscriptionId:string= wfSubscription.get_id().toString().toUpperCase();;
+      let wfInstances: SP.WorkflowServices.WorkflowInstanceCollection = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
       context.load(wfInstances);
       context.executeQueryAsync(
         (sender, args) => {
@@ -1013,7 +1049,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             var instance = instancesEnum.get_current();
             let instanceSubscriptionId = instance.get_workflowSubscriptionId().toString();
             let instanceStatus = instance.get_status();
-            if (instanceSubscriptionId.toUpperCase() === subscriptionId && instanceStatus === 1) {
+            if (instanceSubscriptionId.toUpperCase() === wfSubscriptionId && instanceStatus === 1) {
               runningInstance = instance;
             }
           }
@@ -1041,9 +1077,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         },
         (sender, args) => {
           debugger;
+          alert("Failed to load workflow instances. Running workflows were not cancelled. This can happen if the Office 365 workflow service is unavailable.")
           console.error("Failed to load Workflow instances.");
           console.error("Error: " + args.get_message() + "\n" + args.get_stackTrace());
-          reject();
+          resolve();
         }
       );
     });
@@ -1145,24 +1182,31 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       console.log("id is  null will add");
       delete copy.Id;
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.add(copy).then((item) => {
+        // If anything fails in here, the old tr is still in the component WITH NO ID. Subsequent saves will create duplicates
         let newTR = new TR();
 
         newTR.Id = item.data.Id; // will be passed back toi component and component will set this to th eID NOT REALLY NEEDED
         newTR.TRAssignedToId = copy.TRAssignedToId.results;//used to email new assignees
         newTR.StaffCC = copy.StaffCC;//used to email new assignees
         newTR.Title = copy.Title;
-        // just makes debugging easier
-        var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
-        // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
-        return newAssigneesPromise.then(() => {
-          tr.Id = item.data.Id; // need this to send the email (tr is the raw data prior tp save.)
-          return this.emailStaffCCOnCreate(tr).then(() => {
-            this.navigateToSource();// should stop here when on a form page// will navigate back to listview 
-            return newTR;// this is just used for testing on the workbench
+        try {
+          // just makes debugging easier
+          var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
+          // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
+          return newAssigneesPromise.then(() => {
+            tr.Id = item.data.Id; // need this to send the email (tr is the raw data prior tp save.)
+            return this.emailStaffCCOnCreate(tr).then(() => {
+              this.navigateToSource();// should stop here when on a form page// will navigate back to listview 
+              return newTR;// this is just used for testing on the workbench
+            });
+
           });
-
-        });
-
+        } catch (e) { //should not get here!
+          console.error(e);
+          alert("failed to send emails");
+          alert(e);
+          return newTR;
+        }
       });
     }
   }
@@ -1254,6 +1298,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     return new Promise((resolve, reject) => {
       debugger;
+      if (!tr.StaffCC) {
+        resolve();
+        return;
+      }
       let promises: Array<Promise<any>> = [];
       let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
       editFormUrl = editFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
