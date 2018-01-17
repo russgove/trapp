@@ -1028,83 +1028,75 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   private async cancelRunningWorkflows(ItemId: number, workflowName: string): Promise<any> {
     debugger;
-    let p: Promise<any> = new Promise(async (resolve, reject) => {
-      if (!workflowName) {
-        resolve();
-        return;
+    if (!workflowName) {
+      return Promise.resolve();
+    }
+    let listId = await this.getListId(this.properties.technicalRequestListName);
+    var context = SP.ClientContext.get_current();
+    // get all the workflow service managers
+    var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
+    var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
+    var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService();
+    var workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
 
-      }
-      let listId = await this.getListId(this.properties.technicalRequestListName);
-      var context = SP.ClientContext.get_current();
-      var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
-      var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
-      var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService();
-      var workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
-      //Get all the definitions from the Deployment Service, or get a specific definition using the GetDefinition method.
-      let wfDefinition: SP.WorkflowServices.WorkflowDefinition = (await this.getWorkFlowDefinitionByName(workflowDeploymentService, workflowName));
-      if (!wfDefinition) {
-        console.error("Coold not find workflow Definition for workflow named : " + workflowName);
-        alert("Coold not find workflow Definition for workflow named : " + workflowName);
-        resolve();
-        return;
-      }
-      let wfDefinitionId: string = wfDefinition.get_id();
+    //Get all the definitions from the Deployment Service, or get a specific definition using the GetDefinition method.
+    let wfDefinition: SP.WorkflowServices.WorkflowDefinition = (await this.getWorkFlowDefinitionByName(workflowDeploymentService, workflowName));
+    if (!wfDefinition) {
+      console.error("Coold not find workflow Definition for workflow named : " + workflowName);
+      alert("Coold not find workflow Definition for workflow named : " + workflowName);
+      return Promise.resolve();
+    }
+    let wfDefinitionId: string = wfDefinition.get_id();
 
-      // get the subscription for the list
-      let wfSubscription: SP.WorkflowServices.WorkflowSubscription =
-        await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService, wfDefinitionId, listId);
-      if (!wfSubscription) {
-        console.error("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
-        alert("Could not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+    // get the subscription for the list
+    let wfSubscription: SP.WorkflowServices.WorkflowSubscription =
+      await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService, wfDefinitionId, listId);
+    if (!wfSubscription) {
+      console.error("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+      alert("Could not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+      return Promise.resolve();
+    }
+    let wfSubscriptionId: string = wfSubscription.get_id().toString().toUpperCase();
+    let wfInstances: SP.WorkflowServices.WorkflowInstanceCollection = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
+    context.load(wfInstances);
+    await new Promise((resolve, reject) => {
+      context.executeQueryAsync((x) => {
         resolve();
-        return;
-      }
-      let wfSubscriptionId: string = wfSubscription.get_id().toString().toUpperCase();
-      let wfInstances: SP.WorkflowServices.WorkflowInstanceCollection = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
-      context.load(wfInstances);
-      context.executeQueryAsync(
-        (sender, args) => {
-          var instancesEnum = wfInstances.getEnumerator();
-          let runningInstance;
-          while (instancesEnum.moveNext()) {
-            var instance = instancesEnum.get_current();
-            let instanceSubscriptionId = instance.get_workflowSubscriptionId().toString();
-            let instanceStatus = instance.get_status();
-            if (instanceSubscriptionId.toUpperCase() === wfSubscriptionId && instanceStatus === 1) {
-              runningInstance = instance;
-            }
-          }
-          if (runningInstance) {
-            workflowInstanceService.terminateWorkflow(runningInstance);
-            context.executeQueryAsync(
-              (sender2, args2) => {
-                console.log("Workflow Termination Successful");
-                resolve();
-              },
-              (sender2, args2) => {
-                debugger;
-                console.error("Failed to terminate workflow.");
-                console.error("Error: " + args2.get_message() + "\n" + args2.get_stackTrace());
-                resolve();
-              }
-            );
-          }
-          else {
-            console.log("No Running workflow found to terminate");
-            resolve();
-          }
-
-        },
-        (sender, args) => {
-          debugger;
-          alert("Failed to load workflow instances. Running workflows were not cancelled. This can happen if the Office 365 workflow service is unavailable.");
-          console.error("Failed to load Workflow instances.");
-          console.error("Error: " + args.get_message() + "\n" + args.get_stackTrace());
-          resolve();
-        }
-      );
+      }, (error) => {
+        console.log(error);
+        reject();
+      });
     });
-    return p;
+    if (!wfInstances) {
+      debugger;
+      alert("Failed to load workflow instances. Running workflows were not cancelled. This can happen if the Office 365 workflow service is unavailable.");
+      console.error("Failed to load Workflow instances.");
+      return Promise.resolve();
+    }
+    var instancesEnum = wfInstances.getEnumerator();
+    let runningInstance;
+    while (instancesEnum.moveNext()) {
+      var instance = instancesEnum.get_current();
+      let instanceSubscriptionId = instance.get_workflowSubscriptionId().toString();
+      let instanceStatus = instance.get_status();
+      if (instanceSubscriptionId.toUpperCase() === wfSubscriptionId && instanceStatus === 1) {
+        runningInstance = instance;
+      }
+    }
+    if (runningInstance) {
+      workflowInstanceService.terminateWorkflow(runningInstance);
+      await new Promise((resolve, reject) => {
+        context.executeQueryAsync((x) => {
+          console.log("Workflow Termination Successful");
+          resolve();
+        }, (error) => {
+          console.log(error);
+          debugger;
+          console.error("Failed to terminate workflow.");
+          resolve();
+        });
+      });
+    }
 
   }
   /**
