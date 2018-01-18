@@ -10,13 +10,12 @@
     "@microsoft/sp-lodash-subset": "~1.4.0",
     "@microsoft/sp-office-ui-fabric-core": "~1.4.0",
     "@microsoft/sp-webpart-base": "~1.4.0",
-
     "@types/microsoft-ajax": "0.0.33",
     "@types/react": "15.6.6",
-    "@types/react-dom": "15.5.6",
     "@types/react-addons-shallow-compare": "0.14.17",
     "@types/react-addons-test-utils": "0.14.15",
     "@types/react-addons-update": "0.14.14",
+    "@types/react-dom": "15.5.6",
     "@types/react-tabs": "^0.5.22",
     "@types/sharepoint": "^2016.1.0",
     "@types/webpack-env": ">=1.12.1 <1.14.0",
@@ -26,6 +25,7 @@
     "office-ui-fabric-react": "^4.21.2",
     "react": "15.6.2",
     "react-dom": "15.6.2",
+    "react-dropzone": "^4.2.5",
     "sp-pnp-js": "^2.0.6"
   },
   "devDependencies": {

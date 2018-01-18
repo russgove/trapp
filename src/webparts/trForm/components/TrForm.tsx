@@ -15,7 +15,7 @@ import * as React from "react";
 /** Other utilities */
 import * as moment from "moment";
 import { find, clone, remove, filter, map, orderBy, countBy, findIndex, startsWith } from "lodash";
-
+import Dropzone from 'react-dropzone';
 // switch to fabric pivot on text update
 //import * as tabs from "react-tabs";
 import { Pivot, PivotItem, PivotLinkFormat, PivotLinkSize } from "office-ui-fabric-react/lib/Pivot";
@@ -905,6 +905,29 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   //   //this.state.isDirty = isDirty;
   //   this.setState((this.state)=>{ ...this.state, isDirty: isDirty });
   // }
+    /**
+   * Called when a user drops files into the DropZone. It calls 
+   * the uploadFile method on the props to upload the files to sharepoint and then adds them to state.
+   * 
+   * @private
+   * @param {any} acceptedFiles 
+   * @param {any} rejectedFiles 
+   * @memberof EfrApp
+   */
+  private onDrop(acceptedFiles, rejectedFiles) {
+    console.log("in onDrop");
+    let promises: Array<Promise<any>> = [];
+    acceptedFiles.forEach(file => {
+      promises.push(this.props.uploadFile(file,this.state.tr.Id,this.state.tr.Title));
+    });
+    Promise.all(promises).then((x) => {
+      this.props.getDocuments(this.state.tr.Id).then((dox) => {
+        this.setState((current) => ({ ...current, documents: dox }));
+      });
+
+    });
+
+  }
   public render(): React.ReactElement<ITrFormProps> {
 
     let worktypeDropDoownoptions = map(this.props.workTypes, (wt) => {
@@ -1475,6 +1498,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
           </PivotItem>
           <PivotItem hidden={(this.state.tr.Id===null) ? true : false} linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`}  >
+          <Dropzone className={styles.dropzone} onDrop={this.onDrop.bind(this)} disableClick={true} >
+        
             <div style={{ float: "left" }}>
               <DetailsList
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1507,7 +1532,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 width={this.props.documentIframeWidth} />
             </div>
             <div style={{ clear: "both" }}></div>
-
+            </Dropzone>
 
           </PivotItem>
           <PivotItem linkText='Formulae' >
