@@ -60,9 +60,11 @@ export class TR {
         this.StaffCC = null;
         this.PigmentsId = null;
         this.TestsId = null;
+        this.FileCount=null;
 
     }
     public Id: number;
+    public FileCount: number; // the number of Docs associated with this TR. I calculate this just prior to saving
     public ParentTR: string;
     public ParentTRId: number;
     public Title: string;
