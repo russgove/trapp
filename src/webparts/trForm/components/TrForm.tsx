@@ -813,7 +813,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         // this.state.tr = parentTR;
         this.originalAssignees = clone(parentTR.TRAssignedToId);
         this.originalStatus = parentTR.TRStatus;
-        this.originalRequiredDate = parentTR.RequiredDate
+        this.originalRequiredDate = parentTR.RequiredDate;
         // this.state.childTRs = [];
         this.setState((current) => ({ ...current, tr: parentTR, childTRs: [] }));
         this.updateCKEditorText(this.state.tr);

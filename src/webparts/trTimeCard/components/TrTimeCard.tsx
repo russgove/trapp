@@ -115,7 +115,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * @memberof TrTimeCard
    */
   public render(): React.ReactElement<ITrTimeCardProps> {
-
+debugger;
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
@@ -147,6 +147,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
               onRender: (item) => <div style={{"whiteSpace":"normal"}} dangerouslySetInnerHTML={{__html: item.trRequestTitle}} /> 
             },
             { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 70 },
+            { key: "Priority", name: "Priority", fieldName: "trPriority", minWidth: 20, maxWidth: 70 },
             {
               key: "Required", name: "Required", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 70,
               onRender: (item) => <div>{moment(item.trRequiredDate).format("DD-MMM-YYYY")}</div>
