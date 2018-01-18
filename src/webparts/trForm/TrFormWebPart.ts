@@ -1489,11 +1489,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * 
    * @memberof TrFormWebPart
    */
-  private uploadFile(file, trId): Promise<any> {
-
+  private uploadFile(file, trId,filePrefix:string): Promise<any> {
+    const fileName: string = filePrefix + "--" + file.name;
     if (file.size <= 10485760) {
       // small upload
-      return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(file.name, file, true)
+      return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(fileName, file, true)
         .then((results) => {
           debugger;
           //return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
@@ -1531,7 +1531,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       debugger;
 
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
-        .addChunked(file.name, file, data => {
+        .addChunked(fileName, file, data => {
           console.log({ data: data, message: "progress" });
         }, true)
         .then((results) => {

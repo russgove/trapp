@@ -792,7 +792,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public uploadFile(e: any) {
 
     let file: any = e.target["files"][0];
-    this.props.uploadFile(file, this.state.tr.Id).then((response) => {
+    this.props.uploadFile(file, this.state.tr.Id,this.state.tr.Title).then((response) => {
       this.props.getDocuments(this.state.tr.Id).then((dox) => {
         // this.state.documents = dox;
         this.setState((current) => ({ ...current, documents: dox }));
@@ -876,7 +876,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
             e.preventDefault();
             this.editDocument(item); return false;
-          }}><span className={styles.documentTitle} > {item.title}</span></a>
+          }}><span className={styles.documentTitle} > {item.fileName}</span></a>
       </div>);
   }
 
@@ -1544,40 +1544,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               ]}
             />
           </PivotItem>
-          <PivotItem hidden={(this.state.tr.Id===null) ? true : false} linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`}  >
-            <div style={{ float: "left" }}>
-              <DetailsList
-                layoutMode={DetailsListLayoutMode.fixedColumns}
-                items={this.state.documents}
-                onRenderRow={(props, defaultRender) => <div
-                  onMouseEnter={(event) => this.documentRowMouseEnter(props.item, event)}
-                  onMouseOut={(evemt) => this.documentRowMouseOut(props.item, event)}>
-                  {defaultRender(props)}
-                </div>}
-                setKey="id"
-                selectionMode={SelectionMode.none}
-                columns={[
-                  {
-                    key: "Edit", name: "", fieldName: "Title", minWidth: 20,
-                    onRender: (item) => <div>
-                      <i onClick={(e) => { this.editDocument(item); }}
-                        className="ms-Icon ms-Icon--Edit" aria-hidden="true"></i>
-                    </div>
-                  },
-                  { key: "title", name: "Request #", fieldName: "title", minWidth: 1, maxWidth: 300 },
-
-                ]}
-              />
-              <input type="file" id="uploadfile" onChange={e => { this.uploadFile(e); }} />
-            </div>
-            <div style={{ float: "right" }}>
-              <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight}
-                width={this.props.documentIframeWidth} />
-            </div>
-            <div style={{ clear: "both" }}></div>
-
-
-          </PivotItem>
+        
 
         </Pivot>
 

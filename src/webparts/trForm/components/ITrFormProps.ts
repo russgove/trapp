@@ -12,7 +12,7 @@ export interface ITrFormProps {
   peopleSearch: (filter: string, selectedItems?: IPersonaProps[]) => IPersonaProps[] | PromiseLike<IPersonaProps[]>;
   fetchChildTr: (id: number) => Promise<Array<TR>>; // methid to call to cget child TRs if a user swicthes to a new TR
   fetchTR: (id: number) => Promise<TR>; // methid to call to cget child TRs if a user swicthes to a new TR
-  uploadFile: (file: any, trId: number) => Promise<any>;
+  uploadFile: (file: any, trId: number,prefix:string) => Promise<any>;
   deleteFile: (id:any                 ) => Promise<any>;
   getDocuments: (trId: number) => Promise<Array<TRDocument>>;
   ensureUsersInPersonas: (items?: Array<IPersonaProps>) => void;
