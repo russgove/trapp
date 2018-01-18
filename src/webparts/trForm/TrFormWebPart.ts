@@ -451,109 +451,109 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
     }
     /**  THESE USED TO EXECUTE AFTER INITIAL RENDER in BATCH2*/
-    const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
-    pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch).get()
-      .then((items) => {
-        let requestors: Array<User> = map(items, (item) => {
-          return new User(item["Id"], item["Title"]);
-        });
-        formProps.requestors = unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//lodash.union
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
-        console.log(error.message);
-      });
-    const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
-    pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch).get()
-      .then((items) => {
-        let techSpecs: Array<User> = map(items, (item) => {
-          return new User(item["Id"], item["Title"]);
-        });
-        formProps.techSpecs = unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//lodash.union
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
-        console.log(error.message);
-      });
-    let customerFields = "Id,Title";
-    pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
-      .then((items) => {
-        let customers: Array<Customer> = map(items, (item) => {
-          return new Customer(item["Id"], item["Title"]);
-        });
-        // add the one from the tr if not present
-        if (formProps.customers.length > 0 &&
-          find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
-          customers.push(formProps.customers[0]);
-        }
-        formProps.customers = customers;
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
-        console.log(error.message);
-      });
+    // const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
+    // pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch).get()
+    //   .then((items) => {
+    //     let requestors: Array<User> = map(items, (item) => {
+    //       return new User(item["Id"], item["Title"]);
+    //     });
+    //     formProps.requestors = unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//lodash.union
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
+    //     console.log(error.message);
+    //   });
+    // const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
+    // pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch).get()
+    //   .then((items) => {
+    //     let techSpecs: Array<User> = map(items, (item) => {
+    //       return new User(item["Id"], item["Title"]);
+    //     });
+    //     formProps.techSpecs = unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//lodash.union
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
+    //     console.log(error.message);
+    //   });
+    // let customerFields = "Id,Title";
+    // pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch).get()// get the lookup info
+    //   .then((items) => {
+    //     let customers: Array<Customer> = map(items, (item) => {
+    //       return new Customer(item["Id"], item["Title"]);
+    //     });
+    //     // add the one from the tr if not present
+    //     if (formProps.customers.length > 0 &&
+    //       find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
+    //       customers.push(formProps.customers[0]);
+    //     }
+    //     formProps.customers = customers;
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
+    //     console.log(error.message);
+    //   });
 
-    let workTypesFields = "Id,Title";
-    pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch).get()
-      .then((items) => {
-        let workTypes: Array<WorkType> = map(items, (item) => {
-          return new WorkType(item["Id"], item["Title"]);
-        });
-        // add the one from the tr if not present
-        if (formProps.workTypes.length > 0 &&
-          find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
-          workTypes.push(formProps.workTypes[0]);
-        }
-        formProps.workTypes = workTypes;
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
-        console.log(error.message);
-      });
-    let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
-    let pigmentExpands = "Manufacturer";
-    pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch).get()// get the lookup info
-      .then((items) => {
-        formProps.pigments = map(items, (item) => {
-          let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
-          if (item["Manufacturer"]) {
-            p.manufacturer = item["Manufacturer"]["Title"];
-          }
-          return p;
-        });
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
-        console.log(error.message);
-      });
-    let testFields = "Id,Title";
-    pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch).get()// get the lookup info
-      .then((items) => {
-        formProps.tests = map(items, (item) => {
-          let t: Test = new Test(item["Id"], item["Title"]);
-          return t;
-        });
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
-        console.log(error.message);
-      });
-    let propertyTestFields = "*,Property/Title";
-    let propertyTestExpands = "Property";
-    pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch).get()// get the lookup info
-      .then((items) => {
-        formProps.propertyTests = map(items, (item) => {
-          let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
-          if (item["Property"]) {
-            pt.property = item["Property"]["Title"];
-          }
-          return pt;
-        });
-      })
-      .catch((error) => {
-        console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
-        console.log(error.message);
-      });
+    // let workTypesFields = "Id,Title";
+    // pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch).get()
+    //   .then((items) => {
+    //     let workTypes: Array<WorkType> = map(items, (item) => {
+    //       return new WorkType(item["Id"], item["Title"]);
+    //     });
+    //     // add the one from the tr if not present
+    //     if (formProps.workTypes.length > 0 &&
+    //       find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
+    //       workTypes.push(formProps.workTypes[0]);
+    //     }
+    //     formProps.workTypes = workTypes;
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
+    //     console.log(error.message);
+    //   });
+    // let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
+    // let pigmentExpands = "Manufacturer";
+    // pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch).get()// get the lookup info
+    //   .then((items) => {
+    //     formProps.pigments = map(items, (item) => {
+    //       let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
+    //       if (item["Manufacturer"]) {
+    //         p.manufacturer = item["Manufacturer"]["Title"];
+    //       }
+    //       return p;
+    //     });
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+    //     console.log(error.message);
+    //   });
+    // let testFields = "Id,Title";
+    // pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch).get()// get the lookup info
+    //   .then((items) => {
+    //     formProps.tests = map(items, (item) => {
+    //       let t: Test = new Test(item["Id"], item["Title"]);
+    //       return t;
+    //     });
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+    //     console.log(error.message);
+    //   });
+    // let propertyTestFields = "*,Property/Title";
+    // let propertyTestExpands = "Property";
+    // pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch).get()// get the lookup info
+    //   .then((items) => {
+    //     formProps.propertyTests = map(items, (item) => {
+    //       let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
+    //       if (item["Property"]) {
+    //         pt.property = item["Property"]["Title"];
+    //       }
+    //       return pt;
+    //     });
+    //   })
+    //   .catch((error) => {
+    //     console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
+    //     console.log(error.message);
+    //   });
 
     /* END OF STUFF THAT USED TO EXECUTE AFTER INITIAL RENDER */
 
@@ -575,127 +575,120 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           }
         }
       }
-      // let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
-      // const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
-      // pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch2).get()
-      //   .then((items) => {
-      //     let requestors: Array<User> = lodash.map(items, (item) => {
-      //       return new User(item["Id"], item["Title"]);
-      //     });
-      //     formProps.requestors = lodash.unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//lodash.union
-      //   })
-      //   .catch((error) => {
-      //     console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
-      //     console.log(error.message);
-      //   });
-      // const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
-      // pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch2).get()
-      //   .then((items) => {
-      //     let techSpecs: Array<User> = lodash.map(items, (item) => {
-      //       return new User(item["Id"], item["Title"]);
-      //     });
-      //     formProps.techSpecs = lodash.unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//lodash.union
-      //   })
-      //   .catch((error) => {
-      //     console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
-      //     console.log(error.message);
-      //   });
-      // let customerFields = "Id,Title";
-      // pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
-      //   .then((items) => {
-      //     let customers: Array<Customer> = lodash.map(items, (item) => {
-      //       return new Customer(item["Id"], item["Title"]);
-      //     });
-      //     // add the one from the tr if not present
-      //     if (formProps.customers.length > 0 &&
-      //       lodash.find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
-      //       customers.push(formProps.customers[0]);
-      //     }
-      //     formProps.customers = customers;
-      //   })
-      //   .catch((error) => {
-      //     console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
-      //     console.log(error.message);
-      //   });
+      let batch2 = pnp.sp.createBatch(); // create a second batch to get the lookup columns
+      const requestorsGroupName = "TR " + this.context.pageContext.web.title + " Requestors";
+      pnp.sp.web.siteGroups.getByName(requestorsGroupName).users.orderBy("Title").inBatch(batch2).get()
+        .then((items) => {
+          let requestors: Array<User> = map(items, (item) => {
+            return new User(item["Id"], item["Title"]);
+          });
+          formProps.requestors = unionWith(requestors, formProps.requestors, (a, b) => { return a.id === b.id; });//lodash.union
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching Requestors from group " + requestorsGroupName);
+          console.log(error.message);
+        });
+      const techspecGroupName = "TR " + this.context.pageContext.web.title + " Tech Specialists";
+      pnp.sp.web.siteGroups.getByName(techspecGroupName).users.orderBy("Title").inBatch(batch2).get()
+        .then((items) => {
+          let techSpecs: Array<User> = map(items, (item) => {
+            return new User(item["Id"], item["Title"]);
+          });
+          formProps.techSpecs = unionWith(techSpecs, formProps.techSpecs, (a, b) => { return a.id === b.id; });//lodash.union
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching Tech Specialists from group " + techspecGroupName);
+          console.log(error.message);
+        });
+      let customerFields = "Id,Title";
+      pnp.sp.web.lists.getByTitle(this.properties.partyListName).items.select(customerFields).filter("IsActive eq 'Yes'").orderBy("Title").top(5000).inBatch(batch2).get()// get the lookup info
+        .then((items) => {
+          let customers: Array<Customer> = map(items, (item) => {
+            return new Customer(item["Id"], item["Title"]);
+          });
+          // add the one from the tr if not present
+          if (formProps.customers.length > 0 &&
+            find(customers, (c) => { return c.id === formProps.customers[0].id; }) == null) {
+            customers.push(formProps.customers[0]);
+          }
+          formProps.customers = customers;
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Customers' from list " + this.properties.partyListName);
+          console.log(error.message);
+        });
 
-      // let workTypesFields = "Id,Title";
-      // pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch2).get()
-      //   .then((items) => {
-      //     let workTypes: Array<WorkType> = lodash.map(items, (item) => {
-      //       return new WorkType(item["Id"], item["Title"]);
-      //     });
-      //     // add the one from the tr if not present
-      //     if (formProps.workTypes.length > 0 &&
-      //       lodash.find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
-      //       workTypes.push(formProps.workTypes[0]);
-      //     }
-      //     formProps.workTypes = workTypes;
-      //   })
-      //   .catch((error) => {
-      //     console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
-      //     console.log(error.message);
-      //   });
-      // let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
-      // let pigmentExpands = "Manufacturer";
-      // pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
-      //   .then((items) => {
-      //     formProps.pigments = lodash.map(items, (item) => {
-      //       let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
-      //       if (item["Manufacturer"]) {
-      //         p.manufacturer = item["Manufacturer"]["Title"];
-      //       }
-      //       return p;
-      //     });
-      //   })
-      //   .catch((error) => {
-      //     console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
-      //     console.log(error.message);
-      //   });
-      // let testFields = "Id,Title";
-      // pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch2).get()// get the lookup info
-      //   .then((items) => {
-      //     formProps.tests = lodash.map(items, (item) => {
-      //       let t: Test = new Test(item["Id"], item["Title"]);
-      //       return t;
-      //     });
-      //   })
-      //   .catch((error) => {
-      //     console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
-      //     console.log(error.message);
-      //   });
-      // let propertyTestFields = "*,Property/Title";
-      // let propertyTestExpands = "Property";
-      // pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
-      //   .then((items) => {
-      //     formProps.propertyTests = lodash.map(items, (item) => {
-      //       let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
-      //       if (item["Property"]) {
-      //         pt.property = item["Property"]["Title"];
-      //       }
-      //       return pt;
-      //     });
-      //   })
-      //   .catch((error) => {
-      //     console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
-      //     console.log(error.message);
-      //   });
-      // batch2.execute().then(() => {
-      //   debugger;
-      //   // formComponent.props = formProps; //this did not work
+      let workTypesFields = "Id,Title";
+      pnp.sp.web.lists.getByTitle(this.properties.workTypeListName).items.filter("IsActive eq 'Yes'").inBatch(batch2).get()
+        .then((items) => {
+          let workTypes: Array<WorkType> = map(items, (item) => {
+            return new WorkType(item["Id"], item["Title"]);
+          });
+          // add the one from the tr if not present
+          if (formProps.workTypes.length > 0 &&
+            find(workTypes, (wt) => { return wt.id === formProps.workTypes[0].id; }) == null) {
+            workTypes.push(formProps.workTypes[0]);
+          }
+          formProps.workTypes = workTypes;
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Work Types' from list named " + this.properties.workTypeListName);
+          console.log(error.message);
+        });
+      let pigmentFields = "Id,Title,IsActive,Manufacturer/Title";
+      let pigmentExpands = "Manufacturer";
+      pnp.sp.web.lists.getByTitle(this.properties.pigmentListName).items.select(pigmentFields).orderBy('Title').expand(pigmentExpands).top(5000).inBatch(batch2).get()// get the lookup info
+        .then((items) => {
+          formProps.pigments = map(items, (item) => {
+            let p: Pigment = new Pigment(item["Id"], item["Title"], item["IsActive"]);
+            if (item["Manufacturer"]) {
+              p.manufacturer = item["Manufacturer"]["Title"];
+            }
+            return p;
+          });
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+          console.log(error.message);
+        });
+      let testFields = "Id,Title";
+      pnp.sp.web.lists.getByTitle(this.properties.testListName).items.select(testFields).orderBy('Title').top(5000).inBatch(batch2).get()// get the lookup info
+        .then((items) => {
+          formProps.tests = map(items, (item) => {
+            let t: Test = new Test(item["Id"], item["Title"]);
+            return t;
+          });
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'Pigments' from list " + this.properties.pigmentListName);
+          console.log(error.message);
+        });
+      let propertyTestFields = "*,Property/Title";
+      let propertyTestExpands = "Property";
+      pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
+        .then((items) => {
+          formProps.propertyTests = map(items, (item) => {
+            let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
+            if (item["Property"]) {
+              pt.property = item["Property"]["Title"];
+            }
+            return pt;
+          });
+        })
+        .catch((error) => {
+          console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
+          console.log(error.message);
+        });
+      batch2.execute().then(() => {
+        debugger;
+        // setTimeout(() => {
+        this.reactElement.props = formProps;
+        //formComponent.render();
 
-      //   // formComponent.props.customers = formProps.customers;
-      //   // formComponent.props.pigments = formProps.pigments;
-      //   // formComponent.props.tests = formProps.tests;
-      //   // formComponent.props.propertyTests = formProps.propertyTests;
-      //   // formComponent.props.techSpecs = formProps.techSpecs;
-      //   // formComponent.props.requestors = formProps.requestors;
-      //   // formComponent.props.workTypes = formProps.workTypes;
+        formComponent.forceUpdate();
+        // }, 30000);
 
-
-
-
-      //   formComponent.forceUpdate();
-      // });
+      });
     }
     );
 

@@ -1302,6 +1302,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <div style={{ float: "left" }}>
               <Label> Available Pigments</Label>
               <DetailsList
+              
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
 
