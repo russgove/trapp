@@ -16,6 +16,7 @@ export interface ITrFormProps {
   getDocuments: (trId: number) => Promise<Array<TRDocument>>;
   ensureUsersInPersonas: (items?: Array<IPersonaProps>) => void;
   //data
+  hoursSpent:number;
   initialState: ITRFormState;
   mode: modes; // display , edit, new
   workTypes: Array<WorkType>; // lookup column values

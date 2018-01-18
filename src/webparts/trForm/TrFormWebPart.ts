@@ -272,7 +272,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       getDocuments: this.getDocuments.bind(this),
       peopleSearch: this.PeopleSearch.bind(this),
       ensureUsersInPersonas: this.ensureUsersInPersonas.bind(this),
-
+      hoursSpent:0,
       customers: [],
       initialState: null,
       techSpecs: [],
@@ -402,8 +402,26 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             console.log(error.message);
 
           });
-        // get the Documents
 
+        // get the HoursSpent so far // just summ up allo the hours spent on this TR so we can diplay it
+        
+        debugger;
+        pnp.sp.web.lists.getByTitle("Time Spent").items.filter("TRId eq " + id).select("HoursSpent").inBatch(batch).get()
+          .then((items) => {
+            debugger;
+            // this may resilve befor we get the mainn tr, so jyst stash  away for now.
+            for (const item of items) {
+              formProps.hoursSpent+=item["HoursSpent"];
+            }
+
+          })
+          .catch((error) => {
+            console.log("ERROR, An error occured fetching child trs  from list named " + this.properties.technicalRequestListName);
+            console.log(error.message);
+
+          });
+
+        // get the Documents
         this.getDocuments(id, batch).then((docs) => {
           formState.documents = docs;
         }).catch((error) => {

@@ -1212,12 +1212,23 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 //    this.setState(this.state);
                 this.setState((current) => ({ ...current, isDirty: true }));
               }} />
+              
 
-            <td>
-              <Label ></Label>
+              <td>
+              <Label>Accumulated Hours</Label>
             </td>
             <td>
-
+              {/* <Dropdown
+                label=""
+                options={this.props.requestors.map((r) => { return { key: r.id, text: r.title }; })}
+                onChanged={e => {
+                  this.setDirty(true);
+                  this.state.tr.RequestorId = e.key as number;
+                  this.setState(this.state);
+                }}
+                selectedKey={this.state.tr.RequestorId}
+              /> */}
+              {this.props.hoursSpent}
             </td>
 
           </tr>
