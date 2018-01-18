@@ -7,7 +7,7 @@ export interface ITrFormWebPartProps {
   workTypeListName: string;
   nextNumbersListName: string;
   setupListName: string;
-
+  timeSpentlistName:string;
   custonersListName: string;
   pigmentListName: string;
   propertyTestListName: string; // do i need this, can i just get with the PropertyTest via expand

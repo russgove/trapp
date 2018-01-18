@@ -42,6 +42,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   private originalAssignees: Array<number> = [];
   private originalStatus: string = "";
   private originalRequiredDate: string = "";
+  private validBrandIcons = " accdb csv docx dotx mpp mpt odp ods odt one onepkg onetoc potx ppsx pptx pub vsdx vssx vstx xls xlsx xltx xsn ";
+
 
   constructor(props: ITrFormProps) {
     super(props);
@@ -186,6 +188,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualManHours) {
       errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
     }
+    debugger;
     if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
       errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
     }
@@ -243,7 +246,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     const errors: md.Message[] = this.getErrors();
     if (errors.length === 0) {
-      this.props.save(tr, this.originalAssignees, this.originalStatus,this.originalRequiredDate)
+      this.props.save(tr, this.originalAssignees, this.originalStatus, this.originalRequiredDate)
         .then((result: TR) => {
           tr.Id = result.Id;
           this.setState((current) => ({ ...current, errorMessages: [], isDirty: false, tr: tr }));
@@ -454,6 +457,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public getAvailableTests(): Array<DisplayPropertyTest> {
     // select the propertyTest available based on the applicationType and EndUse of the tr
+    debugger;
     var temppropertyTest: Array<PropertyTest> = filter(this.props.propertyTests, (pt: PropertyTest) => {
       return (pt.applicationTypeid === this.state.tr.ApplicationTypeId
         && pt.endUseIds.indexOf(this.state.tr.EndUseId) !== -1
@@ -494,6 +498,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getAvailableTestGroups(): Array<IGroup> {
+    debugger;
     var displayPropertyTests: Array<DisplayPropertyTest> = this.getAvailableTests(); // all the avalable tests with their Property
     var properties = countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => {
       return dpt.property;
@@ -715,7 +720,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
       this.originalAssignees = clone(childTr.TRAssignedToId);
       this.originalStatus = childTr.TRStatus;
       this.originalRequiredDate = childTr.RequiredDate;
-      
+
       this.updateCKEditorText(this.state.tr);
       // this.state.childTRs = [];
       this.setState((current) => ({ ...current, tr: childTr, childTRs: [] }));
@@ -752,6 +757,28 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
     });
 
+  }
+   /**
+   * Deletes the selectd file from the TR Document library.
+   * 
+   * @param {TRDocument} trdocument 
+   * 
+   * @memberof TrForm
+   */
+  public deleteFile(trdocument: TRDocument): void {
+
+    debugger;
+    this.props.deleteFile(trdocument.id).then((results)=>{
+      let remainingdocs=filter(this.state.documents,(doc)=>{
+        return (doc.id !== trdocument.id);
+      });
+      this.setState((current) => ({ ...current, documents: remainingdocs }));
+    }).catch(error=>{
+      console.error(error);
+      alert("there was an error deleting tis file");
+      
+    });
+    
   }
 
   public parentTRSelected(id: number, title: string) {
@@ -829,6 +856,29 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     return { __html: tr.Summary };
   }
 
+  public renderDocumentTitle(item?: any, index?: number, column?: IColumn): any {
+    let extension = item.title.split('.').pop();
+    let classname = "";
+    if (this.validBrandIcons.indexOf(" " + extension + " ") !== -1) {
+      classname += " ms-Icon ms-BrandIcon--" + extension + " ms-BrandIcon--icon16 ";
+    }
+    else {
+      //classname += " ms-Icon ms-Icon--TextDocument " + styles.themecolor;
+      classname += " ms-Icon ms-Icon--TextDocument ";
+    }
+
+
+    return (
+      <div>
+        <div className={classname} /> &nbsp;
+        <a href="#"
+          onClickCapture={(e) => {
+
+            e.preventDefault();
+            this.editDocument(item); return false;
+          }}><span className={styles.documentTitle} > {item.title}</span></a>
+      </div>);
+  }
 
   private resolveCustomerSuggestions(filterString: string, slectedItems?: ITag[]): ITag[] {
 
@@ -896,6 +946,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         name: cust.title
       });
     }
+    debugger;
     return (
       <div>
 
@@ -1212,9 +1263,9 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 //    this.setState(this.state);
                 this.setState((current) => ({ ...current, isDirty: true }));
               }} />
-              
 
-              <td>
+
+            <td>
               <Label>Accumulated Hours</Label>
             </td>
             <td>
@@ -1228,9 +1279,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         <Pivot onLinkClick={this.tabChanged.bind(this)}
           linkFormat={PivotLinkFormat.tabs}
           linkSize={PivotLinkSize.normal}>
-
-
-
           <PivotItem linkText='Title' onClick={(e) => { debugger; }}  >
 
             <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
@@ -1303,7 +1351,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             <div style={{ float: "left" }}>
               <Label> Available Pigments</Label>
               <DetailsList
-              
+
                 onDidUpdate={(dl: DetailsList) => {
                   // save expanded group in state;
 
@@ -1426,6 +1474,42 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
           </PivotItem>
+          <PivotItem hidden={(this.state.tr.Id===null) ? true : false} linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`}  >
+            <div style={{ float: "left" }}>
+              <DetailsList
+                layoutMode={DetailsListLayoutMode.fixedColumns}
+                items={this.state.documents}
+                onRenderRow={(props, defaultRender) => <div
+                  onMouseEnter={(event) => this.documentRowMouseEnter(props.item, event)}
+                  onMouseOut={(evemt) => this.documentRowMouseOut(props.item, event)}>
+                  {defaultRender(props)}
+                </div>}
+                setKey="id"
+                selectionMode={SelectionMode.none}
+                columns={[
+                  { key: "title", name: "Request #", fieldName: "title", minWidth: 1,
+                   maxWidth: 200, onRender: this.renderDocumentTitle.bind(this) },
+                  {
+                    key: "Delete", name: "", fieldName: "Delete", minWidth: 20,
+                    onRender: (item) => <div>
+                      <i onClick={(e) => { this.deleteFile(item); }}
+                        className="ms-Icon ms-Icon--Delete" aria-hidden="true"></i>
+                    </div>
+                  },
+
+
+                ]}
+              />
+              <input type="file" id="uploadfile" onChange={e => { this.uploadFile(e); }} />
+            </div>
+            <div style={{ float: "right" }}>
+              <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight}
+                width={this.props.documentIframeWidth} />
+            </div>
+            <div style={{ clear: "both" }}></div>
+
+
+          </PivotItem>
           <PivotItem linkText='Formulae' >
 
             <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" style={{ display: "none" }}>
@@ -1460,7 +1544,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               ]}
             />
           </PivotItem>
-          <PivotItem linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`} >
+          <PivotItem hidden={(this.state.tr.Id===null) ? true : false} linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`}  >
             <div style={{ float: "left" }}>
               <DetailsList
                 layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1494,6 +1578,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
           </PivotItem>
+
         </Pivot>
 
         <this.SaveButton />

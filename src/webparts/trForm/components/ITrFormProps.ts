@@ -13,6 +13,7 @@ export interface ITrFormProps {
   fetchChildTr: (id: number) => Promise<Array<TR>>; // methid to call to cget child TRs if a user swicthes to a new TR
   fetchTR: (id: number) => Promise<TR>; // methid to call to cget child TRs if a user swicthes to a new TR
   uploadFile: (file: any, trId: number) => Promise<any>;
+  deleteFile: (id:any                 ) => Promise<any>;
   getDocuments: (trId: number) => Promise<Array<TRDocument>>;
   ensureUsersInPersonas: (items?: Array<IPersonaProps>) => void;
   //data

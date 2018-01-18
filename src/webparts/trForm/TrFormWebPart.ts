@@ -269,6 +269,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       cancel: this.cancel.bind(this),
       TRsearch: this.TRsearch.bind(this),
       uploadFile: this.uploadFile.bind(this),
+      deleteFile:this.deleteFile.bind(this),
       getDocuments: this.getDocuments.bind(this),
       peopleSearch: this.PeopleSearch.bind(this),
       ensureUsersInPersonas: this.ensureUsersInPersonas.bind(this),
@@ -683,8 +684,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
       let propertyTestFields = "*,Property/Title";
       let propertyTestExpands = "Property";
+      debugger;
       pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
+          debugger;
           formProps.propertyTests = map(items, (item) => {
             let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
             if (item["Property"]) {
@@ -692,8 +695,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
             return pt;
           });
+          debugger;
         })
         .catch((error) => {
+          debugger;
           console.log("ERROR, An error occured fetching 'PropertyText' from list " + this.properties.propertyTestListName);
           console.log(error.message);
         });
@@ -829,6 +834,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 }),
                 PropertyPaneTextField('trDocumentsListName', {
                   label: "TR Documents library name",
+                }),
+                PropertyPaneTextField('timeSpentListName', {
+                  label: "Time Spent List name",
                 }),
               ]
             }
@@ -1544,5 +1552,20 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error);
         });
     }
+  }
+   /**
+   * Uploads a file to the TR DOcument library an associates it with the specified TR
+   * 
+   * @private
+   * @param {any} file The file to upload
+   * @param {any} trId  The ID of the TR to associate the file with
+   * @returns {Promise<any>} 
+   * 
+   * @memberof TrFormWebPart
+   */
+  private deleteFile(id): Promise<any> {
+
+      return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(id).delete();
+      
   }
 }

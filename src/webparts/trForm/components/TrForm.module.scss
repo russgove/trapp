@@ -23,4 +23,10 @@
     background-color: "[theme:themeDark, default:#0078d7]";
     color: "[theme:white, default:white]"
   }
+  .documentTitle {
+    overflow-wrap: break-word;
+    display: inline-block;
+    width:300px;
+    white-space:normal; 
+  }
 }

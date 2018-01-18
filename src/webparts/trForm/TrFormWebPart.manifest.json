@@ -32,6 +32,7 @@
         "propertyTestListName": "Test Propeterties",
         "partyListName": "Customers",
         "trDocumentsListName": "TR Documents",
+        "timeSpentlistName":"Time Spent",
         "enableEmail": true,
         "searchPath": "{0}/Lists/tblRequest/DispForm.aspx*",
         "defaultSite": "OKC",
