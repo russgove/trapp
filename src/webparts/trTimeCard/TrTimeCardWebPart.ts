@@ -41,7 +41,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       TRId: timeSpent.trId,
       TechmicalSpecialistId: timeSpent.technicalSpecialist,
       WeekEndingDate: timeSpent.weekEndingDate,
-      HoursSpent: timeSpent.hoursSpent
+      HoursSpent: timeSpent.newHoursSpent // on a new item, its only the hours just entered
     }).then((response) => {
    
       return response.data.Id;
@@ -63,7 +63,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
       TRId: timeSpent.trId,
       TechmicalSpecialistId: timeSpent.technicalSpecialist,
       WeekEndingDate: timeSpent.weekEndingDate,
-      HoursSpent: timeSpent.hoursSpent
+      HoursSpent: timeSpent.hoursSpent+timeSpent.newHoursSpent // when update just add the hours
     }).then((response) => {
 
     })
@@ -87,7 +87,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     let batch = pnp.sp.createBatch();
     for (const timeSpent of timeSpents) {
       if (timeSpent.tsId === null) {
-        if (timeSpent.hoursSpent !== 0) {
+        if (timeSpent.newHoursSpent !== 0) { // only do th update if user added new hours
           this.AddTimeSpent(batch, timeSpent).then((id) => {
             timeSpent.tsId = id;
           });
@@ -203,6 +203,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
             trId: item["TRId"],
             weekEndingDate: item["WeekEndingDate"],
             hoursSpent: item["HoursSpent"],
+            newHoursSpent:0,
             trTitle: null,
             trRequestTitle: null,
             trStatus: null,
@@ -251,6 +252,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         for (let timeSpent of timeSpents) {
           this.getTR(timeSpent.trId, trBatch)
             .then((tr) => {
+              // why am i doing this?
               timeSpent.trPriority = tr.priority;
               timeSpent.trStatus = tr.status;
               timeSpent.trTitle = tr.title;
@@ -273,6 +275,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
                 technicalSpecialist: userId,
                 weekEndingDate: date,
                 hoursSpent: 0,
+                newHoursSpent: 0,
                 tsId: null,
                 trTitle: tr.title,
                 trRequestTitle: tr.requestTitle,

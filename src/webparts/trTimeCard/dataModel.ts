@@ -8,7 +8,8 @@
 export class TimeSpent {
     public technicalSpecialist: number;
     public weekEndingDate: Date;
-    public hoursSpent: number;
+    public hoursSpent: number;// this is whats recored already in the hours spent
+    public newHoursSpent: number; // this is whats added by the user
     public tsId: number;
 
     public trId: number;

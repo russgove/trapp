@@ -23,8 +23,8 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
     super(props);
     this.state = props.initialState;
     this.setState(this.state);
-    this.updateHoursSpent = this.updateHoursSpent.bind(this);
-    this.renderHoursSpent = this.renderHoursSpent.bind(this);
+    this.updateNewHoursSpent = this.updateNewHoursSpent.bind(this);
+    this.renderNewHoursSpent = this.renderNewHoursSpent.bind(this);
     this._getErrorMessage = this._getErrorMessage.bind(this);
     this.save = this.save.bind(this);
   }
@@ -47,18 +47,20 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
 
 
   /**
-   * Called when the user enter info into the textbox, this method updates the hours spent on the TR stored in state
+   * Called when the user enter info into the textbox, this method updates the
+   * newhours spent on the TR stored in state. When we save back to sharepoint we 
+   * add newHoursSpent to hoursSpent
    * 
    * @param {number} trId  The ID of the TR the hours were entered for
    * @param {*} newValue  Th evalue entered
    * 
    * @memberof TrTimeCard
    */
-  public updateHoursSpent(trId: number, newValue: any) {
+  public updateNewHoursSpent(trId: number, newValue: any) {
     let timeSpent = _.find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
     //this.state.message = "";
     if (timeSpent) {
-      timeSpent.hoursSpent = newValue;
+      timeSpent.newHoursSpent = parseFloat(newValue);
     } else {
       console.log(`Cannot find timespent record with a TR id of ${trId}`);
     }
@@ -75,14 +77,14 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * 
    * @memberof TrTimeCard
    */
-  public renderHoursSpent(item?: any, index?: number, column?: IColumn) {
-    const hoursSpent: number = item.hoursSpent;
+  public renderNewHoursSpent(item?: any, index?: number, column?: IColumn) {
+    
     return (<TextField
-      value={item.hoursSpent}
+      value={item.newHoursSpent}
       onGetErrorMessage={this._getErrorMessage}
       validateOnFocusIn
       validateOnFocusOut
-      onChanged={(newValue) => { this.updateHoursSpent(item.trId, newValue); }}
+      onChanged={(newValue) => { this.updateNewHoursSpent(item.trId, newValue); }}
     />);
   }
 
@@ -99,7 +101,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
       .then((timespents) => {
         //this.state.timeSpents = timespents;
         //this.state.message = "Saved";
-        this.setState({ ...this.state, timeSpents: timespents, message : "Saved" });
+        this.setState({ ...this.state, timeSpents: timespents, message: "Saved" });
       })
       .catch((error) => {
         //this.state.message = error;
@@ -115,7 +117,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * @memberof TrTimeCard
    */
   public render(): React.ReactElement<ITrTimeCardProps> {
-debugger;
+    debugger;
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
@@ -140,11 +142,11 @@ debugger;
           columns={[
             {
               key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 100,
-              onRender: (item) => <a href={this.props.editFormUrlFormat.replace("{1}", item.trId).replace("{2}", window.location.href).replace("{3}",this.props.webUrl)}>{item.trTitle}</a>
+              onRender: (item) => <a href={this.props.editFormUrlFormat.replace("{1}", item.trId).replace("{2}", window.location.href).replace("{3}", this.props.webUrl)}>{item.trTitle}</a>
             },
             {
               key: "Description", name: "Title", fieldName: "trRequestTitle", minWidth: 20, maxWidth: 150,
-              onRender: (item) => <div style={{"whiteSpace":"normal"}} dangerouslySetInnerHTML={{__html: item.trRequestTitle}} /> 
+              onRender: (item) => <div style={{ "whiteSpace": "normal" }} dangerouslySetInnerHTML={{ __html: item.trRequestTitle }} />
             },
             { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 70 },
             { key: "Priority", name: "Priority", fieldName: "trPriority", minWidth: 20, maxWidth: 70 },
@@ -152,11 +154,14 @@ debugger;
               key: "Required", name: "Required", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 70,
               onRender: (item) => <div>{moment(item.trRequiredDate).format("DD-MMM-YYYY")}</div>
             },
-            { key: "hoursSpent", name: "hoursSpent", fieldName: "hoursSpent", minWidth: 100, onRender: this.renderHoursSpent }
+            { key: "hoursSpent", name: "hoursSpent", fieldName: "hoursSpent",
+             minWidth: 100},
+             { key: "newHoursSpent", name: "newHoursSpent", fieldName: "newHoursSpent",
+             minWidth: 100, onRender: this.renderNewHoursSpent }
           ]}
         />
         <span style={{ margin: 20 }}>
-          <PrimaryButton  href="#" onClick={this.save} icon="ms-Icon--Save">
+          <PrimaryButton href="#" onClick={this.save} icon="ms-Icon--Save">
             <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>
             Save
         </PrimaryButton>
