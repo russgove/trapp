@@ -246,7 +246,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     const errors: md.Message[] = this.getErrors();
     if (errors.length === 0) {
-      tr.FileCount=this.state.documents.length;
+      tr.FileCount=this.state.documents.length; // update the file count to be however many files are here
+      tr.ActualManHours = this.props.hoursSpent; // updaye hours spent, Thi # we put in the prop, is the total accumulated so fat in the time spent list
       this.props.save(tr, this.originalAssignees, this.originalStatus, this.originalRequiredDate)
         .then((result: TR) => {
           tr.Id = result.Id;

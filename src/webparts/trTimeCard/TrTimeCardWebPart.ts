@@ -59,13 +59,17 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
    * @memberof TrTimeCardWebPart
    */
   public UpdateTimeSpent(batch, timeSpent: TimeSpent) {
-    pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.getById(timeSpent.tsId).inBatch(batch).update({
+    let total=timeSpent.hoursSpent+timeSpent.newHoursSpent;// when update just add the hours
+    console.log("hours spent is "+timeSpent.hoursSpent+" new hours spent is "+timeSpent.newHoursSpent+"total is "+total);
+    let updates={
       TRId: timeSpent.trId,
       TechmicalSpecialistId: timeSpent.technicalSpecialist,
       WeekEndingDate: timeSpent.weekEndingDate,
-      HoursSpent: timeSpent.hoursSpent+timeSpent.newHoursSpent // when update just add the hours
-    }).then((response) => {
-
+      HoursSpent: total
+    };
+    pnp.sp.web.lists.getByTitle(this.properties.timeSpentListName).items.getById(timeSpent.tsId)
+    .inBatch(batch).update(updates).then((response) => {
+      
     })
       .catch((error) => {
         console.log("ERROR, An error occured Updateing TimeSPent");
@@ -100,6 +104,7 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     }
     return batch.execute().then((x) => {
       return timeSpents;
+
     });
   }
 
@@ -121,15 +126,17 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
 
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
     let filterString = `(TRAssignedTo/EMail eq '${this.context.pageContext.user.email}') and (TRStatus ne 'Completed') and (TRStatus ne 'Canceled')`;
-    debugger;
-    let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.expand("TRAssignedTo")
-      .select("Title,RequestTitle,TRPriority,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail")
+
+    let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items
+    .expand("TRPrimaryAssignedTo,WorkType")
+      .select("Title,RequestTitle,TRPriority,WorkType/Title,TRStatus,RequiredDate,Id,TRPrimaryAssignedTo/Id,TRPrimaryAssignedTo/Title")
       .filter(filterString)
       .orderBy('RequiredDate');
     if (batch) {
       command.inBatch(batch);
     }
     return command.get().then((items) => {
+ 
       return _.map(items, (item) => {
         return {
           trId: item["Id"],
@@ -138,6 +145,9 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
           requiredDate: item["RequiredDate"],
           priority: item["TRPriority"],
           requestTitle: item["RequestTitle"],
+          workType :(item["WorkType"])?item["WorkType"].Title:null,
+          
+          assignedTo:(item["TRPrimaryAssignedTo"])?item["TRPrimaryAssignedTo"].Title:null
         };
       });
     });
@@ -156,8 +166,8 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
   public getTR(trId: number, batch?: any): Promise<TechnicalRequest> {
     let command = pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items
       .getById(trId)
-      .expand("TRAssignedTo")
-      .select("Title,RequestTitle,TRStatus,RequiredDate,Id,TRAssignedTo/Id,TRAssignedTo/EMail");
+      .expand("TRPrimaryAssignedTo,WorkType")
+      .select("Title,RequestTitle,TRStatus,RequiredDate,Id,TRPrimaryAssignedTo/Id,TRPrimaryAssignedTo/Title,WorkType/Title");
 
     if (batch) {
       command.inBatch(batch);
@@ -171,6 +181,8 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
         status: item["TRStatus"],
         requiredDate: item["RequiredDate"],
         priority: item["TRPriority"],
+        workType:(item["WorkType"])?item["WorkType"].Title:null,
+        assignedTo:(item["TRPrimaryAssignedTo"])?item["TRPrimaryAssignedTo"].Title:null
       };
     });
   }
@@ -209,6 +221,8 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
             trStatus: null,
             trPriority: null,
             trRequiredDate: null,
+            trWorkType: null,
+            trAssignedTo:null
           };
         });
       });
@@ -239,6 +253,9 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
     // get the Active TRS Assigned to the user. These need to be shown in the timesheet
     this.getAssignedTrs(mainBatch).then((items) => {
       activeTRs = items;
+    }).catch((err)=>{
+      console.error(err);
+      debugger;
     });
     // get the Existing TimeSpents for the user in the selected weeek
     this.getExistingTimeSpent(date, mainBatch).then(items => {
@@ -258,6 +275,8 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
               timeSpent.trTitle = tr.title;
               timeSpent.trRequestTitle = tr.requestTitle;
               timeSpent.trRequiredDate = tr.requiredDate;
+              timeSpent.trAssignedTo=tr.assignedTo;
+              timeSpent.trWorkType=tr.workType;
             })
             .catch((error) => {
               console.log("ERROR, An error occured fetching the TRs for the TS");
@@ -281,7 +300,9 @@ export default class TrTimeCardWebPart extends BaseClientSideWebPart<ITrTimeCard
                 trRequestTitle: tr.requestTitle,
                 trStatus: tr.status,
                 trRequiredDate: tr.requiredDate,
-                trPriority: tr.priority
+                trPriority: tr.priority,
+                trAssignedTo:tr.assignedTo,
+                trWorkType:tr.workType
               });
             }
             else {

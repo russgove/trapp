@@ -11,13 +11,15 @@ import { Toggle } from "office-ui-fabric-react/lib/Toggle";
 import { Label } from "office-ui-fabric-react/lib/Label";
 import { MessageBar, MessageBarType, } from "office-ui-fabric-react/lib/MessageBar";
 import { Dropdown, IDropdownProps, } from "office-ui-fabric-react/lib/Dropdown";
+import { SpinButton, ISpinButtonProps, ISpinButtonStyles, KeyboardSpinDirection } from "office-ui-fabric-react/lib/SpinButton";
 import { DetailsList, IDetailsListProps, DetailsListLayoutMode, IColumn, SelectionMode, IGroup } from "office-ui-fabric-react/lib/DetailsList";
 import { DatePicker, } from "office-ui-fabric-react/lib/DatePicker";
 import { IPersonaProps, PersonaPresence, PersonaInitialsColor, Persona, PersonaSize } from "office-ui-fabric-react/lib/Persona";
 import { IPersonaWithMenu } from "office-ui-fabric-react/lib/components/pickers/PeoplePicker/PeoplePickerItems/PeoplePickerItem.Props";
 import * as moment from "moment";
-import * as _ from "lodash";
+import { reduce, find } from "lodash";
 import { TimeSpent } from "../dataModel";
+
 export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTimeCardState> {
   constructor(props: ITrTimeCardProps) {
     super(props);
@@ -57,16 +59,27 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * @memberof TrTimeCard
    */
   public updateNewHoursSpent(trId: number, newValue: any) {
-    let timeSpent = _.find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
+    let timeSpent = find(this.state.timeSpents, (ts) => { return ts.trId === trId; });
     //this.state.message = "";
     if (timeSpent) {
       timeSpent.newHoursSpent = parseFloat(newValue);
     } else {
       console.log(`Cannot find timespent record with a TR id of ${trId}`);
     }
-    this.setState({ ...this.state, message: "" });
+    this.setState((current) => ({ ...current, message: "" }));
+  }
+  private _hasSuffix(string: string, suffix: string): Boolean {
+    let subString = string.substr(string.length - suffix.length);
+    return subString === suffix;
   }
 
+  private _removeSuffix(string: string, suffix: string): string {
+    if (!this._hasSuffix(string, suffix)) {
+      return string;
+    }
+
+    return string.substr(0, string.length - suffix.length);
+  }
   /**
    * Called by the Details list to reneder the HoursWorked textbox with appropriate handlers
    * 
@@ -77,15 +90,71 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * 
    * @memberof TrTimeCard
    */
-  public renderNewHoursSpent(item?: any, index?: number, column?: IColumn) {
-    
-    return (<TextField
-      value={item.newHoursSpent}
-      onGetErrorMessage={this._getErrorMessage}
-      validateOnFocusIn
-      validateOnFocusOut
-      onChanged={(newValue) => { this.updateNewHoursSpent(item.trId, newValue); }}
+  public renderNewHoursSpent(item?: TimeSpent, index?: number, column?: IColumn) {
+    let suffix = ' hours   ';
+    return (<SpinButton
+      label=""
+
+      key={item.trId.toString() + item.weekEndingDate}
+      value={item.newHoursSpent + suffix}
+      min={-168}
+      max={168}
+      step={0.25}
+
+
+      onValidate={(value: string) => {
+        console.log("in on validate");
+        value = this._removeSuffix(value, suffix);
+        if (isNaN(+value)) {
+          console.log("value set to 0");
+          item["newHoursSpent"] = 0;
+          return '0' + suffix;
+
+        }
+        item["newHoursSpent"] = parseFloat(value);
+        this.setState({});
+        console.log("value set to " + value);
+        return String(value) + suffix;
+      }}
+      onIncrement={(value: string) => {
+        console.log("in on increment");
+        let newValue = parseFloat(this._removeSuffix(value, suffix)) + .25;
+        
+        
+        item["newHoursSpent"] = newValue;
+        console.log("value set to " + newValue);
+        this.setState({});
+        return String(newValue) + suffix;
+      }}
+      onDecrement={(value: string) => {
+        console.log("in on decrement");
+        let newValue = parseFloat(this._removeSuffix(value, suffix)) - .25;
+
+        item["newHoursSpent"] = newValue;
+        this.setState({});
+        console.log("value set to " + newValue);
+        return String(newValue) + suffix;
+      }}
+      onBlur={(e) => {
+        console.log("in on blir");
+        let value = e.currentTarget.value;
+        let newValue = parseFloat(this._removeSuffix(value, suffix));
+        this.setState({});
+        item["newHoursSpent"] = newValue;
+        console.log("value set to " + newValue);
+
+      }
+      }
+
+
     />);
+    // return (<TextField
+    //   value={item.newHoursSpent}
+    //   onGetErrorMessage={this._getErrorMessage}
+    //   validateOnFocusIn
+    //   validateOnFocusOut
+    //   onChanged={(newValue) => { this.updateNewHoursSpent(item.trId, newValue); }}
+    // />);
   }
 
   /**
@@ -97,15 +166,23 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * @memberof TrTimeCard
    */
   public save() {
+    debugger;
+    console.log("in Save");
     this.props.save(this.state.timeSpents)
       .then((timespents) => {
-        //this.state.timeSpents = timespents;
-        //this.state.message = "Saved";
-        this.setState({ ...this.state, timeSpents: timespents, message: "Saved" });
+        console.log("did update");
+
+        this.props.getTimeSpent(this.state.weekEndingDate).then((timeSpents) => {
+          console.log("fetched new");
+          this.setState((current) => ({ ...current, timeSpents: [] }));  // i shouldnt need to do this, but neccesary bacuse spinner does not see new value
+          this.setState((current) => ({ ...current, timeSpents: timeSpents }));
+        });
+
       })
       .catch((error) => {
         //this.state.message = error;
-        this.setState({ ...this.state, message: error });
+        this.setState((current) => ({ ...current, message: error }));
+
       });
     return false; // stop postback
   }
@@ -117,7 +194,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
    * @memberof TrTimeCard
    */
   public render(): React.ReactElement<ITrTimeCardProps> {
-    debugger;
+
     return (
       <div>
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
@@ -128,7 +205,7 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
             this.props.getTimeSpent(weekEndingDate).then((timeSpents) => {
               // this.state.weekEndingDate = weekEndingDate;
               // this.state.timeSpents = timeSpents;
-              this.setState({ ...this.state, weekEndingDate: weekEndingDate, timeSpents: timeSpents });
+              this.setState((current) => ({ ...current, weekEndingDate: weekEndingDate, timeSpents: timeSpents }));
             });
 
           }} />
@@ -139,27 +216,57 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
           selectionMode={SelectionMode.none}
           items={this.state.timeSpents}
           setKey="Id"
+
           columns={[
             {
-              key: "TR", name: "TR", fieldName: "trTitle", minWidth: 20, maxWidth: 100,
+              key: "TR", name: "Request #", fieldName: "trTitle", minWidth: 20, maxWidth: 75,
               onRender: (item) => <a href={this.props.editFormUrlFormat.replace("{1}", item.trId).replace("{2}", window.location.href).replace("{3}", this.props.webUrl)}>{item.trTitle}</a>
             },
             {
               key: "Description", name: "Title", fieldName: "trRequestTitle", minWidth: 20, maxWidth: 150,
               onRender: (item) => <div style={{ "whiteSpace": "normal" }} dangerouslySetInnerHTML={{ __html: item.trRequestTitle }} />
             },
-            { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 70 },
-            { key: "Priority", name: "Priority", fieldName: "trPriority", minWidth: 20, maxWidth: 70 },
+            { key: "Priority", name: "Priority", fieldName: "trPriority", minWidth: 20, maxWidth: 50 },
+
+            { key: "Status", name: "Status", fieldName: "trStatus", minWidth: 20, maxWidth: 50 },
             {
-              key: "Required", name: "Required", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 70,
+              key: "Required", name: "Required Date", fieldName: "trRequiredDate", minWidth: 20, maxWidth: 70,
               onRender: (item) => <div>{moment(item.trRequiredDate).format("DD-MMM-YYYY")}</div>
             },
-            { key: "hoursSpent", name: "hoursSpent", fieldName: "hoursSpent",
-             minWidth: 100},
-             { key: "newHoursSpent", name: "newHoursSpent", fieldName: "newHoursSpent",
-             minWidth: 100, onRender: this.renderNewHoursSpent }
+            { key: "WorkTyoe", name: "Work Type", fieldName: "trWorkType", minWidth: 20, maxWidth: 90 },
+            { key: "AssignedTo", name: "Assigned To", fieldName: "trAssignedTo", minWidth: 20, maxWidth: 70 },
+
+            {
+              key: "hoursSpent", name: "Previous Hours", fieldName: "hoursSpent",
+              minWidth: 100
+            },
+            {
+              key: "newHoursSpent", name: "New Hours", fieldName: "newHoursSpent",
+              minWidth: 130, onRender: this.renderNewHoursSpent
+            }
           ]}
         />
+        <table>
+          <tr>
+
+            <td>
+              <Label>Previous Hours</Label>
+            </td>
+            <td>
+              {reduce(this.state.timeSpents, (sum, ts) => {
+                return sum + ts.hoursSpent;
+              }, 0)}
+            </td>
+            <td>
+              <Label>New Hours</Label>
+            </td>
+            <td>
+              {reduce(this.state.timeSpents, (sum, ts) => {
+                return sum + ts.newHoursSpent;
+              }, 0)}
+            </td>
+          </tr>
+        </table>
         <span style={{ margin: 20 }}>
           <PrimaryButton href="#" onClick={this.save} icon="ms-Icon--Save">
             <i className="ms-Icon ms-Icon--Save" aria-hidden="true"></i>

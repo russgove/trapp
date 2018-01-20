@@ -11,7 +11,8 @@ export class TimeSpent {
     public hoursSpent: number;// this is whats recored already in the hours spent
     public newHoursSpent: number; // this is whats added by the user
     public tsId: number;
-
+    public trAssignedTo: string;
+    public trWorkType: string;
     public trId: number;
     public trTitle: string;
     public trRequestTitle: string;
@@ -34,6 +35,8 @@ export class TechnicalRequest {
     public status: string;
     public requiredDate: Date;
     public priority: string;
+    public workType:string;
+    public assignedTo:string;
 
 
 }
