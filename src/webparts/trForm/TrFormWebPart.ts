@@ -135,6 +135,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * @memberof TrFormWebPart
    */
   public fetchTR(id: number): Promise<TR> {
+    debugger;
     let fields = "*,ParentTR/Title,Requestor/Title";
     return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand("ParentTR,Requestor").select(fields).get()
       .then((item) => {
@@ -183,6 +184,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
 
   }
+  
 
 
   /**
@@ -269,11 +271,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       cancel: this.cancel.bind(this),
       TRsearch: this.TRsearch.bind(this),
       uploadFile: this.uploadFile.bind(this),
-      deleteFile:this.deleteFile.bind(this),
+      deleteFile: this.deleteFile.bind(this),
       getDocuments: this.getDocuments.bind(this),
       peopleSearch: this.PeopleSearch.bind(this),
       ensureUsersInPersonas: this.ensureUsersInPersonas.bind(this),
-      hoursSpent:0,
+      hoursSpent: 0,
       customers: [],
       initialState: null,
       techSpecs: [],
@@ -303,7 +305,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documentCalloutVisible: false,
       documents: [],
       documentCalloutTarget: null,
-      documentCalloutIframeUrl: null
+      documentCalloutIframeUrl: null,
+      currentTab:"tronoxtrtextarea-title"
     };
     let batch = pnp.sp.createBatch();
     // get tr list field titles
@@ -405,14 +408,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           });
 
         // get the HoursSpent so far // just summ up allo the hours spent on this TR so we can diplay it
-        
-        debugger;
+
         pnp.sp.web.lists.getByTitle("Time Spent").items.filter("TRId eq " + id).select("HoursSpent").inBatch(batch).get()
           .then((items) => {
-            debugger;
+
             // this may resilve befor we get the mainn tr, so jyst stash  away for now.
             for (const item of items) {
-              formProps.hoursSpent+=item["HoursSpent"];
+              formProps.hoursSpent += item["HoursSpent"];
             }
 
           })
@@ -684,10 +686,10 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
       let propertyTestFields = "*,Property/Title";
       let propertyTestExpands = "Property";
-      debugger;
+
       pnp.sp.web.lists.getByTitle(this.properties.propertyTestListName).items.select(propertyTestFields).expand(propertyTestExpands).top(5000).inBatch(batch2).get()// get the lookup info
         .then((items) => {
-          debugger;
+
           formProps.propertyTests = map(items, (item) => {
             let pt: PropertyTest = new PropertyTest(item["Id"] as number, item["ApplicationTypeId"] as number, item["EndUseId"] as Array<number>, item["TestId"] as Array<number>);
             if (item["Property"]) {
@@ -695,7 +697,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             }
             return pt;
           });
-          debugger;
+
         })
         .catch((error) => {
           debugger;
@@ -703,7 +705,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           console.log(error.message);
         });
       batch2.execute().then(() => {
-        debugger;
+
         // setTimeout(() => {
         this.reactElement.props = formProps;
         //formComponent.render();
@@ -789,6 +791,15 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   label: "Width of Iframe used to show Documents",
                   min: 100,
                   max: 2000,
+                  step: 5,
+                  showValue: true
+                }),
+
+                
+                PropertyPaneSlider('delayPriorToSettingCKEditor', {
+                  label: "milliseconds to delay before rendering ckeditor",
+                  min: 100,
+                  max: 20000,
                   step: 5,
                   showValue: true
                 })
@@ -1029,7 +1040,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           let subscriptionEnum = wfSubscriptions.getEnumerator();
           while (subscriptionEnum.moveNext()) {
             const wfSubscription: SP.WorkflowServices.WorkflowSubscription = subscriptionEnum.get_current();
-            debugger;
+
             if (wfSubscription.get_definitionId().toString().toUpperCase() === workFlowDefinitionId.toString().toUpperCase()) {
               foundSubscription = wfSubscription;
               break;
@@ -1046,7 +1057,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     return p;
   }
   private async cancelRunningWorkflows(ItemId: number, workflowName: string): Promise<any> {
-    debugger;
+
     if (!workflowName) {
       return Promise.resolve();
     }
@@ -1087,7 +1098,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
     });
     if (!wfInstances) {
-      debugger;
+
       alert("Failed to load workflow instances. Running workflows were not cancelled. This can happen if the Office 365 workflow service is unavailable.");
       console.error("Failed to load Workflow instances.");
       return Promise.resolve();
@@ -1188,7 +1199,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     }
     if (copy.Id !== null) {
       console.log("id is mot null will update");
-      debugger;
+
       if (originalReuiredDate != tr.RequiredDate) {
         await this.cancelRunningWorkflows(copy.Id, this.properties.workflowToTerminateOnChange).then((x) => {
           console.log("Workflow has been terminated");
@@ -1333,7 +1344,6 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   private emailStaffCCOnCreate(tr: TR): Promise<any> {
 
     return new Promise((resolve, reject) => {
-      debugger;
       if (!tr.StaffCC) {
         resolve();
         return;
@@ -1489,17 +1499,16 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * 
    * @memberof TrFormWebPart
    */
-  private uploadFile(file, trId,filePrefix:string): Promise<any> {
+  private uploadFile(file, trId, filePrefix: string): Promise<any> {
     const fileName: string = filePrefix + "--" + file.name;
     if (file.size <= 10485760) {
       // small upload
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files.add(fileName, file, true)
         .then((results) => {
-          debugger;
+
           //return pnp.sp.web.getFileByServerRelativeUrl(results.data.ServerRelativeUrl).getItem<{ Id: number, Title: string, Modified: Date }>("Id", "Title", "Modified").then((item) => {
           return results.file.getItem().then(item => {
             return item.update({ "TRId": trId, Title: file.name }).then((r) => {
-              debugger;
               return;
             }).catch((err) => {
               debugger;
@@ -1528,17 +1537,14 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     } else {
       // large upload// not tested yet
       //  alert("large file support  not impletemented");
-      debugger;
 
       return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).rootFolder.files
         .addChunked(fileName, file, data => {
           console.log({ data: data, message: "progress" });
         }, true)
         .then((results) => {
-          debugger;
           return results.file.getItem().then(item => {
             return item.update({ "TRId": trId, Title: file.name }).then((r) => {
-              debugger;
               return;
             }).catch((err) => {
               debugger;
@@ -1553,19 +1559,19 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         });
     }
   }
-   /**
-   * Uploads a file to the TR DOcument library an associates it with the specified TR
-   * 
-   * @private
-   * @param {any} file The file to upload
-   * @param {any} trId  The ID of the TR to associate the file with
-   * @returns {Promise<any>} 
-   * 
-   * @memberof TrFormWebPart
-   */
+  /**
+  * Uploads a file to the TR DOcument library an associates it with the specified TR
+  * 
+  * @private
+  * @param {any} file The file to upload
+  * @param {any} trId  The ID of the TR to associate the file with
+  * @returns {Promise<any>} 
+  * 
+  * @memberof TrFormWebPart
+  */
   private deleteFile(id): Promise<any> {
 
-      return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(id).delete();
-      
+    return pnp.sp.web.lists.getByTitle(this.properties.trDocumentsListName).items.getById(id).delete();
+
   }
 }

@@ -86,7 +86,111 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     });
 
   }
+  public componentDidUpdate() {
+    // see https://github.com/SharePoint/sp-de//cdn.ckeditor.com/4.6.2/full/ckeditor.jsv-docs/issues/374
+    // var ckEditorCdn: string = "//cdn.ckeditor.com/4.6.2/full/ckeditor.js";
+    debugger;
 
+    // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
+    var data;
+    switch (this.state.currentTab) {
+      case "tronoxtrtextarea-title":
+        if (!this.ckeditor.instances["tronoxtrtextarea-title"]) {
+          console.log("replacing editor for  " + this.state.currentTab);
+          console.log("value in dom is " + document.getElementById(this.state.currentTab)["value"]);
+          this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig);
+
+
+        }
+        else {
+          data = this.ckeditor.instances["tronoxtrtextarea-title"].getData();
+          this.ckeditor.instances["tronoxtrtextarea-title"].destroy();
+          this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig);
+          this.ckeditor.instances["tronoxtrtextarea-title"].setData(data);
+          console.log("recreated editor for  " + this.state.currentTab);
+
+        }
+        break;
+      case "tronoxtrtextarea-description":
+        if (!this.ckeditor.instances["tronoxtrtextarea-description"]) {
+          console.log("replacing editor for  " + this.state.currentTab);
+          console.log("value in dom is " + document.getElementById(this.state.currentTab)["value"]);
+
+          this.ckeditor.replace("tronoxtrtextarea-description", this.props.ckeditorConfig);
+
+        }
+        else {
+          console.log("recreating editor for  " + this.state.currentTab);
+          data = this.ckeditor.instances["tronoxtrtextarea-description"].getData();
+          console.log("value in dom is " + document.getElementById(this.state.currentTab)["value"]);
+          console.log("value in old editor uis " + data);
+
+          this.ckeditor.instances["tronoxtrtextarea-description"].destroy();
+          this.ckeditor.replace("tronoxtrtextarea-description", this.props.ckeditorConfig);
+          this.ckeditor.instances["tronoxtrtextarea-description"].setData(data);
+          console.log("recreated editor for  " + this.state.currentTab);
+
+        }
+        break;
+      case "tronoxtrtextarea-summary":
+        if (!this.ckeditor.instances["tronoxtrtextarea-summary"]) {
+          console.log("replacing editor for  " + this.state.currentTab);
+          console.log("value in dom is " + document.getElementById(this.state.currentTab)["value"]);
+
+          this.ckeditor.replace("tronoxtrtextarea-summary", this.props.ckeditorConfig);
+          console.log("replaced editor for  " + this.state.currentTab);
+        } else {
+          data = this.ckeditor.instances["tronoxtrtextarea-summary"].getData();
+          this.ckeditor.instances["tronoxtrtextarea-summary"].destroy();
+          this.ckeditor.replace("tronoxtrtextarea-summary", this.props.ckeditorConfig);
+          this.ckeditor.instances["tronoxtrtextarea-summary"].setData(data);
+          console.log("recreated editor for  " + this.state.currentTab);
+
+        }
+        break;
+      case "tronoxtrtextarea-testparams":
+        if (!this.ckeditor.instances["tronoxtrtextarea-testparams"]) {
+          console.log("replacing editor for  " + this.state.currentTab);
+          console.log("value in dom is " + document.getElementById(this.state.currentTab)["value"]);
+
+          this.ckeditor.replace("tronoxtrtextarea-testparams", this.props.ckeditorConfig);
+          console.log("replaced editor for  " + this.state.currentTab);
+        }
+        else {
+          data = this.ckeditor.instances["tronoxtrtextarea-testparams"].getData();
+          this.ckeditor.instances["tronoxtrtextarea-testparams"].destroy();
+          this.ckeditor.replace("tronoxtrtextarea-testparams", this.props.ckeditorConfig);
+          this.ckeditor.instances["tronoxtrtextarea-testparams"].setData(data);
+          console.log("recreated editor for  " + this.state.currentTab);
+
+        }
+        break;
+      case "tronoxtrtextarea-formulae":
+        if (!this.ckeditor.instances["tronoxtrtextarea-formulae"]) {
+          console.log("replacing editor for  " + this.state.currentTab);
+          console.log("value in dom is " + document.getElementById(this.state.currentTab)["value"]);
+
+          this.ckeditor.replace("tronoxtrtextarea-formulae", this.props.ckeditorConfig);
+          console.log("replaced editor for  " + this.state.currentTab);
+        }
+        else {
+          data = this.ckeditor.instances["tronoxtrtextarea-formulae"].getData();
+          this.ckeditor.instances["tronoxtrtextarea-formulae"].destroy();
+          this.ckeditor.replace("tronoxtrtextarea-formulae", this.props.ckeditorConfig);
+          this.ckeditor.instances["tronoxtrtextarea-formulae"].setData(data);
+          console.log("recreated editor for  " + this.state.currentTab);
+
+        }
+        break;
+
+
+
+      default:
+
+
+
+    }
+  }
   /**
    * When the user changes the tabs, if the new tab contains a ckeditor control, replcae the textarea that was rendered by default 
    * with the ckeditor control. We need a breief delay before doing so so that we can be sure the control has been rendered
@@ -96,56 +200,39 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public tabChanged(item?: PivotItem, ev?: React.MouseEvent<HTMLElement>) {
+    debugger;
     switch (item.props.linkText) {
       case "Title":
-        if (this.ckeditor.instances["tronoxtrtextarea-title"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-title", this.props.ckeditorConfig);
-            console.log("created tronoxtrtextarea-title");
-          });
-        }
+
+        // the ckeditors seem to be getting clobbered when a user switches tabs. 
+        // So when the tabs change, if there is already a ckeditor set up for the teaxt area 
+        // grab its data, detsroy it, create a new one, and set the new ones data to the data from the old one. 
+        //    this.createCkeditor("tronoxtrtextarea-title");
+        this.setState((current) => ({ ...current, currentTab: "tronoxtrtextarea-title" }));
         break;
       case "Description":
-        if (this.ckeditor.instances["tronoxtrtextarea-description"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-description", this.props.ckeditorConfig);
-            console.log("created tronoxtrtextarea-description");
-          });
-        }
+
+        //    this.createCkeditor("tronoxtrtextarea-description");
+        this.setState((current) => ({ ...current, currentTab: "tronoxtrtextarea-description" }));
         break;
       case "Summary":
-
-        if (this.ckeditor.instances["tronoxtrtextarea-summary"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-summary", this.props.ckeditorConfig);
-            console.log("created tronoxtrtextarea-summary");
-          });
-        }
+        //     this.createCkeditor("tronoxtrtextarea-summary");
+        this.setState((current) => ({ ...current, currentTab: "tronoxtrtextarea-summary" }));
         break;
       case "Test Params":
-        if (this.ckeditor.instances["tronoxtrtextarea-testparams"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-testparams", this.props.ckeditorConfig);
-            console.log("created tronoxtrtextarea-testparams");
-          });
-        }
+        //     this.createCkeditor("tronoxtrtextarea-testparams");
+        this.setState((current) => ({ ...current, currentTab: "tronoxtrtextarea-testparams" }));
+
         break;
       case "Formulae":
-        if (this.ckeditor.instances["tronoxtrtextarea-formulae"] === undefined) {
-          new Promise(resolve => setTimeout(resolve, this.props.delayPriorToSettingCKEditor)).then((xx) => {
-            this.ckeditor.replace("tronoxtrtextarea-formulae", this.props.ckeditorConfig);
-            console.log("created tronoxtrtextarea-formulae");
-          });
-        }
+        //      this.createCkeditor("tronoxtrtextarea-formulae");
+        this.setState((current) => ({ ...current, currentTab: "tronoxtrtextarea-formulae" }));
         break;
       default:
+        this.setState((current) => ({ ...current, currentTab: "other" }));
 
     }
-
-
-
   }
-
   /**
    * Determines if the values entered in the TR are valid
    * 
@@ -188,7 +275,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualManHours) {
       errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
     }
-    debugger;
+
     if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
       errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
     }
@@ -246,7 +333,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     }
     const errors: md.Message[] = this.getErrors();
     if (errors.length === 0) {
-      tr.FileCount=this.state.documents.length; // update the file count to be however many files are here
+      tr.FileCount = this.state.documents.length; // update the file count to be however many files are here
       tr.ActualManHours = this.props.hoursSpent; // updaye hours spent, Thi # we put in the prop, is the total accumulated so fat in the time spent list
       this.props.save(tr, this.originalAssignees, this.originalStatus, this.originalRequiredDate)
         .then((result: TR) => {
@@ -284,25 +371,18 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public updateCKEditorText(tr: TR) {
-    for (const instanceName of this.ckeditor.instances) {
+    // debugger;
+    let instances = this.ckeditor.instances;
+    for (const instanceName in instances) {
+      debugger;
       let instance: any = this.ckeditor.instances[instanceName];
-      switch (instanceName) {
-        case "tronoxtrtextarea-title":
-          instance.setData(tr.RequestTitle);
-          break;
-        case "tronoxtrtextarea-description":
-          instance.setData(tr.Description);
-          break;
-        case "tronoxtrtextarea-summary":
-          instance.setData(tr.SummaryNew);
-          break;
-        case "tronoxtrtextarea-formulae":
-          instance.setData(tr.Formulae);
-          break;
-        default:
-
-      }
+      instance.destroy();
+      console.log("destroyed editor for " + instanceName);
     }
+    // if (this.state.currentTab !== "other") {
+    //   this.createCkeditor(this.state.currentTab);
+    // }
+
   }
 
   /**
@@ -459,7 +539,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    */
   public getAvailableTests(): Array<DisplayPropertyTest> {
     // select the propertyTest available based on the applicationType and EndUse of the tr
-    debugger;
+
     var temppropertyTest: Array<PropertyTest> = filter(this.props.propertyTests, (pt: PropertyTest) => {
       return (pt.applicationTypeid === this.state.tr.ApplicationTypeId
         && pt.endUseIds.indexOf(this.state.tr.EndUseId) !== -1
@@ -500,7 +580,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public getAvailableTestGroups(): Array<IGroup> {
-    debugger;
+
     var displayPropertyTests: Array<DisplayPropertyTest> = this.getAvailableTests(); // all the avalable tests with their Property
     var properties = countBy(displayPropertyTests, (dpt: DisplayPropertyTest) => {
       return dpt.property;
@@ -717,23 +797,18 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
     if (childTr) {
       console.log("switching to tr " + trId);
-      // delete this.state.tr;
-      // this.state.tr = childTr;
       this.originalAssignees = clone(childTr.TRAssignedToId);
       this.originalStatus = childTr.TRStatus;
       this.originalRequiredDate = childTr.RequiredDate;
-
       this.updateCKEditorText(this.state.tr);
-      // this.state.childTRs = [];
-      this.setState((current) => ({ ...current, tr: childTr, childTRs: [] }));
-      // this.setState(this.state);
-      // now get its children, need to move children to state
-      this.props.fetchChildTr(this.state.tr.Id).then((trs) => {
-        // this.state.childTRs = trs;
-        this.setState((current) => ({ ...current, childTRs: trs }));
+      this.props.fetchChildTr(childTr.Id).then((trs) => {
+        this.props.getDocuments(childTr.Id).then((dox) => {
+          this.setState((current) => ({ ...current, tr: childTr, childTRs: trs, documents: dox }));
+        });
+
+
       });
     }
-    return false;
   }
 
   /**
@@ -760,27 +835,27 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     });
 
   }
-   /**
-   * Deletes the selectd file from the TR Document library.
-   * 
-   * @param {TRDocument} trdocument 
-   * 
-   * @memberof TrForm
-   */
+  /**
+  * Deletes the selectd file from the TR Document library.
+  * 
+  * @param {TRDocument} trdocument 
+  * 
+  * @memberof TrForm
+  */
   public deleteFile(trdocument: TRDocument): void {
 
-    debugger;
-    this.props.deleteFile(trdocument.id).then((results)=>{
-      let remainingdocs=filter(this.state.documents,(doc)=>{
+
+    this.props.deleteFile(trdocument.id).then((results) => {
+      let remainingdocs = filter(this.state.documents, (doc) => {
         return (doc.id !== trdocument.id);
       });
       this.setState((current) => ({ ...current, documents: remainingdocs }));
-    }).catch(error=>{
+    }).catch(error => {
       console.error(error);
       alert("there was an error deleting tis file");
-      
+
     });
-    
+
   }
 
   public parentTRSelected(id: number, title: string) {
@@ -794,7 +869,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public uploadFile(e: any) {
 
     let file: any = e.target["files"][0];
-    this.props.uploadFile(file, this.state.tr.Id,this.state.tr.Title).then((response) => {
+    this.props.uploadFile(file, this.state.tr.Id, this.state.tr.Title).then((response) => {
       this.props.getDocuments(this.state.tr.Id).then((dox) => {
         // this.state.documents = dox;
         this.setState((current) => ({ ...current, documents: dox }));
@@ -815,12 +890,17 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         this.originalAssignees = clone(parentTR.TRAssignedToId);
         this.originalStatus = parentTR.TRStatus;
         this.originalRequiredDate = parentTR.RequiredDate;
-        // this.state.childTRs = [];
-        this.setState((current) => ({ ...current, tr: parentTR, childTRs: [] }));
         this.updateCKEditorText(this.state.tr);
+        debugger;
+        this.setState((current) => ({ ...current, tr: parentTR, childTRs: [], documents: [] }));
+
         this.props.fetchChildTr(parentId).then((subTRs) => {
-          // this.state.childTRs = subTRs;
-          this.setState((current) => ({ ...current, childTRs: subTRs }));
+          this.props.getDocuments(parentId).then((dox) => {
+
+            this.setState((current) => ({ ...current, childTRs: subTRs, documents: dox }));
+          }
+
+          );
         });
       });
     }
@@ -892,35 +972,21 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     return results;
 
   }
-  // public setDirty(isDirty: boolean) {
 
-  //   if (!this.state.isDirty && isDirty) { //wasnt dirty now it is 
-  //     window.onbeforeunload = function (e) {
-  //       var dialogText = "You have unsaved changes, are you sure you want to leave?";
-  //       e.returnValue = dialogText;
-  //       return dialogText;
-  //     };
-  //   }
-  //   if (this.state.isDirty && !isDirty) { //was dirty now it is not
-  //     window.onbeforeunload = null;
-  //   }
-  //   //this.state.isDirty = isDirty;
-  //   this.setState((this.state)=>{ ...this.state, isDirty: isDirty });
-  // }
-    /**
-   * Called when a user drops files into the DropZone. It calls 
-   * the uploadFile method on the props to upload the files to sharepoint and then adds them to state.
-   * 
-   * @private
-   * @param {any} acceptedFiles 
-   * @param {any} rejectedFiles 
-   * @memberof EfrApp
-   */
+  /**
+ * Called when a user drops files into the DropZone. It calls 
+ * the uploadFile method on the props to upload the files to sharepoint and then adds them to state.
+ * 
+ * @private
+ * @param {any} acceptedFiles 
+ * @param {any} rejectedFiles 
+ * @memberof EfrApp
+ */
   private onDrop(acceptedFiles, rejectedFiles) {
     console.log("in onDrop");
     let promises: Array<Promise<any>> = [];
     acceptedFiles.forEach(file => {
-      promises.push(this.props.uploadFile(file,this.state.tr.Id,this.state.tr.Title));
+      promises.push(this.props.uploadFile(file, this.state.tr.Id, this.state.tr.Title));
     });
     Promise.all(promises).then((x) => {
       this.props.getDocuments(this.state.tr.Id).then((dox) => {
@@ -1304,30 +1370,21 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         <Pivot onLinkClick={this.tabChanged.bind(this)}
           linkFormat={PivotLinkFormat.tabs}
           linkSize={PivotLinkSize.normal}>
-          <PivotItem linkText='Title' onClick={(e) => { debugger; }}  >
-
-            <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" style={{ display: "none" }}>
-              {this.state.tr.RequestTitle}
-            </textarea>
+          <PivotItem linkText='Title' key="tronoxtrtextarea-title" >
+            <textarea name="tronoxtrtextarea-title" id="tronoxtrtextarea-title" value={this.state.tr.RequestTitle} />
           </PivotItem>
-          <PivotItem linkText='Description' >
-            <textarea name="tronoxtrtextarea-description" id="tronoxtrtextarea-description" style={{ display: "none" }}>
-              {this.state.tr.Description}
-            </textarea>
-          </PivotItem>
-          <PivotItem linkText='Summary' >
+          <PivotItem linkText='Description' key="tronoxtrtextarea-description" >
+            <textarea name="tronoxtrtextarea-description" id="tronoxtrtextarea-description" value={this.state.tr.Description} />
+         </PivotItem>
+          <PivotItem linkText='Summary' key="tronoxtrtextarea-summary" >
             <div dangerouslySetInnerHTML={this.createSummaryMarkup(this.state.tr)} />
-            <textarea name="tronoxtrtextarea-summary" id="tronoxtrtextarea-summary" style={{ display: "none" }}>
-              {this.state.tr.SummaryNew}
-            </textarea>
+            <textarea name="tronoxtrtextarea-summary" id="tronoxtrtextarea-summary" value={this.state.tr.SummaryNew} style={{ display: "none" }} />
           </PivotItem>
-          <PivotItem linkText='Test Params' >
-            <textarea name="tronoxtrtextarea-testparams" id="tronoxtrtextarea-testparams" style={{ display: "none" }}>
-              {this.state.tr.TestingParameters}
-            </textarea>
+          <PivotItem linkText='Test Params' key="tronoxtrtextarea-testparams"  >
+            <textarea name="tronoxtrtextarea-testparams" id="tronoxtrtextarea-testparams" value={this.state.tr.TestingParameters} />
           </PivotItem>
 
-          <PivotItem linkText={`Assigned To(${((this.state.tr.TRAssignedToId === null) ? "0" : this.state.tr.TRAssignedToId.length.toString())})`}>
+          <PivotItem key="assignedto" linkText={`Assigned To(${((this.state.tr.TRAssignedToId === null) ? "0" : this.state.tr.TRAssignedToId.length.toString())})`}>
 
             <DetailsList
               layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -1363,7 +1420,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               ]}
             />
           </PivotItem>
-          <PivotItem linkText={`Staff cc(${(this.state.tr.StaffCC === null) ? "0" : this.state.tr.StaffCC.length})`} >
+          <PivotItem key="staffcc" linkText={`Staff cc(${(this.state.tr.StaffCC === null) ? "0" : this.state.tr.StaffCC.length})`} >
             <NormalPeoplePicker
               defaultSelectedItems={this.state.tr.StaffCC}
               onChange={this.staffCCChanged.bind(this)}
@@ -1371,7 +1428,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             >
             </NormalPeoplePicker>
           </PivotItem>
-          <PivotItem linkText={`Pigments(${(this.state.tr.PigmentsId === null) ? "0" : this.state.tr.PigmentsId.length})`} >
+          <PivotItem key="pigments" linkText={`Pigments(${(this.state.tr.PigmentsId === null) ? "0" : this.state.tr.PigmentsId.length})`} >
 
             <div style={{ float: "left" }}>
               <Label> Available Pigments</Label>
@@ -1435,7 +1492,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
             </div>
             <div style={{ clear: "both" }}></div>
           </PivotItem>
-          <PivotItem linkText={`Tests(${(this.state.tr.TestsId === null) ? "0" : this.state.tr.TestsId.length})`} >
+          <PivotItem key="tests"
+            linkText={`Tests(${(this.state.tr.TestsId === null) ? "0" : this.state.tr.TestsId.length})`} >
 
             <div style={{ float: "left" }}>
               <Label> Available Tests</Label>
@@ -1499,54 +1557,58 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
 
           </PivotItem>
-          <PivotItem hidden={(this.state.tr.Id===null) ? true : false} linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`}  >
-          <Dropzone className={styles.dropzone} onDrop={this.onDrop.bind(this)} disableClick={true} >
-        
-            <div style={{ float: "left" }}>
-              <DetailsList
-                layoutMode={DetailsListLayoutMode.fixedColumns}
-                items={this.state.documents}
-                onRenderRow={(props, defaultRender) => <div
-                  onMouseEnter={(event) => this.documentRowMouseEnter(props.item, event)}
-                  onMouseOut={(evemt) => this.documentRowMouseOut(props.item, event)}>
-                  {defaultRender(props)}
-                </div>}
-                setKey="id"
-                selectionMode={SelectionMode.none}
-                columns={[
-                  { key: "title", name: "Request #", fieldName: "title", minWidth: 1,
-                   maxWidth: 200, onRender: this.renderDocumentTitle.bind(this) },
-                  {
-                    key: "Delete", name: "", fieldName: "Delete", minWidth: 20,
-                    onRender: (item) => <div>
-                      <i onClick={(e) => { this.deleteFile(item); }}
-                        className="ms-Icon ms-Icon--Delete" aria-hidden="true"></i>
-                    </div>
-                  },
+          <PivotItem key="documents"
+            hidden={(this.state.tr.Id === null) ? true : false} linkText={`Documents(${(this.state.documents === null) ? "0" : this.state.documents.length})`}  >
+            <Dropzone className={styles.dropzone} onDrop={this.onDrop.bind(this)} disableClick={true} >
+
+              <div style={{ float: "left" }}>
+                <DetailsList
+                  layoutMode={DetailsListLayoutMode.fixedColumns}
+                  items={this.state.documents}
+                  onRenderRow={(props, defaultRender) => <div
+                    onMouseEnter={(event) => this.documentRowMouseEnter(props.item, event)}
+                    onMouseOut={(evemt) => this.documentRowMouseOut(props.item, event)}>
+                    {defaultRender(props)}
+                  </div>}
+                  setKey="id"
+                  selectionMode={SelectionMode.none}
+                  columns={[
+                    {
+                      key: "title", name: "Request #", fieldName: "title", minWidth: 1,
+                      maxWidth: 200, onRender: this.renderDocumentTitle.bind(this)
+                    },
+                    {
+                      key: "Delete", name: "", fieldName: "Delete", minWidth: 20,
+                      onRender: (item) => <div>
+                        <i onClick={(e) => { this.deleteFile(item); }}
+                          className="ms-Icon ms-Icon--Delete" aria-hidden="true"></i>
+                      </div>
+                    },
 
 
-                ]}
-              />
-              <input type="file" id="uploadfile" onChange={e => { this.uploadFile(e); }} />
-            </div>
-            <div style={{ float: "right" }}>
-              <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight}
-                width={this.props.documentIframeWidth} />
-            </div>
-            <div style={{ clear: "both" }}></div>
+                  ]}
+                />
+                <input type="file" id="uploadfile" onChange={e => { this.uploadFile(e); }} />
+              </div>
+              <div style={{ float: "right" }}>
+                <DocumentIframe src={this.state.documentCalloutIframeUrl} height={this.props.documentIframeHeight}
+                  width={this.props.documentIframeWidth} />
+              </div>
+              <div style={{ clear: "both" }}></div>
             </Dropzone>
 
           </PivotItem>
-          <PivotItem linkText='Formulae' >
+          <PivotItem key="tronoxtrtextarea-formulae" linkText='Formulae' >
 
-            <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" style={{ display: "none" }}>
-              {this.state.tr.Formulae}
-            </textarea>
+            <textarea name="tronoxtrtextarea-formulae" id="tronoxtrtextarea-formulae" value={this.state.tr.Formulae} />
+
+
           </PivotItem>
-          <PivotItem linkText={`Child TRs(${(this.state.childTRs === null) ? "0" : this.state.childTRs.length})`} >
+          <PivotItem key="childTRs"
+            linkText={`Child TRs(${(this.state.childTRs === null) ? "0" : this.state.childTRs.length})`} >
 
 
-            <DetailsList
+            <DetailsList key='childTRDetails'
               layoutMode={DetailsListLayoutMode.fixedColumns}
               items={this.state.childTRs}
               setKey="id"
@@ -1571,7 +1633,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
               ]}
             />
           </PivotItem>
-        
+
 
         </Pivot>
 

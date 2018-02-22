@@ -10,8 +10,9 @@ export interface ITRFormState {
   documentCalloutVisible: boolean;
   documentCalloutTarget: HTMLElement;
   documentCalloutIframeUrl: string;
-  expandedPigmentManufacturer?:string;
-  expandedProperty?:string;
+  expandedPigmentManufacturer?: string;
+  expandedProperty?: string;
+  currentTab: string;
 
 
 }

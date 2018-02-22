@@ -19,6 +19,7 @@ import { IPersonaWithMenu } from "office-ui-fabric-react/lib/components/pickers/
 import * as moment from "moment";
 import { reduce, find } from "lodash";
 import { TimeSpent } from "../dataModel";
+//import SPListView from "./SPListView";
 
 export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTimeCardState> {
   constructor(props: ITrTimeCardProps) {
@@ -197,6 +198,12 @@ export default class TrTimeCard extends React.Component<ITrTimeCardProps, ITrTim
 
     return (
       <div>
+        {/* <SPListView 
+        listname="Technical Requests"
+        viewXML="<View Scope='Recursive'><Query><Where></Where> </Query><ViewFileds><FieldRef Name='Title' /><FieldRef Name='LinkTitle' /> <FieldRef Name='Editor' /></ViewFileds><RowLimit>3</RowLimit></View>"
+        webFullUrl={this.props.webUrl}
+        /> */}
+        
         <Label>Time spent by Technical Specialist {this.props.userName} for the week ending {this.state.weekEndingDate.toDateString()}   </Label>
         <DatePicker
           value={moment(this.state.weekEndingDate).toDate()}
