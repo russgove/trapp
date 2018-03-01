@@ -135,7 +135,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * @memberof TrFormWebPart
    */
   public fetchTR(id: number): Promise<TR> {
-    debugger;
+
     let fields = "*,ParentTR/Title,Requestor/Title";
     return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(id).expand("ParentTR,Requestor").select(fields).get()
       .then((item) => {
@@ -184,7 +184,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       });
 
   }
-  
+
 
 
   /**
@@ -306,7 +306,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       documents: [],
       documentCalloutTarget: null,
       documentCalloutIframeUrl: null,
-      currentTab:"tronoxtrtextarea-title"
+      currentTab: "tronoxtrtextarea-title"
     };
     let batch = pnp.sp.createBatch();
     // get tr list field titles
@@ -795,7 +795,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   showValue: true
                 }),
 
-                
+
                 PropertyPaneSlider('delayPriorToSettingCKEditor', {
                   label: "milliseconds to delay before rendering ckeditor",
                   min: 100,
@@ -1146,7 +1146,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * 
    * @memberof TrFormWebPart
    */
-  private async save(tr: TR, orginalAssignees: Array<number>, originalStatus: string, originalReuiredDate: string): Promise<any> {
+  private async save(tr: TR, orginalAssignees: Array<number>, orginalStaffCCs: Array<number>, originalStatus: string, originalReuiredDate: string): Promise<any> {
     // remove lookups
     let copy = clone(tr) as any;
     delete copy.RequestorName;
@@ -1197,6 +1197,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (copy.hasOwnProperty("SummaryNew")) {
       delete copy.SummaryNew;
     }
+
     if (copy.Id !== null) {
       console.log("id is mot null will update");
 
@@ -1207,9 +1208,13 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       }
 
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
-        console.log("Item sucessfully added, emailing asignnes");
+        console.log("Item sucessfully added, emailing any asignees added to the TR");
         let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
-        console.log("emailling staff cc");
+        console.log("Item sucessfully added, emailing any staffCCs added to the TR");
+        this.ensureUsersInPersonas(tr.StaffCC);
+        let newStaffCCIds = map(tr.StaffCC, (cc) => { return parseInt(cc.id) });
+        let newStaffCCPromise = this.emailNewStaffCC(tr, newStaffCCIds, orginalStaffCCs);
+        console.log("emailling staff cc  that the TR Has been closed");
         var staffccPromise = this.emailStaffCCOnClose(tr, originalStatus);
         console.log("awaiting promises from emails");
         return Promise.all([newAssigneesPromise, staffccPromise])
@@ -1234,26 +1239,26 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
         newTR.Id = item.data.Id; // will be passed back toi component and component will set this to th eID NOT REALLY NEEDED
         newTR.TRAssignedToId = copy.TRAssignedToId.results;//used to email new assignees
-        newTR.StaffCC = copy.StaffCC;//used to email new assignees
+        //newTR.StaffCC = copy.StaffCC;//used to email new assignees
         newTR.Title = copy.Title;
-        try {
-          // just makes debugging easier
-          var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
-          // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
-          return newAssigneesPromise.then(() => {
-            tr.Id = item.data.Id; // need this to send the email (tr is the raw data prior tp save.)
-            return this.emailStaffCCOnCreate(tr).then(() => {
-              this.navigateToSource();// should stop here when on a form page// will navigate back to listview 
-              return newTR;// this is just used for testing on the workbench
-            });
 
+        var newAssigneesPromise = this.emailNewAssignees(newTR, orginalAssignees);
+
+        let newStaffCCIds = map(newTR.StaffCC, (cc) => { return parseInt(cc.id) });
+        var newStaffCCPromise = this.emailNewStaffCC(newTR, copy.StaffCCId.results, orginalStaffCCs);
+        // var staffccPromise = this.emailStaffCC(newTR, originalStatus);
+        return Promise.all([newAssigneesPromise, newStaffCCPromise])
+          .then((a) => {
+            console.log("emails sent continuing");
+            this.navigateToSource();// should stop here when on a form page  
+            tr.Id = item.data.Id;
+            return tr;
+          })
+          .catch((err) => {
+            console.log("error sending emails " + err);
           });
-        } catch (e) { //should not get here!
-          console.error(e);
-          alert("failed to send emails");
-          alert(e);
-          return newTR;
-        }
+
+
       });
     }
   }
@@ -1341,59 +1346,76 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
    * 
    * @memberof TrFormWebPart
    */
-  private emailStaffCCOnCreate(tr: TR): Promise<any> {
+  private emailNewStaffCC(tr: TR, newStaffCC: Array<number>, originalStaffcc: Array<number>): Promise<any> {
 
     return new Promise((resolve, reject) => {
-      if (!tr.StaffCC) {
+      if (!newStaffCC || newStaffCC === null || newStaffCC.length === 0) {
         resolve();
         return;
       }
       let promises: Array<Promise<any>> = [];
-      let editFormUrl = this.properties.editFormUrlFormat.replace("{1}", tr.Id.toString());
-      editFormUrl = editFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
-      let displayFormUrl = this.properties.displayFormUrlFormat.replace("{1}", tr.Id.toString());
-      displayFormUrl = displayFormUrl.split("{0}").join(this.context.pageContext.web.absoluteUrl); //split&join to replace all
-      console.log("fetching email text in emailStaffCC");
-      var y = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
-        console.log("fetched email text in emailStaffCC, extracting text");
+
+      let editFormUrl = this.properties.editFormUrlFormat
+        .split("{1}").join(tr.Id.toString())
+        .split("{0}").join(this.context.pageContext.web.absoluteUrl);
+      let displayFormUrl = this.properties.displayFormUrlFormat
+        .split("{1}").join(tr.Id.toString())
+        .split("{0}").join(this.context.pageContext.web.absoluteUrl);
+      console.log("fetching email text in emailNewSraffcc");
+      var x = pnp.sp.web.lists.getByTitle(this.properties.setupListName).items.getAs<SetupItem[]>().then((setupItems) => {
+        console.log("fetched email text in emailNewStaffCC, extracting it now");
         let subjectFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Subject onCreated"; }).PlainText;
         let subject: string = this.replaceEmailTokens(subjectFormat, tr, editFormUrl, displayFormUrl);
         let bodyFormat: string = find(setupItems, (si: SetupItem) => { return si.Title === "StaffCC Email Body onCreate"; }).PlainText;
         let body: string = this.replaceEmailTokens(bodyFormat, tr, editFormUrl, displayFormUrl);
 
-        console.log("extracted text in emailStaffCC, looping users");
-        for (let staffCC of tr.StaffCC) {
-          console.log("in emailStaffCC, fetching user " + staffCC);
-          //*******          TODO , O a;ready have the email address in the persona
+        console.log("extracted email text in emailNewStaffcc,looping assignees");
+        console.log("new  staffcc are:" + newStaffCC);
+        debugger;
+        console.log("# of   staffcc are:" + newStaffCC.length);
+        
+        for (const staffcc of newStaffCC) {
+          debugger;
+          if (originalStaffcc === null || originalStaffcc.indexOf(staffcc) === -1) {
+            // send email
+            console.log("fetching assignee #" + staffcc);
+            let promise = pnp.sp.web.getUserById(staffcc).get().then((user) => {
+              console.log("fetched assignee #" + staffcc);
+              let emailProperties: EmailProperties = {
+                From: this.context.pageContext.user.email,
+                To: [user.Email],
+                Subject: subject,
+                Body: body
+              };
+              console.log("sending email to staffcc #" + staffcc + "  " + user.Email);
+              return pnp.sp.utility.sendEmail(emailProperties)
+                .then((resp) => {
+                  console.log("StaffCC email sent to " + emailProperties.To);
+                })
+                .catch((error) => {
+                  console.log(error);
+                  reject(error);
+                });
 
-
-          let promise = pnp.sp.web.getUserById(parseInt(staffCC.id)).get().then((user) => {
-            console.log("in emailStaffCC, fetched user " + staffCC);
-            let emailProperties: EmailProperties = {
-              From: this.context.pageContext.user.email,
-              To: [user.Email],
-              Subject: subject,
-              Body: body
-            };
-            console.log("in emailStaffCC, emailing user " + user.Email);
-            return pnp.sp.utility.sendEmail(emailProperties)
-              .then((x) => {
-                console.log("email sent to " + emailProperties.To);
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-
-          }).catch((error) => {
-            console.log("Error Fetching user with id " + staffCC);
-          });
-          promises.push(promise);
+            }).catch((error) => {
+              console.log("Error Fetching user with id " + staffcc);
+            });
+            promises.push(promise);
+          } else {
+            console.log("asignee is not new");
+          }
         }
-        Promise.all(promises).then((x) => {
+        return Promise.all(promises).then((resp) => {
           resolve();
         });
+      }).catch((error) => {
+
+        console.log(error);
       });
+
+
     });
+
   }
 
   /**

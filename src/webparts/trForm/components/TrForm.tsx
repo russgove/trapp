@@ -40,6 +40,7 @@ import styles from "./TrForm.module.scss";
 export default class TrForm extends React.Component<ITrFormProps, ITRFormState> {
   private ckeditor: any;
   private originalAssignees: Array<number> = [];
+  private originalStaffCCs: Array<number> = []; // used so that we only send emai;s to new people added
   private originalStatus: string = "";
   private originalRequiredDate: string = "";
   private validBrandIcons = " accdb csv docx dotx mpp mpt odp ods odt one onepkg onetoc potx ppsx pptx pub vsdx vssx vstx xls xlsx xltx xsn ";
@@ -49,6 +50,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     super(props);
     this.state = props.initialState;
     this.originalAssignees = clone(this.state.tr.TRAssignedToId);// sasve original so we can email new assignees
+    this.originalStaffCCs = map(this.state.tr.StaffCC, (cc) => { return parseInt(cc.id) });// sasve original so we can email new assignees
     this.originalStatus = this.state.tr.TRStatus;// sasve original so we can email if it gets closed
     this.originalRequiredDate = this.state.tr.RequiredDate;// sasve original so we can email if it gets closed
     this.SaveButton = this.SaveButton.bind(this);
@@ -89,8 +91,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
   public componentDidUpdate() {
     // see https://github.com/SharePoint/sp-de//cdn.ckeditor.com/4.6.2/full/ckeditor.jsv-docs/issues/374
     // var ckEditorCdn: string = "//cdn.ckeditor.com/4.6.2/full/ckeditor.js";
-    debugger;
-
     // replaces the title with a ckeditor. the other textareas are not visible yet. They will be replaced when the tab becomes active
     var data;
     switch (this.state.currentTab) {
@@ -200,7 +200,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
    * @memberof TrForm
    */
   public tabChanged(item?: PivotItem, ev?: React.MouseEvent<HTMLElement>) {
-    debugger;
+
     switch (item.props.linkText) {
       case "Title":
 
@@ -335,7 +335,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (errors.length === 0) {
       tr.FileCount = this.state.documents.length; // update the file count to be however many files are here
       tr.ActualManHours = this.props.hoursSpent; // updaye hours spent, Thi # we put in the prop, is the total accumulated so fat in the time spent list
-      this.props.save(tr, this.originalAssignees, this.originalStatus, this.originalRequiredDate)
+      this.props.save(tr, this.originalAssignees, this.originalStaffCCs, this.originalStatus, this.originalRequiredDate)
         .then((result: TR) => {
           tr.Id = result.Id;
           this.setState((current) => ({ ...current, errorMessages: [], isDirty: false, tr: tr }));
@@ -374,7 +374,6 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     // debugger;
     let instances = this.ckeditor.instances;
     for (const instanceName in instances) {
-      debugger;
       let instance: any = this.ckeditor.instances[instanceName];
       instance.destroy();
       console.log("destroyed editor for " + instanceName);
@@ -798,6 +797,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (childTr) {
       console.log("switching to tr " + trId);
       this.originalAssignees = clone(childTr.TRAssignedToId);
+      this.originalStaffCCs = map(childTr.StaffCC, (cc) => { return parseInt(cc.id) });// sasve original so we can email new assignees
       this.originalStatus = childTr.TRStatus;
       this.originalRequiredDate = childTr.RequiredDate;
       this.updateCKEditorText(this.state.tr);
@@ -888,10 +888,11 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
 
         // this.state.tr = parentTR;
         this.originalAssignees = clone(parentTR.TRAssignedToId);
+        this.originalStaffCCs = map(parentTR.StaffCC, (cc) => { return parseInt(cc.id) });// sasve original so we can email new assignees
+
         this.originalStatus = parentTR.TRStatus;
         this.originalRequiredDate = parentTR.RequiredDate;
         this.updateCKEditorText(this.state.tr);
-        debugger;
         this.setState((current) => ({ ...current, tr: parentTR, childTRs: [], documents: [] }));
 
         this.props.fetchChildTr(parentId).then((subTRs) => {
@@ -1037,7 +1038,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
         name: cust.title
       });
     }
-    debugger;
+
     return (
       <div>
 
@@ -1375,7 +1376,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
           </PivotItem>
           <PivotItem linkText='Description' key="tronoxtrtextarea-description" >
             <textarea name="tronoxtrtextarea-description" id="tronoxtrtextarea-description" value={this.state.tr.Description} />
-         </PivotItem>
+          </PivotItem>
           <PivotItem linkText='Summary' key="tronoxtrtextarea-summary" >
             <div dangerouslySetInnerHTML={this.createSummaryMarkup(this.state.tr)} />
             <textarea name="tronoxtrtextarea-summary" id="tronoxtrtextarea-summary" value={this.state.tr.SummaryNew} style={{ display: "none" }} />

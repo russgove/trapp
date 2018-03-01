@@ -17,21 +17,14 @@
           "manifest": "./src/webparts/trTimeCard/TrTimeCardWebPart.manifest.json"
         }
       ]
-    },
-    "view-tr-files-command-set": {
-      "components": [
-        {
-          "entrypoint": "./lib/extensions/viewTrFiles/ViewTrFilesCommandSet.js",
-          "manifest": "./src/extensions/viewTrFiles/ViewTrFilesCommandSet.manifest.json"
-        }
-      ]
     }
+   
   },
   "localizedResources": {
     "trFormStrings": "lib/webparts/trForm/loc/{locale}.js",
     "trTimeCardStrings": "lib/webparts/trTimeCard/loc/{locale}.js",
-    "ControlStrings": "./node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
-    "ViewTrFilesCommandSetStrings": "lib/extensions/viewTrFiles/loc/{locale}.js"
+    "ControlStrings": "./node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js"
+    
   },
   "externals": {
     "sp-init": {
