@@ -44,7 +44,7 @@
         "ckeditorUrl":"https://tronoxglobal.sharepoint.com/sites/CDN/Scripts/ckeditor/v4.5.11/ckeditor.js",
         "documentIframeWidth":500,
         "documentIframeHeight":500,
-        "workflowToTerminateOnChange":"Send TR Norifications"
+        "workflowSubscriptionIdToTerminateOnChange":"7D399B1A-9BA2-4470-9A4A-D176CF3B6BB9"
       }
     },
     {

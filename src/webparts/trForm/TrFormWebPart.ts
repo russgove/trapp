@@ -849,6 +849,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                 PropertyPaneTextField('timeSpentListName', {
                   label: "Time Spent List name",
                 }),
+                PropertyPaneTextField('workflowSubscriptionIdToTerminateOnChange', {
+                  label: "Subscription id of the workflow to be terminated when the date changes(Notifications wf)",
+                }),
+
+                
               ]
             }
           ]
@@ -1004,6 +1009,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   private getWorkFlowDefinitionByName(workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService, workFlowName: string): Promise<SP.WorkflowServices.WorkflowDefinition> {
     let p: Promise<any> = new Promise(async (resolve, reject) => {
+      debugger;
       let context = workflowDeploymentService.get_context();
       let wfDefinitions = workflowDeploymentService.enumerateDefinitions(true);
       context.load(wfDefinitions);
@@ -1013,7 +1019,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
           let defEnum = wfDefinitions.getEnumerator();
           while (defEnum.moveNext()) {
             const wfDefinition = defEnum.get_current();
+            const tempname = wfDefinition.get_displayName();
             if (wfDefinition.get_displayName() === workFlowName) {
+              debugger;
               foundDefinition = wfDefinition;
               break;
             }
@@ -1056,37 +1064,37 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     });
     return p;
   }
-  private async cancelRunningWorkflows(ItemId: number, workflowName: string): Promise<any> {
+  private async cancelRunningWorkflows(ItemId: number, workflowSubscriptionIdToTerminateOnChange: string): Promise<any> {
 
-    if (!workflowName) {
+    if (!workflowSubscriptionIdToTerminateOnChange) {
       return Promise.resolve();
     }
-    let listId = await this.getListId(this.properties.technicalRequestListName);
+     let listId = await this.getListId(this.properties.technicalRequestListName);
     var context = SP.ClientContext.get_current();
-    // get all the workflow service managers
-    var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
-    var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
-    var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService();
-    var workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
+    // // get all the workflow service managers
+     var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
+     var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
+    // var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService();
+    // var workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
 
-    //Get all the definitions from the Deployment Service, or get a specific definition using the GetDefinition method.
-    let wfDefinition: SP.WorkflowServices.WorkflowDefinition = (await this.getWorkFlowDefinitionByName(workflowDeploymentService, workflowName));
-    if (!wfDefinition) {
-      console.error("Coold not find workflow Definition for workflow named : " + workflowName);
-      alert("Coold not find workflow Definition for workflow named : " + workflowName);
-      return Promise.resolve();
-    }
-    let wfDefinitionId: string = wfDefinition.get_id();
+    // //Get all the definitions from the Deployment Service, or get a specific definition using the GetDefinition method.
+    // let wfDefinition: SP.WorkflowServices.WorkflowDefinition = (await this.getWorkFlowDefinitionByName(workflowDeploymentService, workflowName));
+    // if (!wfDefinition) {
+    //   console.error("Coold not find workflow Definition for workflow named : " + workflowName);
+    //   alert("Coold not find workflow Definition for workflow named : " + workflowName);
+    //   return Promise.resolve();
+    // }
+    // let wfDefinitionId: string = wfDefinition.get_id();
 
-    // get the subscription for the list
-    let wfSubscription: SP.WorkflowServices.WorkflowSubscription =
-      await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService, wfDefinitionId, listId);
-    if (!wfSubscription) {
-      console.error("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
-      alert("Could not find a subscription for  workflow named : " + workflowName + " ib the TR List");
-      return Promise.resolve();
-    }
-    let wfSubscriptionId: string = wfSubscription.get_id().toString().toUpperCase();
+    // // get the subscription for the list
+    // let wfSubscription: SP.WorkflowServices.WorkflowSubscription =
+    //   await this.getWorkFlowSubscriptionByDefinitionIdListId(workflowSubscriptionService, wfDefinitionId, listId);
+    // if (!wfSubscription) {
+    //   console.error("Coold not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+    //   alert("Could not find a subscription for  workflow named : " + workflowName + " ib the TR List");
+    //   return Promise.resolve();
+    // }
+    let wfSubscriptionId: string = workflowSubscriptionIdToTerminateOnChange.toUpperCase();
     let wfInstances: SP.WorkflowServices.WorkflowInstanceCollection = workflowInstanceService.enumerateInstancesForListItem(listId, ItemId);
     context.load(wfInstances);
     await new Promise((resolve, reject) => {
@@ -1200,13 +1208,22 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     if (copy.Id !== null) {
       console.log("id is mot null will update");
-
+      debugger;
       if (originalReuiredDate != tr.RequiredDate) {
-        await this.cancelRunningWorkflows(copy.Id, this.properties.workflowToTerminateOnChange).then((x) => {
-          console.log("Workflow has been terminated");
-        });
-      }
+        try {
+          await this.cancelRunningWorkflows(copy.Id, this.properties.workflowSubscriptionIdToTerminateOnChange).then((x) => {
+            debugger;
+            console.log("Workflow has been terminated");
+          });
+        }
+        catch (err) {
+          debugger;
+          // dont error out if cant stop previous workflow
+          // workflow will only restart if person who changed date is an admin
+        }
 
+      }
+      debugger;
       return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
         console.log("Item sucessfully added, emailing any asignees added to the TR");
         let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
@@ -1373,7 +1390,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         console.log("new  staffcc are:" + newStaffCC);
         debugger;
         console.log("# of   staffcc are:" + newStaffCC.length);
-        
+
         for (const staffcc of newStaffCC) {
           debugger;
           if (originalStaffcc === null || originalStaffcc.indexOf(staffcc) === -1) {
