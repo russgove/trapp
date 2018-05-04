@@ -272,9 +272,10 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualCompletionDate) {
       errorMessages.push(new md.Message("Actual Completion Date is required to complete a request"));
     }
-    if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualManHours) {
-      errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
-    }
+    // // Remove actual hours/ tjey are now accumulated
+    // if (this.state.tr.TRStatus === "Completed" && !this.state.tr.ActualManHours) {
+    //   errorMessages.push(new md.Message("Actual Hours is required to complete a request"));
+    // }
 
     if (this.state.tr.RequiredDate && this.state.tr.RequestDate && this.state.tr.RequestDate > this.state.tr.RequiredDate) {
       errorMessages.push(new md.Message("Due Date  must be after Initiation Date"));
@@ -997,8 +998,21 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
     });
 
   }
-  public render(): React.ReactElement<ITrFormProps> {
+  public handleLeavePage(evt) {
+    debugger;
+    console.log("in onbeforeunload");
+    debugger;
+    if (this.state.isDirty) {
 
+      var dialogText = 'You have unsaved changes, are you sure you want to leave?';
+      evt.returnValue = dialogText;
+      return dialogText
+    }
+    delete evt.returnValue;
+
+  }
+  public render(): React.ReactElement<ITrFormProps> {
+debugger;
     let worktypeDropDoownoptions = map(this.props.workTypes, (wt) => {
       return {
         key: wt.id, text: wt.workType
@@ -1344,6 +1358,8 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                   this.setState((current) => ({ ...current, isDirty: true }));
                 }} />
             </td>
+            {/* 
+             // Remove actual hours/ tjey are now accumulated
             <td>
               <Label >Actual Hours</Label>
             </td>
@@ -1354,7 +1370,7 @@ export default class TrForm extends React.Component<ITrFormProps, ITRFormState> 
                 this.state.tr.ActualManHours = parseInt(e, 10);
                 //    this.setState(this.state);
                 this.setState((current) => ({ ...current, isDirty: true }));
-              }} />
+              }} /> */}
 
 
             <td>

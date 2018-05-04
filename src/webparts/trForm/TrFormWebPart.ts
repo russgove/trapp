@@ -262,6 +262,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (document.getElementById("s4-ribbonrow")) {
       document.getElementById("s4-ribbonrow").style.display = "none";
     }
+    if (document.getElementById("sideNavBox")) {
+      document.getElementById("sideNavBox").style.display = "none";
+    }
 
     let formProps: ITrFormProps = {
       save: this.save.bind(this),
@@ -582,7 +585,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
       formProps.initialState = formState;
       this.reactElement = React.createElement(TrForm, formProps);
       var formComponent: TrForm = ReactDom.render(this.reactElement, this.domElement) as TrForm;//render the component
-
+      window.addEventListener("beforeunload",formComponent.handleLeavePage.bind(formComponent));
       if (Environment.type === EnvironmentType.ClassicSharePoint) {
         const buttons: NodeListOf<HTMLButtonElement> = this.domElement.getElementsByTagName('button');
         if (buttons && buttons.length) {
@@ -711,7 +714,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         //formComponent.render();
 
         formComponent.forceUpdate();
-        // }, 30000);
+        debugger;
+      
+
 
       });
     }
@@ -853,7 +858,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
                   label: "Subscription id of the workflow to be terminated when the date changes(Notifications wf)",
                 }),
 
-                
+
               ]
             }
           ]
@@ -1009,7 +1014,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
   }
   private getWorkFlowDefinitionByName(workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService, workFlowName: string): Promise<SP.WorkflowServices.WorkflowDefinition> {
     let p: Promise<any> = new Promise(async (resolve, reject) => {
-      debugger;
+
       let context = workflowDeploymentService.get_context();
       let wfDefinitions = workflowDeploymentService.enumerateDefinitions(true);
       context.load(wfDefinitions);
@@ -1021,7 +1026,7 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
             const wfDefinition = defEnum.get_current();
             const tempname = wfDefinition.get_displayName();
             if (wfDefinition.get_displayName() === workFlowName) {
-              debugger;
+
               foundDefinition = wfDefinition;
               break;
             }
@@ -1069,11 +1074,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
     if (!workflowSubscriptionIdToTerminateOnChange) {
       return Promise.resolve();
     }
-     let listId = await this.getListId(this.properties.technicalRequestListName);
+    let listId = await this.getListId(this.properties.technicalRequestListName);
     var context = SP.ClientContext.get_current();
     // // get all the workflow service managers
-     var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
-     var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
+    var workflowServicesManager: SP.WorkflowServices.WorkflowServicesManager = SP.WorkflowServices.WorkflowServicesManager.newObject(context, context.get_web());
+    var workflowInstanceService: SP.WorkflowServices.WorkflowInstanceService = workflowServicesManager.getWorkflowInstanceService();
     // var workflowSubscriptionService: SP.WorkflowServices.WorkflowSubscriptionService = workflowServicesManager.getWorkflowSubscriptionService();
     // var workflowDeploymentService: SP.WorkflowServices.WorkflowDeploymentService = workflowServicesManager.getWorkflowDeploymentService();
 
@@ -1208,11 +1213,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
     if (copy.Id !== null) {
       console.log("id is mot null will update");
-      debugger;
+
       if (originalReuiredDate != tr.RequiredDate) {
         try {
           await this.cancelRunningWorkflows(copy.Id, this.properties.workflowSubscriptionIdToTerminateOnChange).then((x) => {
-            debugger;
+
             console.log("Workflow has been terminated");
           });
         }
@@ -1223,8 +1228,9 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         }
 
       }
-      debugger;
-      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy).then((item) => {
+
+      return pnp.sp.web.lists.getByTitle(this.properties.technicalRequestListName).items.getById(tr.Id).update(copy)
+      .then((item) => {
         console.log("Item sucessfully added, emailing any asignees added to the TR");
         let newAssigneesPromise = this.emailNewAssignees(tr, orginalAssignees);
         console.log("Item sucessfully added, emailing any staffCCs added to the TR");
@@ -1237,6 +1243,8 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
         return Promise.all([newAssigneesPromise, staffccPromise])
           .then((a) => {
             console.log("emails sent continuing");
+            debugger;
+             window.onbeforeunload = null;
             this.navigateToSource();// should stop here when on a form page  
             return tr;
           })
@@ -1388,11 +1396,11 @@ export default class TrFormWebPart extends BaseClientSideWebPart<ITrFormWebPartP
 
         console.log("extracted email text in emailNewStaffcc,looping assignees");
         console.log("new  staffcc are:" + newStaffCC);
-        debugger;
+
         console.log("# of   staffcc are:" + newStaffCC.length);
 
         for (const staffcc of newStaffCC) {
-          debugger;
+
           if (originalStaffcc === null || originalStaffcc.indexOf(staffcc) === -1) {
             // send email
             console.log("fetching assignee #" + staffcc);
